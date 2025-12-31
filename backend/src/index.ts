@@ -6,20 +6,24 @@ dotenv.config();
 import express from "express";
 import cors from "cors";
 import { verifyFirebaseToken, AuthenticatedRequest } from "./middleware/auth";
+import profilerouter from "./routes/profile.routes";
 
+// Use profile routes
 
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+app.use("/api", profilerouter);
 
+app.use(express.json());
 app.get("/", (_req, res) => {
   res.send("API is running 🚀");
 });
 
 // Protected route example
-app.get("/api/protected", verifyFirebaseToken, (req: AuthenticatedRequest, res) => {
+app.get("/api/mee", verifyFirebaseToken, (req: AuthenticatedRequest, res) => {
   res.json({
     message: "Access granted to protected route",
     user: {

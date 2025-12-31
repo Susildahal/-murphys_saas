@@ -25,10 +25,7 @@ export const verifyFirebaseToken = async (
       return;
     }
 
-    // Verify the token with Firebase Admin
-    console.log('Verifying token...');
     const decodedToken = await admin.auth().verifyIdToken(token, true);
-    console.log('Token verified successfully for user:', decodedToken.uid);
 
     // Attach the decoded token (user info) to the request
     req.user = decodedToken;
