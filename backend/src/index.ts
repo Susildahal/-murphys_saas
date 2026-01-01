@@ -7,6 +7,7 @@ import express from "express";
 import cors from "cors";
 import { verifyFirebaseToken, AuthenticatedRequest } from "./middleware/auth";
 import profilerouter from "./routes/profile.routes";
+import inviterouter from "./routes/invite.route";
 
 // Use profile routes
 
@@ -16,6 +17,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use("/api", profilerouter);
+app.use("/api", inviterouter);
 
 app.use(express.json());
 app.get("/", (_req, res) => {

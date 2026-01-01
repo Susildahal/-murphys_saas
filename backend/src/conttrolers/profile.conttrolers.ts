@@ -2,6 +2,7 @@ import Profile from "../models/profile.model";
 import { Request, Response } from "express";
 import transporter from "../config/nodemiller";
 
+
 export const createProfile = async (req: Request, res: Response) => {
   try {
     const body = req.body as any;
