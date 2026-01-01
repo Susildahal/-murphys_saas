@@ -14,5 +14,3 @@ profilerouter.put("/profiles/:id", upload.single('profile_image'), cloudinaryUpl
 export default profilerouter;
 
 
-
-
