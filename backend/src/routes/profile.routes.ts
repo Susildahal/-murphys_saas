@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createProfile, getProfiles, getProfileById  ,updateProfile } from "../conttrolers/profile.conttrolers";
+import { createProfile, getProfiles, getProfileById  ,updateProfile ,sentemail } from "../conttrolers/profile.conttrolers";
 import upload from "../middleware/upload";
 import cloudinaryUpload from "../middleware/cloudinaryUpload";
 const profilerouter = Router();
@@ -9,6 +9,7 @@ profilerouter.post("/profiles", upload.single('profile_image'), cloudinaryUpload
 profilerouter.get("/profiles", getProfiles);
 profilerouter.get("/profiles/:id", getProfileById);
 profilerouter.put("/profiles/:id", upload.single('profile_image'), cloudinaryUpload, updateProfile);
+profilerouter.post("/send-email", sentemail);
 
 
 export default profilerouter;

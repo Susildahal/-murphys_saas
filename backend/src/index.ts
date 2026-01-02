@@ -8,6 +8,7 @@ import cors from "cors";
 import { verifyFirebaseToken, AuthenticatedRequest } from "./middleware/auth";
 import profilerouter from "./routes/profile.routes";
 import inviterouter from "./routes/invite.route";
+import paymentrouter from "./routes/payment.route";
 
 // Use profile routes
 
@@ -18,6 +19,7 @@ app.use(cors());
 app.use(express.json());
 app.use("/api", profilerouter);
 app.use("/api", inviterouter);
+app.use("/api", paymentrouter);
 
 app.use(express.json());
 app.get("/", (_req, res) => {

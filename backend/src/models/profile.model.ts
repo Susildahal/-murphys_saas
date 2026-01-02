@@ -16,9 +16,9 @@ state: { type: String },
 website: { type: String },
 profile_image: { type: String },
 public_id: { type: String },
-invite_type: { type: String, enum: ['invite', 'non invite'], default: 'non invite' },
-invite_email: { type: String },
-inviteStatus: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' },
+usertypes: { type: String },
+role: { type: String },
+status: { type: String }
 
 }, { timestamps: true });
 

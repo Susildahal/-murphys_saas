@@ -118,6 +118,9 @@ export const updateProfile = async (req: Request, res: Response) => {
       position: body.position,
       state: body.state,
       website: body.website,
+      role: body.role,
+      status: body.status,
+      usertypes: body.usertypes
     };
 
     // Only update image fields if a new image was uploaded
@@ -139,47 +142,96 @@ export const updateProfile = async (req: Request, res: Response) => {
   }
 };
 
-export const inviteusers = async (req: Request, res: Response) => {
+
+export const sentemail = async (req: Request, res: Response) => {
+  const { to, subject, body } = req.body;
+  
   try {
-    const {email , invite_by} = req.body;
-    if (!email) {
-      return res.status(400).json({ message: 'Email is required' });
-    }
-    const ifemailesist = await Profile.findOne({ email: email });
-    if (ifemailesist) {
-      return res.status(409).json({ message: "Email already exists" });
-    }
+    // Create styled HTML email template
+    const htmlTemplate = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${subject}</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+          <tr>
+            <td align="center">
+              <!-- Main Container -->
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                
+                <!-- Header -->
+                <tr>
+                  <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">
+                      ${subject}
+                    </h1>
+                  </td>
+                </tr>
+                
+                <!-- Body Content -->
+                <tr>
+                  <td style="padding: 40px 30px;">
+                    <div style="color: #333333; font-size: 16px; line-height: 1.8; white-space: pre-wrap;">
+                      ${body}
+                    </div>
+                  </td>
+                </tr>
+                
+                <!-- Divider -->
+                <tr>
+                  <td style="padding: 0 30px;">
+                    <div style="border-top: 1px solid #e5e7eb;"></div>
+                  </td>
+                </tr>
+                
+                <!-- Footer -->
+                <tr>
+                  <td style="padding: 30px; text-align: center; background-color: #f9fafb;">
+                    <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px;">
+                      This email was sent from your Murphys Client account.
+                    </p>
+                    <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                      © ${new Date().getFullYear()} Your Company. All rights reserved.
+                    </p>
+                  </td>
+                </tr>
+                
+              </table>
+              
+              <!-- Bottom Spacing -->
+              <table width="600" cellpadding="0" cellspacing="0" style="margin-top: 20px;">
+                <tr>
+                  <td style="text-align: center; padding: 20px;">
+                    <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                      If you have any questions, please don't hesitate to contact us.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `;
 
-    const inviteby =await Profile.findOne({ email: invite_by });
-    if (!inviteby) {
-      return res.status(404).json({ message: "Inviter profile not found" });
-    }
-
-
-    const profile = new Profile({
-      email: email,
-      invite_type: 'invite',
-      invite_email: invite_by,
-      inviteStatus: 'pending'
-    });
-    await profile.save();
-    // Send invitation email
-    const mailOptions = {
+    await transporter.sendMail({
       from: process.env.EMAIL_FROM,
-      to: email,
-      subject: 'You are invited to join Murphys Client',
-      text: `Hello,
-You have been invited to join Murphys Client. Please click the link below to accept the invitation:
-http://your-frontend-url.com/accept-invite?email=${encodeURIComponent(email)}
-Best regards,
-Murphys Client Team`
-    };
-    await transporter.sendMail(mailOptions);
-    res.status(201).json({ data: profile, message: "Invitation sent successfully" });
+      to: to,
+      subject: subject,
+      text: body, // Plain text fallback
+      html: htmlTemplate // Beautiful HTML version
+    });
+
+    res.status(200).json({ message: "Email sent successfully" });
   } catch (error) {
     res.status(400).json({ message: (error as Error).message });
   }
-
-
-
 };
+
+
