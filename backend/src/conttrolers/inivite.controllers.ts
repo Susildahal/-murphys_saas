@@ -23,6 +23,7 @@ export const sendInvite = async (req: Request, res: Response) => {
       invite_type: 'invite',
       invite_email: invite_email,
       inviteStatus: 'pending',
+      inviteexpiry: new Date(Date.now() + 5*24*60*60*1000) // 5 days from now
     });
     await invite.save();
     // Send invitation email
@@ -31,7 +32,7 @@ export const sendInvite = async (req: Request, res: Response) => {
       to: email,
       subject: 'You are invited to join Murphys Client',
       text: `Hello ${firstName || ''} ${lastName || ''},
-You have been invited to join Murphys Client. Please click the link below to accept the invitation:
+You have been invited to join Murphys Client. Please click the link below to accept the invitation within 5 days:
 ${process.env.createaccoutroutes}?email=${encodeURIComponent(email)}
 Best regards,
 Murphys Client Team`
@@ -47,8 +48,19 @@ export const getInvites = async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 1;
   const skip = (page - 1) * limit;
+  const email = req.query.email as string | undefined;
 
   try {
+    if (email) {
+      const invite = await Invite.findOne({ email: email, invite_type: 'invite' });
+      if (!invite) {
+        return res.status(404).json({ message: "Invite not found" });
+      }
+      if(invite.inviteStatus == 'pending' || invite.inviteStatus == 'rejected' ) {
+        return res.status(400).json({ message: `Invite has already been ${invite.inviteStatus}` });
+      }
+      return res.status(200).json({ data: invite, message: "Invite retrieved successfully" });
+    }
     const total = await Invite.countDocuments( );
     const invites = await Invite.find({ invite_type: 'invite' }).skip(skip).limit(limit);
     res.status(200).json({ data: invites, 
@@ -64,9 +76,9 @@ export const getInvites = async (req: Request, res: Response) => {
   }
 };
 
-export const acceptInvite = async (req: Request, res: Response) => {
+export const changeInviteStatus = async (req: Request, res: Response) => {
   try {
-    const { email } = req.body; 
+    const { email, status } = req.body; 
     if (!email) {
       return res.status(400).json({ message: 'Email is required' });
     }
@@ -74,34 +86,16 @@ export const acceptInvite = async (req: Request, res: Response) => {
     if (!invite) {
       return res.status(404).json({ message: "Invite not found" });
     }
-    invite.inviteStatus = 'accepted';
+    invite.inviteStatus = status;
     await invite.save();
-    res.status(200).json({ data: invite, message: "Invite accepted successfully" });
+    res.status(200).json({ data: invite, message: "Invite status changed successfully" });
   }
   catch (error) {
     res.status(400).json({ message: (error as Error).message });
   }
 };
 
-export const rejectInvite = async (req: Request, res: Response) => {
-  try {
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ message: 'Email is required' });
-    }
-    const invite = await Invite.findOne({ email: email, invite_type: 'invite' });
-    if (!invite) {
-      return res.status(404).json({ message: "Invite not found" });
-    }
-    invite.inviteStatus = 'rejected';
-    await invite.save();
-    res.status(200).json({ data: invite, message: "Invite rejected successfully" });
-  }
-  catch (error)
-  {
-    res.status(400).json({ message: (error as Error).message });
-  }
-  };
+
   
 
   export const updateInvite = async (req: Request, res: Response) => {
@@ -141,6 +135,10 @@ export  const inviteAgain = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Invite not found" });
     }
     const email = invite.email;
+   const inviteexpiry = new Date(Date.now() + 5*24*60*60*1000); // 5 days from now
+   invite.inviteexpiry = inviteexpiry;
+   invite.inviteStatus = 'pending';
+   await invite.save();
     // Resend invitation email
     await transporter.sendMail({
       from: process.env.EMAIL_FROM,
@@ -161,3 +159,25 @@ Murphys Client Team`
 
 
 
+export const getinvitebyemail = async ( req: Request, res: Response) => {
+  const {email } = req.params;
+  try {
+    const invite = await Invite.findOne({ email: email, invite_type: 'invite' });
+    if (!invite) {
+      return res.status(404).json({ message: "Invite not found" });
+    }
+
+    if(invite.inviteStatus !== 'pending') {
+      return res.status(400).json({ message: `Invite has already been ${invite.inviteStatus}` });
+    }
+  
+    if (invite.inviteexpiry && invite.inviteexpiry < new Date()) {
+      return res.status(400).json({ message: "Invite has expired" });
+    }
+
+    res.status(200).json({ data: invite, message: "Invite retrieved successfully" });
+  }
+  catch (error) {
+    res.status(500).json({ message: (error as Error).message });
+  }
+};

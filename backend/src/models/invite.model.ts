@@ -7,6 +7,7 @@ const inviteSchema = new mongoose.Schema({
     invite_type: { type: String, enum: ['invite', 'non invite'], default: 'non invite' },
     invite_email: { type: String },
     inviteStatus: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' },
+    inviteexpiry: { type: Date },
 }, { timestamps: true });
 const Invite = mongoose.model("invite", inviteSchema);
 

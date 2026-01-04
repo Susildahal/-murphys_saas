@@ -9,6 +9,8 @@ import { verifyFirebaseToken, AuthenticatedRequest } from "./middleware/auth";
 import profilerouter from "./routes/profile.routes";
 import inviterouter from "./routes/invite.route";
 import paymentrouter from "./routes/payment.route";
+import categoryrouter from "./routes/category.route";
+import servicerouter from "./routes/service.route";
 
 // Use profile routes
 
@@ -20,6 +22,8 @@ app.use(express.json());
 app.use("/api", profilerouter);
 app.use("/api", inviterouter);
 app.use("/api", paymentrouter);
+app.use("/api", categoryrouter);
+app.use("/api", servicerouter);
 
 app.use(express.json());
 app.get("/", (_req, res) => {
