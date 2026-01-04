@@ -7,7 +7,9 @@ const paymentSchema = new mongoose.Schema({
   secretKey: String,
   webhookSecret: String,
   isActive: Boolean,
-  isTestMode: Boolean
+  isTestMode: Boolean,
+  status: { type: Boolean, default: true },
+
 
 }, { timestamps: true });
 const Payment = mongoose.model("Payment", paymentSchema);

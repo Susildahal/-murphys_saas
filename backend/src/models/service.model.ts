@@ -5,7 +5,7 @@ const serviceSchema = new mongoose.Schema({
           description: { type: String, required: true, trim: true },
           price: { type: Number, required: true },
           currency:{ type: String, required: true },
-          billingType: { type: String, enum: ['one-time', 'recurring'], required: true },
+          billingType: { type: String, enum: ['one_time', 'monthly', 'yearly', 'pay_as_you_go'], required: true },
           categoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
           categoryName: { type: String, required: true },
           hasDiscount: { type: Boolean, required: false, default: false },
@@ -21,7 +21,9 @@ const serviceSchema = new mongoose.Schema({
           notes: { type: String, required: false },
           image : { type: String, required: false },
           publicid: { type: String, required: false },
+          status: { type: String, enum: ['active', 'inactive'], default: 'active' },
 }, { timestamps: true });
+
 
 const Service = mongoose.model("Service", serviceSchema);
 export default Service;

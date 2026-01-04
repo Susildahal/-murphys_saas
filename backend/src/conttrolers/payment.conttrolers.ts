@@ -60,3 +60,21 @@ export const deletePayment = async (req: Request, res: Response) => {
     res.status(400).json({ message: (error as Error).message });
     }
 };
+
+
+export const changePaymentStatus = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body; 
+    const payment = await Payments.findById(id);
+    if (!payment) {
+      return res.status(404).json({ message: "Payment method not found" });
+    }
+    payment.status = status;
+    await payment.save();
+    res.status(200).json({ data: payment, message: "Payment method status changed successfully" });
+  }
+  catch (error) {
+    res.status(400).json({ message: (error as Error).message });
+  }
+};
