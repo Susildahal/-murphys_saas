@@ -3,46 +3,131 @@ import { Request, Response } from "express";
 import transporter from "../config/nodemiller";
 import Profile from "../models/profile.model";
 import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
 dotenv.config()
+
+
 
 
 export const sendInvite = async (req: Request, res: Response) => {
   try {
     const { email, firstName, lastName, invite_email } = req.body;
+
     if (!email) {
-      return res.status(400).json({ message: 'Email is required' });
+      return res.status(400).json({ message: "Email is required" });
     }
-    const existingInvite = await Profile.findOne({ email: email });
+
+    // Check existing invite
+    const existingInvite = await Invite.findOne({
+      email,
+      inviteStatus: "pending",
+    });
+
     if (existingInvite) {
-      return res.status(409).json({ message: "An invite has already been sent to this email" });
+      return res
+        .status(409)
+        .json({ message: "An invite has already been sent to this email" });
     }
+
+    // Save invite
     const invite = new Invite({
       email,
       firstName,
       lastName,
-      invite_type: 'invite',
-      invite_email: invite_email,
-      inviteStatus: 'pending',
-      inviteexpiry: new Date(Date.now() + 5*24*60*60*1000) // 5 days from now
+      invite_type: "invite",
+      invite_email,
+      inviteStatus: "pending",
+      inviteexpiry: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days
     });
+
     await invite.save();
-    // Send invitation email
+
+    // Generate token
+    const token = jwt.sign(
+      { email },
+      process.env.JWT_SECRET as string,
+      { expiresIn: "5d" }
+    );
+ const encodedUrlToken = encodeURIComponent(token);
+    const acceptUrl = `${process.env.createaccoutroutes}/token=${encodedUrlToken}`;
+
+    // Send email
     await transporter.sendMail({
       from: process.env.EMAIL_FROM,
       to: email,
-      subject: 'You are invited to join Murphys Client',
-      text: `Hello ${firstName || ''} ${lastName || ''},
-You have been invited to join Murphys Client. Please click the link below to accept the invitation within 5 days:
-${process.env.createaccoutroutes}?email=${encodeURIComponent(email)}
-Best regards,
-Murphys Client Team`
+      subject: "You're invited to join Murphys Client",
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <h2>Hello ${firstName || ""} ${lastName || ""},</h2>
+
+          <p>
+            You’ve been invited to join <strong>Murphys Client</strong>.
+          </p>
+
+          <p>
+            Please accept your invitation by clicking the button below.
+            This invitation will expire in <strong>5 days</strong>.
+          </p>
+
+          <div style="margin: 30px 0;">
+            <a href="${acceptUrl}"
+              style="
+                background-color: #2563eb;
+                color: #ffffff;
+                padding: 12px 24px;
+                text-decoration: none;
+                border-radius: 6px;
+                font-weight: bold;
+                display: inline-block;
+              ">
+              Accept Invitation
+            </a>
+          </div>
+
+          <p style="font-size: 14px; color: #666;">
+            If you didn’t expect this invitation, you can safely ignore this email.
+          </p>
+
+          <p>
+            Best regards,<br />
+            <strong>Murphys Client Team</strong>
+          </p>
+        </div>
+      `,
     });
-    res.status(201).json({ data: invite, message: "Invitation sent successfully" });
+
+    return res.status(201).json({
+      data: invite,
+      message: "Invitation sent successfully",
+    });
+  } catch (error) {
+    return res.status(400).json({
+      message: (error as Error).message,
+    });
   }
-  catch (error) {
+};
+
+
+export const verifyInviteToken = async (req: Request, res: Response) => {
+  try {
+    const { token } = req.body;
+    if (!token) {
+      return res.status(400).json({ message: 'Token is required' });
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { email: string };
+    const invite = await Invite.findOne({ email: decoded.email, invite_type: 'invite' });
+    if (!invite) {
+      return res.status(404).json({ message: "Invite not found" });
+    }
+    if (invite.inviteexpiry && invite.inviteexpiry < new Date()) {
+      return res.status(400).json({ message: "Invite has expired" });
+    }
+    res.status(200).json({ data: invite, message: "Invite token is valid" });
+  } catch (error) {
     res.status(400).json({ message: (error as Error).message });
   }
 };
+
 
 export const getInvites = async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;
@@ -135,24 +220,64 @@ export  const inviteAgain = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Invite not found" });
     }
     const email = invite.email;
-   const inviteexpiry = new Date(Date.now() + 5*24*60*60*1000); // 5 days from now
-   invite.inviteexpiry = inviteexpiry;
+    const firstName = invite.firstName;
+    const lastName = invite.lastName;
+    const token = jwt.sign(
+      { email },
+      process.env.JWT_SECRET as string,
+      { expiresIn: '5d' }
+    );
+ const encodedUrlToken = encodeURIComponent(token);
    invite.inviteStatus = 'pending';
    await invite.save();
-    // Resend invitation email
+    const acceptUrl = `${process.env.createaccoutroutes}/token=${encodedUrlToken}`;
+
+    // Send email
     await transporter.sendMail({
       from: process.env.EMAIL_FROM,
       to: email,
-      subject: 'Reminder: You are invited to join Murphys Client',
-      text: `Hello ${invite.firstName || ''} ${invite.lastName || ''},
-This is a reminder that you have been invited to join Murphys Client. Please click the link below to accept the invitation:
-${process.env.createaccoutroutes}?email=${encodeURIComponent(invite.email)}
-Best regards,
-Murphys Client Team`
+      subject: "You're invited to join Murphys Client",
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+          <h2>Hello ${firstName || ""} ${lastName || ""},</h2>
+
+          <p>
+            You’ve been invited to join <strong>Murphys Client</strong>.
+          </p>
+
+          <p>
+            Please accept your invitation by clicking the button below.
+            This invitation will expire in <strong>5 days</strong>.
+          </p>
+
+          <div style="margin: 30px 0;">
+            <a href="${acceptUrl}"
+              style="
+                background-color: #2563eb;
+                color: #ffffff;
+                padding: 12px 24px;
+                text-decoration: none;
+                border-radius: 6px;
+                font-weight: bold;
+                display: inline-block;
+              ">
+              Accept Invitation
+            </a>
+          </div>
+
+          <p style="font-size: 14px; color: #666;">
+            If you didn’t expect this invitation, you can safely ignore this email.
+          </p>
+
+          <p>
+            Best regards,<br />
+            <strong>Murphys Client Team</strong>
+          </p>
+        </div>
+      `,
     });
-    res.status(200).json({ data: invite, message: "Invitation resent successfully" });
   }
- catch (error) {
+  catch (error) {
     res.status(400).json({ message: (error as Error).message });
   }
 };

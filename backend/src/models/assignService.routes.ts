@@ -3,7 +3,9 @@ import mongoose from 'mongoose';
 
 const assignServiceSchema = new mongoose.Schema({
     client_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    client_name: { type: String, required: true },
     service_catalog_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Service', required: true },
+    service_name: { type: String, required: true },
     status: { type: String, enum: ['active', 'expired', 'cancelled'], default: 'active' },
     note: { type: String },
     price: { type: String, required: true },

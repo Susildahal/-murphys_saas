@@ -37,8 +37,10 @@ export const assignServiceToClient = async (req: Request, res: Response) => {
         start_date,
         renewal_date,
         email,
+        client_name: fullname,
+        service_name: useExistingService.name,
     });
-    const token = jwt.sign({ email: email }, process.env.JWT_SECRET as string, { expiresIn: '7d' });
+    const token = jwt.sign({ email: email }, process.env.JWT_SECRET as string, { expiresIn: '7d' }); // Token valid for 7 days
     
     await assignedService.save();
  const emailoptions = {
@@ -56,7 +58,7 @@ export const assignServiceToClient = async (req: Request, res: Response) => {
                     <li>Billing Cycle: ${cycle}</li>
                 </ul>
                 <p> If you have any questions or need further assistance, please do not hesitate to contact our support team.</p>
-                <p> Click Here to accept tis service: <a href="${process.env.frontendurl}/admin/verify/encoadedurl:${token}">Murphys Client Portal</a></p>
+                <p> Click Here to accept tis service: <a href="${process.env.frontendurl}/verify/encoadedurl:${token}">Murphys Client Portal</a></p>
                 <p>Thank you for choosing Murphys Client!
 
                </p>
@@ -72,20 +74,49 @@ export const assignServiceToClient = async (req: Request, res: Response) => {
 
 export const acceptedAssignedService = async (req: Request, res: Response) => {
     try {
-        const {token } = req.params;
+        const {token } = req.body;
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { email: string };
+        const decodedToken = jwt.decode(token) as { exp?: number } | null;
+        if (decodedToken?.exp && Math.floor(Date.now() / 1000) > decodedToken.exp) {
+          return res.status(401).json({ message: 'Token has expired' });
+        }
         const assignedService = await AssignService.findOne({ email: decoded.email, isaccepted: 'pending' });
+        
+    
         if (!assignedService) {
             return res.status(404).json({ message: 'No pending assigned service found for this email' });
         }
-        assignedService.isaccepted = 'accepted';
-        await assignedService.save();
-        res.status(200).json({ data: assignedService, message: 'Assigned service accepted successfully' });
+const userProfile = await Profile.findOne({ email: decoded.email });
+        if (!userProfile) {
+            return res.status(404).json({ message: 'User profile not found' });
+        }
+  
+        res.status(200).json({ data: {assignedService, userProfile}, message: 'Assigned service accepted successfully' });
     }
     catch (error) {
         res.status(400).json({ message: (error as Error).message });
     }
 };
+
+ export const acceptAssignedService = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const {isaccepted } = req.body;
+        const assignedService = await AssignService.findById(id);
+        if (!assignedService) {
+            return res.status(404).json({ message: 'Assigned service not found' });
+        }
+        assignedService.isaccepted = isaccepted;
+        await assignedService.save();
+        res.status(200).json({ data: assignedService, message: 'Assigned service accepted successfully' });
+    }
+    catch (error) {
+
+        res.status(400).json({ message: (error as Error).message });
+    }
+};
+
+
 
 
 

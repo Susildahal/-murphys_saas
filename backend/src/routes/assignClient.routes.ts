@@ -1,9 +1,11 @@
 import router from "express";
-import { assignServiceToClient ,acceptedAssignedService } from "../conttrolers/assignServicec.conttlores";
+import { assignServiceToClient ,acceptedAssignedService,acceptAssignedService  } from "../conttrolers/assignServicec.conttlores";
 
 const assignClientRouter = router();
 assignClientRouter.post('/assign-service', assignServiceToClient);
-assignClientRouter.post('/verify_token/:token', acceptedAssignedService);
+assignClientRouter.post('/verify_token', acceptedAssignedService);
+assignClientRouter.patch('/accept-assigned-service/:id', acceptAssignedService);
+// assignClientRouter.get('/assigned_services', getAllAssignedServices);
 
 
 
