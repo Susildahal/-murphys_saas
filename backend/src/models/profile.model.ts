@@ -17,8 +17,10 @@ website: { type: String },
 profile_image: { type: String },
 public_id: { type: String },
 usertypes: { type: String },
-role: { type: String },
-status: { type: String }
+role: { type: mongoose.Schema.Types.ObjectId, ref: 'Role' }, // Reference to custom Role
+status: { type: String, enum: ['active', 'inactive', 'suspended'], default: 'active' },
+role_type: { type: String , enum: ['client user', 'admin user'] }, // Type: admin or client
+permissions: [{ type: String }], // Custom permissions array for granular access control
 
 }, { timestamps: true });
 

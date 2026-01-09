@@ -1,17 +1,41 @@
 import { Router } from "express";
-import { createProfile, getProfiles, getProfileById  ,updateProfile ,sentemail } from "../conttrolers/profile.conttrolers";
+import { 
+  createProfile, 
+  getProfiles, 
+  getProfileById, 
+  updateProfile, 
+  sentemail, 
+  getProfileByEmail, 
+  deleteProfile, 
+  getAdminProfiles,
+  toggleUserPermission,
+  updateUserRole,
+  updateUserStatus,
+  getUserPermissions
+} from "../conttrolers/profile.conttrolers";
 import upload from "../middleware/upload";
 import cloudinaryUpload from "../middleware/cloudinaryUpload";
+import { verifyFirebaseToken } from "../middleware/auth";
+import { isAdmin, isOwnerOrAdmin, checkPermission, Permission } from "../middleware/rbac";
+
 const profilerouter = Router();
 
-// Use Multer to accept a single file under 'profile_image', then upload to Cloudinary
+// Public routes (no authentication required)
 profilerouter.post("/profiles", upload.single('profile_image'), cloudinaryUpload, createProfile);
-profilerouter.get("/profiles", getProfiles);
-profilerouter.get("/profiles/:id", getProfileById);
-profilerouter.put("/profiles/:id", upload.single('profile_image'), cloudinaryUpload, updateProfile);
-profilerouter.post("/send-email", sentemail);
 
+// Protected routes (authentication required)
+profilerouter.get("/profiles", verifyFirebaseToken, getProfiles);
+profilerouter.get("/profiles/types", verifyFirebaseToken, isAdmin, getAdminProfiles);
+profilerouter.get("/profiles/:id", verifyFirebaseToken, isOwnerOrAdmin, getProfileById);
+profilerouter.get("/profiles/email/:email", verifyFirebaseToken, isOwnerOrAdmin, getProfileByEmail);
+profilerouter.put("/profiles/:id", verifyFirebaseToken, isOwnerOrAdmin, upload.single('profile_image'), cloudinaryUpload, updateProfile);
+profilerouter.delete("/profiles/:id", verifyFirebaseToken, deleteProfile);
 
-export default profilerouter;
+// Email route (admin only)
+profilerouter.post("/send-email", verifyFirebaseToken, isAdmin, sentemail);
+profilerouter.post("/profiles/permissions/toggle", verifyFirebaseToken, isAdmin, toggleUserPermission);
+profilerouter.post("/profiles/permissions/role", verifyFirebaseToken, isAdmin, updateUserRole);
+profilerouter.post("/profiles/permissions/status", verifyFirebaseToken, isAdmin, updateUserStatus);
+profilerouter.get("/profiles/permissions/:userId", verifyFirebaseToken, isAdmin, getUserPermissions);
 
-
+export default profilerouter;   

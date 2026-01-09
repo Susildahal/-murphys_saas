@@ -1,13 +1,20 @@
 import router from "express";
-import { assignServiceToClient ,acceptedAssignedService,acceptAssignedService  } from "../conttrolers/assignServicec.conttlores";
+import { assignServiceToClient ,acceptedAssignedService,acceptAssignedService  ,getAllAssignedServices ,getAssignDetails } from "../conttrolers/assignServicec.conttlores";
+import { verifyFirebaseToken } from "../middleware/auth";
+import { checkPermission, Permission } from "../middleware/rbac";
 
 const assignClientRouter = router();
-assignClientRouter.post('/assign-service', assignServiceToClient);
+
+// Public route for accepting assigned services via token
 assignClientRouter.post('/verify_token', acceptedAssignedService);
-assignClientRouter.patch('/accept-assigned-service/:id', acceptAssignedService);
-// assignClientRouter.get('/assigned_services', getAllAssignedServices);
 
+// All other routes require authentication
+assignClientRouter.use(verifyFirebaseToken);
 
+assignClientRouter.post('/assign-service', assignServiceToClient);
+assignClientRouter.patch('/accept-assigned-service/:id',  acceptAssignedService);
+assignClientRouter.get('/assigned_services', getAllAssignedServices);
+assignClientRouter.get('/assign_details/:client_id/:service_catalog_id', getAssignDetails);
 
 export default assignClientRouter;
 

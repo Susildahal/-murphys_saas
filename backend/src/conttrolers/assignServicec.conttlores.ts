@@ -7,6 +7,11 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config()
 
+interface JwtPayload {
+  email: string;
+  iat: number;
+  exp: number;
+}
 
 export const assignServiceToClient = async (req: Request, res: Response) => {
   try {
@@ -116,6 +121,61 @@ const userProfile = await Profile.findOne({ email: decoded.email });
     }
 };
 
+
+
+
+export const getAllAssignedServices = async (req: Request, res: Response) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const skip = (page - 1) * limit;
+  const searchQuery = req.query.search as string || '';
+
+  try {
+    let query = {};
+    if (searchQuery) {
+      query = {
+        $or: [
+          { client_name: { $regex: searchQuery, $options: 'i' } },
+          { service_name: { $regex: searchQuery, $options: 'i' } },
+          { email: { $regex: searchQuery, $options: 'i' } },
+        ],
+      };
+    }
+
+    const [totalCount, assignedServices] = await Promise.all([
+      AssignService.countDocuments(),
+      AssignService.find(query).skip(skip).limit(limit).sort({ createdAt: -1 }),
+
+    ]);
+    res.status(200).json({ data: assignedServices, pagination: {  totalCount, page, limit, totalPages: Math.ceil(totalCount / limit) }, message: 'Assigned services retrieved successfully' });
+  }
+  catch (error) {
+    res.status(400).json({ message: (error as Error).message });
+  }
+};
+
+export const getAssignDetails = async (req: Request, res: Response) => {
+  try {
+    const { client_id } = req.params as any;
+    const { service_catalog_id } = req.params as any;
+
+    if (!client_id || !service_catalog_id) {
+      return res.status(400).json({ message: 'client_id and service_catalog_id are required' });
+    }
+
+    const [clientProfile, service] = await Promise.all([
+      Profile.findById(client_id),
+      Service.findById(service_catalog_id),
+    ]);
+    if (!clientProfile || !service) {
+      return res.status(404).json({ message: 'Client or Service not found' });
+    }
+    res.status(200).json({ data: { clientProfile, service }, message: 'Assigned service retrieved successfully' });
+  }
+  catch (error) {
+    res.status(400).json({ message: (error as Error).message });
+  }
+};
 
 
 

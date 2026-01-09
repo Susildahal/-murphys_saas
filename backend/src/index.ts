@@ -11,7 +11,8 @@ import inviterouter from "./routes/invite.route";
 import paymentrouter from "./routes/payment.route";
 import categoryrouter from "./routes/category.route";
 import servicerouter from "./routes/service.route";
-import  assignClientRouter from "./routes/assignClient.routes";
+import assignClientRouter from "./routes/assignClient.routes";
+import rolerouter from "./routes/role.routes";
 
 // Use profile routes
 
@@ -26,6 +27,7 @@ app.use("/api", paymentrouter);
 app.use("/api", categoryrouter);
 app.use("/api", servicerouter);
 app.use("/api", assignClientRouter);
+app.use("/api", rolerouter);
 
 app.use(express.json());
 app.get("/", (_req, res) => {

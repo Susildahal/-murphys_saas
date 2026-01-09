@@ -11,25 +11,27 @@ dotenv.config()
 
 export const sendInvite = async (req: Request, res: Response) => {
   try {
-    const { email, firstName, lastName, invite_email } = req.body;
+    const { email, firstName, lastName, invite_email ,role_type } = req.body;
 
     if (!email) {
       return res.status(400).json({ message: "Email is required" });
     }
 
-    // Check existing invite
-    const existingInvite = await Invite.findOne({
-      email,
-      inviteStatus: "pending",
-    });
-
-    if (existingInvite) {
+    // Check existing invites and profiles
+    const [inviteemailexist , profileemailexist ]= await Promise.all([
+      Invite.findOne({ email: email, inviteStatus: "pending", role_type }),
+      Profile.findOne({ email: email })
+    ]);
+    if (profileemailexist) {
+      return res.status(409).json({ message: "Email is already registered" });
+    }
+    if (inviteemailexist) {
       return res
         .status(409)
         .json({ message: "An invite has already been sent to this email" });
     }
-
     // Save invite
+
     const invite = new Invite({
       email,
       firstName,
@@ -37,7 +39,7 @@ export const sendInvite = async (req: Request, res: Response) => {
       invite_type: "invite",
       invite_email,
       inviteStatus: "pending",
-      inviteexpiry: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days
+      role_type,
     });
 
     await invite.save();
@@ -119,9 +121,10 @@ export const verifyInviteToken = async (req: Request, res: Response) => {
     if (!invite) {
       return res.status(404).json({ message: "Invite not found" });
     }
-    if (invite.inviteexpiry && invite.inviteexpiry < new Date()) {
-      return res.status(400).json({ message: "Invite has expired" });
+      if(invite.inviteStatus !== 'pending') {
+      return res.status(400).json({ message: `Invite has already been ${invite.inviteStatus}` });
     }
+
     res.status(200).json({ data: invite, message: "Invite token is valid" });
   } catch (error) {
     res.status(400).json({ message: (error as Error).message });
@@ -131,7 +134,7 @@ export const verifyInviteToken = async (req: Request, res: Response) => {
 
 export const getInvites = async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
   const skip = (page - 1) * limit;
   const email = req.query.email as string | undefined;
 
@@ -170,6 +173,10 @@ export const changeInviteStatus = async (req: Request, res: Response) => {
     const invite = await Invite.findOne({ email: email, invite_type: 'invite' });
     if (!invite) {
       return res.status(404).json({ message: "Invite not found" });
+    }
+
+    if(status === "accepted" ){
+     await new Profile({ email: email, firstName: invite.firstName, lastName: invite.lastName, role_type: invite.role_type }).save();
     }
     invite.inviteStatus = status;
     await invite.save();
@@ -222,6 +229,7 @@ export  const inviteAgain = async (req: Request, res: Response) => {
     const email = invite.email;
     const firstName = invite.firstName;
     const lastName = invite.lastName;
+    const role_type = invite.role_type;
     const token = jwt.sign(
       { email },
       process.env.JWT_SECRET as string,
@@ -229,6 +237,7 @@ export  const inviteAgain = async (req: Request, res: Response) => {
     );
  const encodedUrlToken = encodeURIComponent(token);
    invite.inviteStatus = 'pending';
+   invite.role_type = role_type;
    await invite.save();
     const acceptUrl = `${process.env.createaccoutroutes}/token=${encodedUrlToken}`;
 
@@ -294,10 +303,6 @@ export const getinvitebyemail = async ( req: Request, res: Response) => {
 
     if(invite.inviteStatus !== 'pending') {
       return res.status(400).json({ message: `Invite has already been ${invite.inviteStatus}` });
-    }
-  
-    if (invite.inviteexpiry && invite.inviteexpiry < new Date()) {
-      return res.status(400).json({ message: "Invite has expired" });
     }
 
     res.status(200).json({ data: invite, message: "Invite retrieved successfully" });

@@ -1,8 +1,14 @@
 import { Router } from "express";
-import { createPayment, getPayments, getPaymentById, updatePayment, deletePayment ,changePaymentStatus } from "../conttrolers/payment.conttrolers";
+import { createPayment, getPayments, getPaymentById, updatePayment, deletePayment ,changePaymentStatus , } from "../conttrolers/payment.conttrolers";
+import { verifyFirebaseToken } from "../middleware/auth";
+import { checkPermission, Permission } from "../middleware/rbac";
 
 const paymentrouter = Router();
-paymentrouter.post("/payments", createPayment);
+
+// All payment routes require authentication
+paymentrouter.use(verifyFirebaseToken);
+
+paymentrouter.post("/payments",  createPayment);
 paymentrouter.get("/payments", getPayments);
 paymentrouter.get("/payments/:id", getPaymentById);
 paymentrouter.put("/payments/:id", updatePayment);

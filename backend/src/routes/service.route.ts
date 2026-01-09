@@ -8,8 +8,13 @@ import {
   updateService,
   deleteService,
 } from '../conttrolers/service.conttolers';
+import { verifyFirebaseToken } from '../middleware/auth';
+import { checkPermission, Permission } from '../middleware/rbac';
 
 const router = express.Router();
+
+// All service routes require authentication
+router.use(verifyFirebaseToken);
 
 // List services
 router.get('/services', getServices);

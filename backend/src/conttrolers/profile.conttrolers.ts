@@ -51,10 +51,11 @@ export const getProfiles = async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 10;
   const skip = (page - 1) * limit;
+  const search = req.query.search as string | undefined;
   const inviteStatus = req.query.inviteStatus as string | undefined;
+  const email = req.query.email as string | undefined;
 
   try {
-    const email = req.query.email as string | undefined;
     if (email) {
       const profile = await Profile.findOne({ email: email });
       if (!profile) {
@@ -63,6 +64,14 @@ export const getProfiles = async (req: Request, res: Response) => {
       return res.status(200).json({ data: profile });
     } else {
       const filter: any = {};
+      if (search) {
+        const regex = new RegExp(search, 'i');
+        filter.$or = [
+          { firstName: { $regex: regex } },
+          { lastName: { $regex: regex } },
+          { email: { $regex: regex } },
+        ];
+      }
       if (inviteStatus) {
         filter.inviteStatus = inviteStatus;
       }
@@ -84,6 +93,7 @@ export const getProfiles = async (req: Request, res: Response) => {
     res.status(500).json({ message: (error as Error).message });
   }
 };
+
 
 export const getProfileById = async (req: Request, res: Response) => {
   try {
@@ -233,5 +243,242 @@ export const sentemail = async (req: Request, res: Response) => {
     res.status(400).json({ message: (error as Error).message });
   }
 };
+
+export const getProfileByEmail = async (req: Request, res: Response) => {
+  try {
+    const email = req.params.email;
+    const profile = await Profile.findOne({ email: email });
+    if (!profile) {
+      return res.status(404).json({ message: "Profile not found" });
+    }
+    res.status(200).json({ data: profile, message: "Profile retrieved successfully" });
+  }
+  catch (error) {
+    res.status(400).json({ message: (error as Error).message });
+  }
+};
+
+export const deleteProfile= async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const profile = await Profile.findByIdAndDelete(id);
+    if (!profile) {
+      return res.status(404).json({ message: 'Profile not found' });
+    }
+    res.status(200).json({ data: profile, message: 'Profile deleted successfully' });
+  }
+  catch (error) {
+    res.status(400).json({ message: (error as Error).message });
+  }
+};
+
+
+export const getAdminProfiles = async (req: Request, res: Response) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const skip = (page - 1) * limit;
+  const role_type = req.query.role_type as string | undefined;
+  const search = req.query.search as string | undefined;
+  console.log("role_type:", role_type);
+  console.log("search:", search);
+
+  try {
+    const filter: any = {};
+    if (role_type) {
+      filter.role_type = role_type;
+    }
+    if (search) {
+      const regex = new RegExp(search, 'i');
+      filter.$or = [
+        { firstName: { $regex: regex } },
+        { lastName: { $regex: regex } },
+        { email: { $regex: regex } },
+        { phone: { $regex: regex } },
+        { city: { $regex: regex } },
+        { country: { $regex: regex } }
+
+      ];
+    }
+
+    const [total, admins] = await Promise.all([
+      Profile.countDocuments(filter),
+      Profile.find(filter).skip(skip).limit(limit)
+    ]);
+
+    res.status(200).json({
+      data: admins,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      },
+      message: "Admin profiles retrieved successfully"
+    });
+  } catch (error) {
+    res.status(400).json({ message: (error as Error).message });
+  }
+};
+
+// Toggle user permissions (Admin only)
+export const toggleUserPermission = async (req: Request, res: Response) => {
+  try {
+    const { userId, permission } = req.body;
+
+    if (!userId || !permission) {
+      return res.status(400).json({ 
+        message: 'User ID and permission are required' 
+      });
+    }
+
+    const profile = await Profile.findById(userId);
+    if (!profile) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Initialize permissions array if it doesn't exist
+    if (!profile.permissions) {
+      profile.permissions = [];
+    }
+
+    // Toggle permission
+    const permissionIndex = profile.permissions.indexOf(permission);
+    if (permissionIndex > -1) {
+      // Remove permission
+      profile.permissions.splice(permissionIndex, 1);
+    } else {
+      // Add permission
+      profile.permissions.push(permission);
+    }
+
+    await profile.save();
+
+    // Re-fetch the profile to ensure we return the latest persisted document
+    const updatedProfile = await Profile.findById(userId).select('-__v');
+    console.log(`Permission toggle: user=${userId} permission=${permission} action=${permissionIndex > -1 ? 'removed' : 'added'}`);
+
+    res.status(200).json({
+      data: updatedProfile,
+      message: `Permission ${permissionIndex > -1 ? 'removed' : 'added'} successfully`,
+      permissions: updatedProfile?.permissions || []
+    });
+  } catch (error) {
+    res.status(400).json({ message: (error as Error).message });
+  }
+};
+
+// Update user role (Admin only)
+export const updateUserRole = async (req: Request, res: Response) => {
+  try {
+    const { userId, role_type } = req.body;
+
+    if (!userId || !role_type) {
+      return res.status(400).json({ 
+        message: 'User ID and role type are required' 
+      });
+    }
+    // Validate role_type
+    const validRoles = ['admin user', 'client user'];
+    if (!validRoles.includes(role_type)) {
+      return res.status(400).json({ 
+        message: 'Invalid role type. Must be "admin user" or "client user"' 
+      });
+    }
+
+    const profile = await Profile.findById(userId);
+    if (!profile) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    profile.role_type = role_type;
+    await profile.save();
+
+    res.status(200).json({
+      data: profile,
+      message: 'User role updated successfully'
+    });
+  } catch (error) {
+    res.status(400).json({ message: (error as Error).message });
+  }
+};
+
+// Update user status (Admin only)
+export const updateUserStatus = async (req: Request, res: Response) => {
+  try {
+    const { userId, status } = req.body;
+
+    if (!userId || !status) {
+      return res.status(400).json({ 
+        message: 'User ID and status are required' 
+      });
+    }
+
+    // Validate status
+    const validStatuses = ['active', 'inactive', 'suspended'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ 
+        message: 'Invalid status. Must be "active", "inactive", or "suspended"' 
+      });
+    }
+
+    const profile = await Profile.findById(userId);
+    if (!profile) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    profile.status = status;
+    await profile.save();
+
+    res.status(200).json({
+      data: profile,
+      message: 'User status updated successfully'
+    });
+  } catch (error) {
+    res.status(400).json({ message: (error as Error).message });
+  }
+};
+
+// Get user permissions
+export const getUserPermissions = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+
+    const profile = await Profile.findById(userId);
+    if (!profile) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Get role-based permissions
+    const rolePermissions = profile.role_type === 'admin user' 
+      ? [
+          'create_profile', 'read_profile', 'update_profile', 'delete_profile',
+          'manage_users', 'manage_roles', 'manage_permissions',
+          'create_service', 'update_service', 'delete_service', 'assign_service',
+          'view_payments', 'manage_payments',
+          'send_invitation', 'manage_invitations',
+          'create_role', 'update_role', 'delete_role',
+          'create_category', 'update_category', 'delete_category'
+          
+        ]
+      : ['read_profile', 'update_profile', 'view_payments'];
+    // Merge with custom permissions
+    const allPermissions = [...new Set([...rolePermissions, ...(profile.permissions || [])])];
+    res.status(200).json({
+      data: {
+        userId: profile._id,
+        email: profile.email,
+        role_type: profile.role_type,
+        status: profile.status,
+        rolePermissions,
+        customPermissions: profile.permissions || [],
+        allPermissions
+      },
+      message: 'User permissions retrieved successfully'
+    });
+  } catch (error) {
+    res.status(400).json({ message: (error as Error).message });
+  }
+};
+
+
 
 
