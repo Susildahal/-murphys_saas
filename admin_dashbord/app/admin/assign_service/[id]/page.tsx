@@ -62,9 +62,15 @@ function page() {
       return services[0];
     }
     
-    // If services has a services property
-    if (services.services && Array.isArray(services.services)) {
-      return services.services;
+    // If services is an object wrapping the array (e.g. { services: [...] })
+    if (
+      services &&
+      typeof services === 'object' &&
+      !Array.isArray(services) &&
+      'services' in services &&
+      Array.isArray((services as any).services)
+    ) {
+      return (services as any).services as any[];
     }
     
     // If services is already a flat array
@@ -112,6 +118,7 @@ function page() {
     try {
       const svc = servicesList.find((s: any) => (s._id || s.id) === selectedService) || {};
       const payload = {
+        id: typeof crypto !== 'undefined' && (crypto as any).randomUUID ? (crypto as any).randomUUID() : `${Date.now()}-${Math.random()}`,
         client_id: selectedClient,
         service_catalog_id: selectedService,
         categoryId: svc.categoryId || svc.categoryId || null,
@@ -122,7 +129,7 @@ function page() {
         price: assignPrice,
         auto_invoice: assignAutoInvoice,
         notes: assignNotes,
-      };
+      } as any;
 
       const response = await dispatch(assignServiceToClient(payload)).unwrap();
       if (response) {

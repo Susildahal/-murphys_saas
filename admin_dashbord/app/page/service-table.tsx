@@ -55,6 +55,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import DateRangePicker from '@/components/ui/date-range-picker';
+import SpinnerComponent from './common/Spinner';
 
 interface ServiceTableProps {
   onEdit: (service: Service) => void;
@@ -204,12 +205,10 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
 
   if (loading && services.length === 0) {
     return (
-      <div className="flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading services...</p>
-        </div>
-      </div>
+      <>
+        <SpinnerComponent />
+      </>
+    
     );
   }
 

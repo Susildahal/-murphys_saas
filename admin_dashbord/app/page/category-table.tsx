@@ -48,6 +48,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import SpinnerComponent from './common/Spinner';
 
 interface CategoryTableProps {
   onEdit: (category: Category) => void;
@@ -119,12 +120,7 @@ export default function CategoryTable({ onEdit }: CategoryTableProps) {
 
   if (loading && categories.length === 0) {
     return (
-      <div className="flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Loading categories...</p>
-        </div>
-      </div>
+      <SpinnerComponent />
     );
   }
 
