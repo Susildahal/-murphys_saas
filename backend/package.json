@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
+    "vercel-build": "tsc",
     "start": "node dist/server.js",
     "seed:roles": "ts-node src/seeders/roleSeeder.ts"
   },
@@ -17,12 +18,14 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
-    "firebase": "^12.7.0",
+    "firebase": "^12.7.0",  
     "firebase-admin": "^13.6.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.0",
     "multer": "^2.0.2",
     "nodemailer": "^7.0.12"
+  ,
+    "serverless-http": "^3.0.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
