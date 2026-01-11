@@ -29,10 +29,11 @@ const waitForAuthReady = () => {
 
 // Create axios instance
 const axiosInstance = axios.create({
-  baseURL: 'https://murphys-saas-m62b.vercel.app/api',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
 // Request interceptor to add Firebase token
