@@ -19,11 +19,7 @@ import rolerouter from "./routes/role.routes";
 
 const app = express();
 const corsOptions = {
-  origin: [
-    'https://murphys-saas.vercel.app',
-    'http://localhost:3000',
-    'https://murphys-saas.vercel.app/admin'
-  ],
+  origin: '*',
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
   credentials: true,
   optionsSuccessStatus: 204,
