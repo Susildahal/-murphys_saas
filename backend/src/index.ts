@@ -18,8 +18,22 @@ import rolerouter from "./routes/role.routes";
 
 
 const app = express();
+const allowedOrigins = [
+  'https://murphys-saas.vercel.app',
+  'https://murphys-saas.vercel.app/admin',
+  'http://localhost:3000'
+];
+
 const corsOptions = {
-  origin: '*',
+  origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+    // Allow requests with no origin (like mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS: ' + origin));
+    }
+  },
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
   credentials: true,
   optionsSuccessStatus: 204,
