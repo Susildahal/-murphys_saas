@@ -5,7 +5,16 @@ const nextConfig: NextConfig = {
     domains: ["res.cloudinary.com"],
   },
   
-  /* config options here */
+  /* Proxy /api requests to backend to avoid CORS in production */
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        // expects NEXT_PUBLIC_API_URL without a trailing /api
+        destination: `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
