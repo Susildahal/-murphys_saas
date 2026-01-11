@@ -17,7 +17,7 @@ import {
   DialogFooter,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { MoreVertical, Search, Mail, Phone, Calendar, Briefcase, User, MapPin, Clock, Send, Crown, User2 } from 'lucide-react';
+import { MoreVertical, Search, Mail, Phone, Calendar, Briefcase, User, MapPin, Clock, Send, User2 } from 'lucide-react';
 import axiosInstance from '@/lib/axios';
 import { showSuccessToast, showErrorToast } from '@/lib/toast-handler';
 import {
@@ -29,13 +29,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import {
@@ -149,8 +142,8 @@ function Page() {
                 <TableHead>   Name</TableHead>
                 <TableHead> Contract</TableHead>
                 <TableHead className=" w-[100px]">Role Type</TableHead>
-                <TableHead className=" w-[100px]">Status</TableHead>
-                <TableHead className="">Position</TableHead>
+                <TableHead className="">City</TableHead>
+                <TableHead className="">Country</TableHead>
                 <TableHead className="">Joined</TableHead>
                 <TableHead className="text-right  font-medium text-sm">Actions</TableHead>
               </TableRow>
@@ -207,78 +200,9 @@ function Page() {
                         )}
                       </div>
                     </TableCell>
-                    <TableCell
-                    >
-                      {u.role_type || '-'}
-                    </TableCell>
-                    <TableCell className=" ">
-                      <Select
-                        value={u.role || 'standard'}
-                        // onValueChange={(value) => handleUserTypeChange(u._id, value)}
-                        disabled={updatingUser === u._id}
-                      >
-                        <SelectTrigger className="w-24 h-8 sm:w-[120px]">
-                          <SelectValue placeholder="User type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="standard">
-                            <div className="flex items-center gap-2">
-                              <User className="w-3.5 h-3.5" />
-                              Standard
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="premium">
-                            <div className="flex items-center gap-2">
-                              <Crown className="w-3.5 h-3.5 text-yellow-600" />
-                              Premium
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="enterprise">
-                            <div className="flex items-center gap-2">
-                              <Briefcase className="w-3.5 h-3.5 text-blue-600" />
-                              Enterprise
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="trial">
-                            <div className="flex items-center gap-2">
-                              <Clock className="w-3.5 h-3.5 text-gray-500" />
-                              Trial
-                            </div>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell className=" ">
-                      <Select
-                        value={u.status || 'active'}
-                        // onValueChange={(value) => handleStatusChange(u._id, value)}
-                        disabled={updatingUser === u._id}
-                      >
-                        <SelectTrigger className="w-24 h-8 sm:w-[120px]">
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">
-                            <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 rounded-full bg-green-500" />
-                              Active
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="inactive">
-                            <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 rounded-full bg-gray-400" />
-                              Inactive
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="terminated">
-                            <div className="flex items-center gap-2">
-                              <div className="w-2 h-2 rounded-full bg-red-500" />
-                              Terminated
-                            </div>
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
+                    <TableCell>{u.role_type || '-'}</TableCell>
+                    <TableCell className="">{u.city || '-'}</TableCell>
+                    <TableCell className="">{u.country || '-'}</TableCell>
                  
                     <TableCell className=" ">
                       <span className="text-sm text-muted-foreground">
@@ -344,12 +268,12 @@ function Page() {
                   {viewUser && getInitials(viewUser.firstName, viewUser.lastName)}
                 </AvatarFallback>
               </Avatar>
-              <div>
+                <div>
                 <DialogTitle className="text-2xl">
                   {viewUser && `${viewUser.firstName || ''} ${viewUser.lastName || ''}`.trim()}
                 </DialogTitle>
                 <DialogDescription>
-                  {viewUser?.position || 'User'} • {viewUser?.email}
+                  {viewUser?.role_type || viewUser?.role || 'User'} • {viewUser?.email}
                 </DialogDescription>
               </div>
             </div>
@@ -394,8 +318,8 @@ function Page() {
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">Position</p>
-                    <p className="text-sm font-medium">{viewUser?.position || '-'}</p>
+                    <p className="text-xs text-muted-foreground">Bio</p>
+                    <p className="text-sm font-medium">{viewUser?.bio || '-'}</p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-xs text-muted-foreground">Department</p>
@@ -406,10 +330,10 @@ function Page() {
                     <Badge variant="outline">{viewUser?.role || 'User'}</Badge>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">Status</p>
-                    <Badge variant={viewUser?.status === 'active' ? 'default' : 'secondary'}>
-                      {viewUser?.status || 'Active'}
-                    </Badge>
+                    <p className="text-xs text-muted-foreground">Website</p>
+                    <p className="text-sm font-medium break-words">{viewUser?.website ? (
+                      <a href={viewUser.website} target="_blank" rel="noreferrer" className="text-blue-600 underline">{viewUser.website}</a>
+                    ) : ('-')}</p>
                   </div>
                 </div>
               </CardContent>

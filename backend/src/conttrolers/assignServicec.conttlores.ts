@@ -131,7 +131,7 @@ export const getAllAssignedServices = async (req: Request, res: Response) => {
   const searchQuery = req.query.search as string || '';
 
   try {
-    let query = {};
+    let query: any = {};
     if (searchQuery) {
       query = {
         $or: [
@@ -142,12 +142,50 @@ export const getAllAssignedServices = async (req: Request, res: Response) => {
       };
     }
 
-    const [totalCount, assignedServices] = await Promise.all([
-      AssignService.countDocuments(),
-      AssignService.find(query).skip(skip).limit(limit).sort({ createdAt: -1 }),
+    // count documents matching same query
+    const totalCount = await AssignService.countDocuments(query);
 
-    ]);
-    res.status(200).json({ data: assignedServices, pagination: {  totalCount, page, limit, totalPages: Math.ceil(totalCount / limit) }, message: 'Assigned services retrieved successfully' });
+    // aggregation pipeline to lookup client and service collections and overwrite names
+    const pipeline: any[] = [
+      { $match: query },
+      { $sort: { createdAt: -1 } },
+      {
+        $lookup: {
+          from: 'profiles', // collection name for Profile model
+          localField: 'client_id',
+          foreignField: '_id',
+          as: 'client'
+        }
+      },
+      { $unwind: { path: '$client', preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: 'services', // collection name for Service model
+          localField: 'service_catalog_id',
+          foreignField: '_id',
+          as: 'service'
+        }
+      },
+      { $unwind: { path: '$service', preserveNullAndEmptyArrays: true } },
+      // Prefer looked-up values; fall back to stored values if lookup missing
+      { $addFields: {
+          client_name: {
+            $cond: [
+              { $and: [ { $ifNull: ['$client.firstName', false] }, { $ifNull: ['$client.lastName', false] } ] },
+              { $concat: ['$client.firstName', ' ', '$client.lastName'] },
+              '$client_name'
+            ]
+          },
+          service_name: { $ifNull: ['$service.name', '$service_name'] }
+      } },
+      { $project: { client: 0, service: 0 } },
+      { $skip: skip },
+      { $limit: limit }
+    ];
+
+    const assignedServices = await (AssignService as any).aggregate(pipeline);
+
+    res.status(200).json({ data: assignedServices, pagination: { totalCount, page, limit, totalPages: Math.ceil(totalCount / limit) }, message: 'Assigned services retrieved successfully' });
   }
   catch (error) {
     res.status(400).json({ message: (error as Error).message });

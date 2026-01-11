@@ -216,9 +216,9 @@ export default function AdminLoginPage() {
                       <button
                         type="button"
                         onClick={() => router.push("/forgot-password")}
-                        className="text-xs text-neutral-500 hover:text-neutral-900 transition"
-                      >
-                        Forgot?
+                        className="text-xs text-neutral-500 cursor-pointer hover:text-neutral-900 transition"
+                      > 
+                        Forgot password ?
                       </button>
                     </div>
                     <div className="relative">

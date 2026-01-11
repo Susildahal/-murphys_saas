@@ -127,7 +127,6 @@ const page = () => {
                
                
             />
-            {loading ? <SpinnerComponent /> : null}
 
             <div className="overflow-x-auto">
                 <Table>

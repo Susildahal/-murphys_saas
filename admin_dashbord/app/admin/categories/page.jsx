@@ -51,13 +51,11 @@ export default function Page() {
         <Header 
           title="Category Management"
           description="Organize your services with categories"
-          link="/admin/categories"
+          // removed `link` prop so the button uses `onButtonClick` to open the dialog
           linkText="Create Category"
           icon={<Plus />}
           onButtonClick={handleCreateNew}
           total={total}
-         
-
         />
         <div className="border-none shadow-none">
 

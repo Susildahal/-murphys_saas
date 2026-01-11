@@ -2,12 +2,8 @@
 
 import * as React from "react"
 import {
-  AudioWaveform,
-  BookOpen,
   Bot,
   Command,
-  Frame,
-  GalleryVerticalEnd,
   Map,
   PieChart,
   Settings2,
@@ -102,8 +98,8 @@ const data = {
           url: "/admin/settings",
         },
         {
-          title: "Team",
-          url: "#",
+          title: "Change Password",
+          url: "/admin/change_password",
         },
         {
           title: "Billing",
