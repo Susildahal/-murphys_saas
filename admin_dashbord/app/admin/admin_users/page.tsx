@@ -279,8 +279,9 @@ function AdminUsersPage() {
         description={`Are you sure you want to delete admin user "${userToDelete?.firstName} ${userToDelete?.lastName}"? This action cannot be undone.`}
         onConfirm={async () => {
           try {
-            await dispatch(deleteProfile({ id: userToDelete._id || userToDelete.id })).unwrap()
-            await axiosInstance.delete(`/users/${userToDelete._id || userToDelete.id}`)
+            const idToDelete = userToDelete._id || userToDelete.id;
+            await dispatch(deleteProfile(idToDelete)).unwrap()
+            await axiosInstance.delete(`/users/${idToDelete}`)
             setShowDeleteModel(false)
           }
           catch (err: any) {
