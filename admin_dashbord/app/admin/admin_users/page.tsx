@@ -27,6 +27,8 @@ import Header from '@/app/page/common/header'
 import SpinnerComponent from '@/app/page/common/Spinner'
 import { Input } from '@/components/ui/input'
 import axiosInstance from '@/lib/axios'
+import DeleteModel from '@/app/page/common/DeleteModel'
+import { deleteProfile } from '@/lib/redux/slices/profileSlice'
 
 function AdminUsersPage() {
   const dispatch = useAppDispatch()
@@ -38,6 +40,8 @@ function AdminUsersPage() {
   const profiles = Array.isArray(profile) ? profile : profile ? [profile] : []
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
   const [selectedUserDetails, setSelectedUserDetails] = useState<any>(null)
+  const [showDeleteModel, setShowDeleteModel] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<any>(null);
 
   // initial load
   useEffect(() => {
@@ -161,8 +165,7 @@ function AdminUsersPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => { setSelectedUserDetails(admin); setShowDetailsDialog(true); }}>View</DropdownMenuItem>
-                          <DropdownMenuItem>Edit</DropdownMenuItem>
-                          <DropdownMenuItem>Delete</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => { setUserToDelete(admin); setShowDeleteModel(true); }}>Delete</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -268,6 +271,24 @@ function AdminUsersPage() {
           </div>
         </div>
       )}
+      {/* Delete Confirmation Modal */}
+      <DeleteModel
+        isOpen={showDeleteModel}
+        onClose={() => setShowDeleteModel(false)}
+        title="Delete Admin User"
+        description={`Are you sure you want to delete admin user "${userToDelete?.firstName} ${userToDelete?.lastName}"? This action cannot be undone.`}
+        onConfirm={async () => {
+          try {
+            await dispatch(deleteProfile({ id: userToDelete._id || userToDelete.id })).unwrap()
+            await axiosInstance.delete(`/users/${userToDelete._id || userToDelete.id}`)
+            setShowDeleteModel(false)
+          }
+          catch (err: any) {
+            console.error('Delete admin user error', err)
+            alert(err?.response?.data?.message || 'Failed to delete admin user')
+          }
+        }}
+      />
     </div>
   )
 }

@@ -38,7 +38,7 @@ export function NavProjects({
  
 
   return (
-    <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+    <SidebarGroup>
       <SidebarGroupLabel className="text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider">
         Quick Access
       </SidebarGroupLabel>
@@ -46,7 +46,8 @@ export function NavProjects({
         {projects.map((item) => (
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton 
-              asChild 
+              asChild
+              tooltip={item.name}
               className="hover:bg-blue-500/20 hover:text-blue-400 transition-all duration-200 data-[active=true]:bg-blue-500/30 data-[active=true]:text-blue-300 rounded-md"
             >
               <Link href={item.url}>

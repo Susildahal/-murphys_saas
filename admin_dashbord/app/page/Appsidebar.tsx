@@ -32,6 +32,7 @@ const data = {
     name: "",
     email: "",
     avatar: "/avatars/shadcn.jpg",
+    
   },
  
 }
@@ -41,8 +42,10 @@ const data = {
       <AppSidebar  />
       </div>
       <SidebarInset>
-        <header className="flex mb-4 h-16 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 px-4 justify-between">
+        <header className="sticky top-0 z-10 bg-background flex mb-4 h-16 shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 px-4 justify-between">
           <div className="flex items-center gap-2">
+            {/* Mobile toggle */}
+            <SidebarTrigger className="block md:hidden -ml-1" />
             <Separator orientation="vertical" className="mr-2 h-4" />
             <Breadcrumb>
               <BreadcrumbList>
@@ -57,7 +60,7 @@ const data = {
             </Breadcrumb>
           </div>
           <div className="flex items-center gap-2">
-                <NavUser user={data.user } />
+                <NavUser />
             <ModeToggle />
           </div>
         </header>

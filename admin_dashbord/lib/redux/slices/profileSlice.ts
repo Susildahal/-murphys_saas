@@ -167,6 +167,8 @@ export const getadminProfile = createAsyncThunk(
 
 
 
+
+
 // Slice
 
 const profileSlice = createSlice({
@@ -300,6 +302,7 @@ const profileSlice = createSlice({
       state.loading = false;
       state.error = action.payload as string;
     });
+   
   },
 });
 

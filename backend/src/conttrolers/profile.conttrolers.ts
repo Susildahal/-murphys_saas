@@ -1,6 +1,8 @@
 import Profile from "../models/profile.model";
 import { Request, Response } from "express";
 import transporter from "../config/nodemiller";
+import AssignService from '../models/assignService.routes';
+
 
 
 export const createProfile = async (req: Request, res: Response) => {

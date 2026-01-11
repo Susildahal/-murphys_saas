@@ -648,7 +648,7 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
             </div>
 
             <div>
-              <Label className=' pb-2'>Start / Renewal date</Label>
+              <Label className=' pb-2'>Start / Complite  date</Label>
               <DateRangePicker
                 value={{ from: assignStartDate || null, to: assignRenewalDate || null }}
                 onChange={(v) => {

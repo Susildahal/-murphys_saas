@@ -2,8 +2,12 @@
 
 import * as React from "react"
 import {
+  AudioWaveform,
+  BookOpen,
   Bot,
   Command,
+  Frame,
+  GalleryVerticalEnd,
   Map,
   PieChart,
   Settings2,
@@ -12,7 +16,10 @@ import {
   Briefcase,
   Grid3x3,
   CreditCard,
+  Search,
 } from "lucide-react"
+import { Collapsible } from "@radix-ui/react-collapsible"
+import { motion, AnimatePresence } from "motion/react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
@@ -23,7 +30,9 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar"
+import { Input } from "@/components/ui/input"
 import Image from "next/image"
 
 // This is sample data.
@@ -149,30 +158,156 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [searchQuery, setSearchQuery] = React.useState("")
+  const { state } = useSidebar()
+  const isCollapsed = state === "collapsed"
+
+  // Filter projects based on search
+  const filteredProjects = React.useMemo(() => {
+    if (!searchQuery) return data.projects
+    return data.projects.filter(project => 
+      project.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  }, [searchQuery])
+
+  // Filter nav items based on search
+  const filteredNavMain = React.useMemo(() => {
+    if (!searchQuery) return data.navMain
+    return data.navMain.map(item => ({
+      ...item,
+      items: item.items?.filter(subItem => 
+        subItem.title.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    })).filter(item => item.items && item.items.length > 0)
+  }, [searchQuery])
+
   return (
-    <Sidebar  collapsible="icon" {...props}>
-      <SidebarHeader>
-        <div className="flex flex-col gap-4">
-          <Image
-          src="/logo.png"
-          alt="Murphys Logo"
-          width={150}
-          height={50}
-          className="mt-4 mb-2 px-2"
-          />
+    <Sidebar collapsible="icon" {...props} className="">
+      <motion.div
+        initial={false}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2, ease: "easeInOut" }}
+      >
+        <SidebarHeader className="border-b z-50 border-border/40">
+          <motion.div 
+            className="flex h-16 items-center px-4"
+            animate={{ 
+              justifyContent: isCollapsed ? "center" : "flex-start"
+            }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={isCollapsed ? "collapsed" : "expanded"}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Image
+                  src="/logo.png"
+                  alt="Murphys Logo"
+                  width={isCollapsed ? 32 : 140}
+                  height={isCollapsed ? 32 : 40}
+                  className="object-contain"
+                  priority
+                />
+              </motion.div>
+            </AnimatePresence>
+          </motion.div>
           
-         
-       
-        </div>
-      </SidebarHeader>
-      <SidebarContent className="">
-         <NavProjects projects={data.projects} />
-        <NavMain items={data.navMain} />
-       
-      </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
+          <AnimatePresence>
+            {!isCollapsed && (
+              <motion.div 
+                className="px-3 pb-3"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+              >
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    type="search"
+                    placeholder="Search navigation..."
+                    className="h-9 pl-8 bg-muted/50"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          
+          {isCollapsed && (
+            <motion.div 
+              className="px-2 pb-3"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.2 }}
+            >
+              <div className="relative flex justify-center">
+                <Search className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-foreground transition-colors" />
+              </div>
+            </motion.div>
+          )}
+        </SidebarHeader>
+      </motion.div>
+      
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.1, duration: 0.3 }}
+      >
+        <SidebarContent className="px-2 py-4 overflow-y-auto scrollbar-none">
+          <style jsx global>{`
+            .scrollbar-none::-webkit-scrollbar {
+              display: none;
+            }
+            .scrollbar-none {
+              -ms-overflow-style: none;
+              scrollbar-width: none;
+            }
+          `}</style>
+          <AnimatePresence mode="wait">
+            {filteredProjects.length === 0 && filteredNavMain.length === 0 ? (
+              <motion.div 
+                key="no-results"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="flex flex-col items-center justify-center py-8 px-4 text-center"
+              >
+                <Search className="h-12 w-12 text-muted-foreground/50 mb-3" />
+                <p className="text-sm font-medium text-muted-foreground">No navigation items found</p>
+                <p className="text-xs text-muted-foreground/70 mt-1">Try a different search term</p>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="results"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <NavProjects projects={filteredProjects} />
+                <NavMain items={filteredNavMain} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </SidebarContent>
+      </motion.div>
+      
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.15, duration: 0.3 }}
+      >
+        <SidebarFooter className="border-t border-border/40 p-2">
+          <NavUser />
+        </SidebarFooter>
+      </motion.div>
       <SidebarRail />
     </Sidebar>
   )

@@ -15,7 +15,7 @@ interface JwtPayload {
 
 export const assignServiceToClient = async (req: Request, res: Response) => {
   try {
-    const {   client_id, service_catalog_id, status, note, price, cycle , auto_invoice, start_date,  renewal_date  } = req.body;
+    const {   client_id, service_catalog_id, status, note, price, cycle , auto_invoice, start_date, end_date  } = req.body;
     if (!client_id || !service_catalog_id || !price || !cycle) {
       return res.status(400).json({ message: 'client_id, service_catalog_id, price, and cycle are required' });
     }
@@ -40,7 +40,7 @@ export const assignServiceToClient = async (req: Request, res: Response) => {
         isaccepted: "pending",
         auto_invoice,
         start_date,
-        renewal_date,
+        end_date,
         email,
         client_name: fullname,
         service_name: useExistingService.name,
@@ -59,7 +59,7 @@ export const assignServiceToClient = async (req: Request, res: Response) => {
                     <li>Service Name: ${useExistingService.name}</li>
                     <li>Description: ${useExistingService.description}</li>
                     <li>Price: ${price} ${useExistingService.currency}</li>
-                    <li> Renewal Date: ${renewal_date}</li>
+                    <li> End Date: ${end_date}</li>
                     <li>Billing Cycle: ${cycle}</li>
                 </ul>
                 <p> If you have any questions or need further assistance, please do not hesitate to contact our support team.</p>
@@ -215,9 +215,131 @@ export const getAssignDetails = async (req: Request, res: Response) => {
   }
 };
 
+export const updateAssignedService = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const {
+      isaccepted,
+      price,
+      add_renewal_date,
+      renewal_date,
+      renewal_label,
+      renewal_price,
+      renewal_id,
+    } = req.body;
 
+    const updateSet: any = {};
+    if (isaccepted !== undefined) updateSet.isaccepted = isaccepted;
+    if (price !== undefined) updateSet.price = price;
 
+    const renewalDateStr = add_renewal_date || renewal_date;
 
+    // 🔹 Renewal operation
+    if (renewalDateStr && renewal_label && renewal_price !== undefined) {
+      const currentService = await AssignService.findById(id);
+      if (!currentService) {
+        return res.status(404).json({ message: 'Assigned service not found' });
+      }
 
+      const existingRenewalTotal = (currentService.renewal_dates || []).reduce(
+        (sum: number, r: any) => sum + (Number(r.price) || 0),
+        0
+      );
 
+      const oldPrice =
+        renewal_id
+          ? (currentService.renewal_dates || []).find(
+              (r: any) => String(r._id) === String(renewal_id)
+            )?.price || 0
+          : 0;
 
+      const newTotal =
+        existingRenewalTotal - Number(oldPrice) + Number(renewal_price);
+
+      const servicePrice = Number(currentService.price || 0);
+
+      if (newTotal > servicePrice) {
+        return res.status(400).json({
+          message: `Total renewal prices (${newTotal}) cannot exceed service price (${servicePrice})`,
+        });
+      }
+
+      // 🔹 Update existing renewal
+      if (renewal_id) {
+        const updated = await AssignService.findOneAndUpdate(
+          { _id: id, 'renewal_dates._id': renewal_id },
+          {
+            $set: {
+              'renewal_dates.$.label': renewal_label,
+              'renewal_dates.$.date': new Date(renewalDateStr),
+              'renewal_dates.$.price': Number(renewal_price),
+              ...updateSet,
+            },
+          },
+          { new: true }
+        );
+
+        if (!updated) {
+          return res.status(404).json({ message: 'Renewal entry not found' });
+        }
+
+        return res.status(200).json({
+          data: updated,
+          message: 'Renewal date updated successfully',
+        });
+      }
+
+      // 🔹 Add new renewal
+      const pushed = await AssignService.findByIdAndUpdate(
+        id,
+        {
+          $push: {
+            renewal_dates: {
+              label: renewal_label,
+              date: new Date(renewalDateStr),
+              price: Number(renewal_price),
+            },
+          },
+          ...(Object.keys(updateSet).length ? { $set: updateSet } : {}),
+        },
+        { new: true }
+      );
+
+      return res.status(200).json({
+        data: pushed,
+        message: 'Renewal date added successfully',
+      });
+    }
+
+    // 🔹 Simple update only
+    const assignedService = await AssignService.findByIdAndUpdate(
+      id,
+      { $set: updateSet },
+      { new: true }
+    );
+
+    if (!assignedService) {
+      return res.status(404).json({ message: 'Assigned service not found' });
+    }
+
+    res.status(200).json({
+      data: assignedService,
+      message: 'Assigned service updated successfully',
+    });
+  } catch (error) {
+    res.status(400).json({ message: (error as Error).message });
+  }
+};
+export const deleteAssignedService = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const assignedService = await AssignService.findByIdAndDelete(id);
+    if (!assignedService) {
+      return res.status(404).json({ message: 'Assigned service not found' });
+    }
+    res.status(200).json({ data: assignedService, message: 'Assigned service deleted successfully' });
+  }
+  catch (error) {
+    res.status(400).json({ message: (error as Error).message });
+  }
+};

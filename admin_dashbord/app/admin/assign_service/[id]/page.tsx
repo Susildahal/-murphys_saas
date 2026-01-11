@@ -95,6 +95,7 @@ function page() {
   const [assignPrice, setAssignPrice] = React.useState<number | undefined>(undefined);
   const [assignAutoInvoice, setAssignAutoInvoice] = React.useState<boolean>(false);
   const [assignNotes, setAssignNotes] = React.useState<string>('');
+  const [assignEndDate, setAssignEndDate] = React.useState<string | null>(null);
   
   const handleAssignSubmit = async () => {
     // Validate required fields
@@ -125,7 +126,7 @@ function page() {
         status: assignStatus,
         cycle: assignCycle,
         start_date: assignStartDate,
-        renewal_date: assignRenewalDate,
+        end_date: assignEndDate,
         price: assignPrice,
         auto_invoice: assignAutoInvoice,
         notes: assignNotes,
@@ -264,12 +265,12 @@ function page() {
           </div>
 
           <div>
-            <Label className=' pb-2'>Start / Renewal date</Label>
+            <Label className=' pb-2'>Start / End date</Label>
             <DateRangePicker
-              value={{ from: assignStartDate || null, to: assignRenewalDate || null }}
+              value={{ from: assignStartDate || null, to: assignEndDate || null }}
               onChange={(v) => {
                 setAssignStartDate(v.from || '');
-                setAssignRenewalDate(v.to || null);
+                setAssignEndDate(v.to || null);
               }}
             />
           </div>

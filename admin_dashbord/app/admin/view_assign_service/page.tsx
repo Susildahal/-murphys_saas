@@ -4,13 +4,12 @@ import Header from '@/app/page/common/header'
 import {
     Table,
     TableBody,
-    TableCaption,
     TableCell,
     TableHead,
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { MoreVertical, RefreshCcw } from 'lucide-react'
+import { MoreVertical, RefreshCcw, Calendar as CalendarIcon, Plus, Edit2, Trash2, Delete } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -26,9 +25,16 @@ import {
     DialogTitle,
     DialogDescription,
 } from '@/components/ui/dialog'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Calendar } from '@/components/ui/calendar'
 import { useToast } from '@/hooks/use-toast'
 import Image from 'next/image'
-import { Select , SelectContent ,SelectGroup ,SelectTrigger ,SelectItem, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectGroup, SelectTrigger, SelectItem, SelectValue } from '@/components/ui/select';
+import { updateAssignedService, addRenewalDate, deleteAssignedService } from '@/lib/redux/slices/assignSlice';
+import { cn } from '@/lib/utils'
+import { format } from 'date-fns'
+import DeleteModel from '@/app/page/common/DeleteModel'
+
 
 
 const page = () => {
@@ -43,6 +49,15 @@ const page = () => {
     const [limitNumber, setLimitNumber] = React.useState(10);
     const [detailsOpen, setDetailsOpen] = React.useState(false);
     const [detailsData, setDetailsData] = React.useState<any>(null);
+    const [editOpen, setEditOpen] = React.useState(false);
+    const [editData, setEditData] = React.useState<any>(null);
+    const [renewalDialogOpen, setRenewalDialogOpen] = React.useState(false);
+    const [renewalDialogData, setRenewalDialogData] = React.useState<any>(null);
+    const [isEditingRenewal, setIsEditingRenewal] = React.useState(false);
+    const [editingRenewalId, setEditingRenewalId] = React.useState<string | null>(null);
+    const [newRenewalDate, setNewRenewalDate] = React.useState<Date | undefined>(undefined);
+    const [newRenewalLabel, setNewRenewalLabel] = React.useState('');
+    const [newRenewalPrice, setNewRenewalPrice] = React.useState('');
     const { toast } = useToast();
 
     // Debounce search input to avoid excessive requests
@@ -53,6 +68,8 @@ const page = () => {
 
     React.useEffect(() => {
         dispatch(getAssignedServices({ page: pageNumber, limit: limitNumber, search: debouncedSearch }));
+        
+  
     }, [dispatch, pageNumber, limitNumber, debouncedSearch]);
 
     // Helper function to calculate days ago
@@ -98,19 +115,37 @@ const page = () => {
         return { text, variant };
     };
 
-    const handelreset=()=>{
+    const handelreset = () => {
         setSearchTerm('');
         setPageNumber(1);
     }
 
+    const handleEditRenewal = (renewal: any) => {
+        setIsEditingRenewal(true);
+        setEditingRenewalId(renewal._id);
+        setNewRenewalLabel(renewal.label);
+        setNewRenewalDate(new Date(renewal.date));
+        setNewRenewalPrice(String(renewal.price));
+    };
+
+    const resetRenewalForm = () => {
+        setIsEditingRenewal(false);
+        setEditingRenewalId(null);
+        setNewRenewalDate(undefined);
+        setNewRenewalLabel('');
+        setNewRenewalPrice('');
+    };
+    const [deleteid, setDeleteid] = React.useState<string | null>(null);
+    const [deleteOpen, setDeleteOpen] = React.useState(false);
+
 
     return (
         <>
+        { loading && <SpinnerComponent /> }
             <Header
                 title="Assigned Services"
                 description="Manage and view assigned services"
-                link="/admin/view_assign_service"
-                linkText="Assign New Service"
+               
                 total={total}
                 extraInfo={<div>
                     <Input
@@ -120,12 +155,10 @@ const page = () => {
                         value={searchTerm}
                         onChange={(e) => {
                             setSearchTerm(e.target.value);
-                            setPageNumber(1); // reset to first page on new search
+                            setPageNumber(1);
                         }}
                     />
                 </div>}
-               
-               
             />
 
             <div className="overflow-x-auto">
@@ -137,7 +170,8 @@ const page = () => {
                             <TableHead>Assigned Date</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead>Price</TableHead>
-                            <TableHead>Renewal Date</TableHead>
+                            <TableHead>End Date</TableHead>
+                            <TableHead>Renewal Dates</TableHead>
                             <TableHead>Actions</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -145,9 +179,9 @@ const page = () => {
                         {rows && rows.length > 0 ? (
                             rows.map((service: any) => {
                                 const assignedDate = service.start_date || service.assignedDate || service.createdAt;
-                                const renewalDate = service.renewal_date;
                                 const daysAgo = getDaysAgo(assignedDate);
-                                const renewalInfo = getDaysRemainingInfo(renewalDate);
+                                const totalRenewalPrice = (service.renewal_dates || []).reduce((sum: number, r: any) => sum + (r.price || 0), 0);
+                                const remainingPrice = Number(service.price || 0) - totalRenewalPrice;
 
                                 return (
                                     <TableRow key={service._id ?? service.id}>
@@ -159,25 +193,77 @@ const page = () => {
                                                 {daysAgo && <Badge variant="secondary" className="w-fit text-xs">{daysAgo}</Badge>}
                                             </div>
                                         </TableCell>
-                                        <TableCell>{service.isaccepted ?? service.status ?? '-'}</TableCell>
-                                        <TableCell>{service.price ?? '-'}</TableCell>
+                                        <TableCell>
+                                            <Badge variant={service.isaccepted === 'accepted' ? 'default' : service.isaccepted === 'pending' ? 'outline' : 'destructive'}>
+                                                {service.isaccepted ?? service.status ?? '-'}
+                                            </Badge>
+                                        </TableCell>
                                         <TableCell>
                                             <div className="flex flex-col gap-1">
-                                                <span>{renewalDate ? new Date(String(renewalDate)).toLocaleDateString() : '-'}</span>
-                                                {renewalInfo.text && <Badge variant={renewalInfo.variant} className="w-fit text-xs">{renewalInfo.text}</Badge>}
+                                                <span className="font-semibold">${service.price ?? '-'}</span>
+                                                {totalRenewalPrice > 0 && (
+                                                    <div className="flex flex-col gap-1">
+                                                        <Badge variant="secondary" className="w-fit text-xs">
+                                                            Allocated: ${totalRenewalPrice}
+                                                        </Badge>
+                                                        <Badge variant={remainingPrice > 0 ? "outline" : "default"} className="w-fit text-xs">
+                                                            Remaining: ${remainingPrice}
+                                                        </Badge>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col gap-1">
+                                                <span>
+                                                    {service.end_date ? new Date(String(service.end_date)).toLocaleDateString() : '-'}
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                {service.renewal_dates && service.renewal_dates.length > 0 ? (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            setRenewalDialogData(service);
+                                                            resetRenewalForm();
+                                                            setRenewalDialogOpen(true);
+                                                        }}
+                                                    >
+                                                        <CalendarIcon className="h-4 w-4 mr-2" />
+                                                        View {service.renewal_dates.length} Renewal{service.renewal_dates.length > 1 ? 's' : ''}
+                                                    </Button>
+                                                ) : (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            setRenewalDialogData(service);
+                                                            resetRenewalForm();
+                                                            setRenewalDialogOpen(true);
+                                                        }}
+                                                    >
+                                                        <Plus className="h-4 w-4 mr-2" />
+                                                        Add Renewal
+                                                    </Button>
+                                                )}
                                             </div>
                                         </TableCell>
                                         <TableCell>
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                                    <Button variant="ghost" className="h-8 w-8 cursor-pointer p-0">
                                                         <MoreVertical className="h-4 w-4 rotate-90" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem>Edit</DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => {
-                                                        // Fetch and show details
+                                                        setEditData(service);
+                                                        setEditOpen(true);
+                                                    }}>Edit Service</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => {
                                                         dispatch(getAssignDetails({ client_id: service.client_id, service_catalog_id: service.service_catalog_id }))
                                                             .then((res: any) => {
                                                                 if (res.payload) {
@@ -192,15 +278,12 @@ const page = () => {
                                                                     variant: 'destructive',
                                                                 });
                                                             })
-                                                        } }>
+                                                    }}>
                                                         View Details
                                                     </DropdownMenuItem>
-                                                       <DropdownMenuItem>View Invoice </DropdownMenuItem>
+                                                    <DropdownMenuItem>View Invoice</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={ ()=> { setDeleteOpen(true); setDeleteid(service._id); }}>Delete</DropdownMenuItem>
 
-                                    
-
-                                                    
-                                                    
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </TableCell>
@@ -209,49 +292,102 @@ const page = () => {
                             })
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={7} className="text-center">
-                                    No assigned services found  {searchTerm === '' ? '' : <span className='font-bold '>{`for "${searchTerm}"   `  }  <RefreshCcw className="inline-block ml-2 animate-spin"  onClick={ handelreset}/></span>}.
+                                <TableCell colSpan={8} className="text-center">
+                                    No assigned services found {searchTerm === '' ? '' : <span className='font-bold '>{`for "${searchTerm}"   `} <RefreshCcw className="inline-block ml-2 cursor-pointer hover:animate-spin" onClick={handelreset} /></span>}.
                                 </TableCell>
                             </TableRow>
                         )}
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Edit Service Dialog */}
+            <Dialog open={editOpen} onOpenChange={setEditOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Edit Assigned Service</DialogTitle>
+                        <DialogDescription>Update details for the assigned service</DialogDescription>
+                    </DialogHeader>
+                    <div className="mt-4 grid grid-cols-1 gap-3">
+                        {editData ? (
+                            <>
+                                <div>
+                                    <label className="text-sm font-medium">Price</label>
+                                    <Input value={String(editData.price ?? '')} onChange={(e) => setEditData({ ...editData, price: e.target.value })} />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium">Status</label>
+                                    <Select value={String(editData.isaccepted ?? editData.status ?? '')} onValueChange={(val) => setEditData({ ...editData, isaccepted: val })}>
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectGroup>
+                                                <SelectItem value={"accepted"}>Accepted</SelectItem>
+                                                <SelectItem value={"pending"}>Pending</SelectItem>
+                                                <SelectItem value={"rejected"}>Rejected</SelectItem>
+                                            </SelectGroup>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="flex items-center gap-2 mt-3">
+                                    <Button onClick={async () => {
+                                        try {
+                                            const id = editData._id || editData.id;
+                                            const payload: any = {
+                                                price: editData.price,
+                                            };
+                                            if (editData.isaccepted !== undefined) payload.isaccepted = editData.isaccepted;
+                                            await dispatch(updateAssignedService({ id, data: payload })).unwrap();
+                                            setEditOpen(false);
+                                        } catch (err: any) {
+                                            toast({ title: 'Update failed', description: err?.message || 'Could not update', variant: 'destructive' });
+                                        }
+                                    }}>Save</Button>
+                                    <Button variant="ghost" onClick={() => setEditOpen(false)}>Cancel</Button>
+                                </div>
+                            </>
+                        ) : (
+                            <div>No item selected.</div>
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
+
             <div className="mt-4 flex items-center justify-between">
                 <div>
                     <Pagination page={pageNumber} totalPages={totalPages || 1} onPageChange={(p) => setPageNumber(p)} />
                 </div>
                 <div>
-                                <Select value={String(limitNumber)} onValueChange={(value) => setLimitNumber(Number(value))}>
-                                    <SelectTrigger className="w-[100px] border rounded p-1">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectGroup>
-                                            <SelectItem value={"5"}>5</SelectItem>
-                                            <SelectItem value={"10"}>10</SelectItem>
-                                            <SelectItem value={"25"}>25</SelectItem>
-                                            <SelectItem value={"50"}>50</SelectItem>
-                                            <SelectItem value={"100"}>100</SelectItem>
-                                        </SelectGroup>
-                                    </SelectContent>
-                                </Select>
+                    <Select value={String(limitNumber)} onValueChange={(value) => setLimitNumber(Number(value))}>
+                        <SelectTrigger className="w-[100px]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectItem value={"5"}>5</SelectItem>
+                                <SelectItem value={"10"}>10</SelectItem>
+                                <SelectItem value={"25"}>25</SelectItem>
+                                <SelectItem value={"50"}>50</SelectItem>
+                                <SelectItem value={"100"}>100</SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
 
-            {/* Details dialog */}
+            {/* Details Dialog */}
             <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-                <DialogContent>
+                <DialogContent className="max-w-4xl">
                     <DialogHeader>
                         <DialogTitle>Assigned Service Details</DialogTitle>
-                        <DialogDescription>Details for the selected assigned service</DialogDescription>
+                        <DialogDescription>Complete details for the selected assigned service</DialogDescription>
                     </DialogHeader>
                     <div className="mt-4">
                         {detailsData ? (() => {
                             const payload = (detailsData as any).data ? (detailsData as any).data : detailsData;
-                            const client = payload.clientProfile || payload.client || payload.clientProfile;
-                            const service = payload.service || payload.service || payload.service;
-                            // helper to safely parse tag/feature arrays that may be double-encoded
+                            const client = payload.clientProfile || payload.client;
+                            const service = payload.service;
                             const parseArrayField = (val: any) => {
                                 try {
                                     if (!val) return [];
@@ -259,7 +395,6 @@ const page = () => {
                                         try { return typeof v === 'string' ? JSON.parse(v) : v; } catch { return v; }
                                     });
                                     if (typeof val === 'string') {
-                                        // attempt JSON.parse repeatedly
                                         let parsed: any = val;
                                         let attempts = 0;
                                         while (typeof parsed === 'string' && attempts < 3) {
@@ -275,51 +410,53 @@ const page = () => {
                             return (
                                 <div className="grid grid-cols-1 gap-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <h3 className="text-lg font-semibold">Client Profile</h3>
-                                            <div><strong>Name:</strong> {client ? `${client.firstName || client.first_name || ''} ${client.lastName || client.last_name || ''}`.trim() : '-'}</div>
-                                            <div><strong>Email:</strong> {client?.email ?? payload.email ?? '-'}</div>
-                                            <div><strong>Location:</strong> {client ? `${client.city || ''}${client.state ? ', ' + client.state : ''}${client.country ? ', ' + client.country : ''}` : '-'}</div>
-                                             {client?.image && (
-                                                <div className="mt-2">
-                                                    <Image src={client.image} alt={client.name || 'client image'} width={300} height={180} className="rounded-md object-cover" />
-                                                </div>
-                                            )}
+                                        <div className="border rounded-lg p-4">
+                                            <h3 className="text-lg font-semibold mb-3">Client Profile</h3>
+                                            <div className="space-y-2">
+                                                <div><strong>Name:</strong> {client ? `${client.firstName || client.first_name || ''} ${client.lastName || client.last_name || ''}`.trim() : '-'}</div>
+                                                <div><strong>Email:</strong> {client?.email ?? payload.email ?? '-'}</div>
+                                                <div><strong>Location:</strong> {client ? `${client.city || ''}${client.state ? ', ' + client.state : ''}${client.country ? ', ' + client.country : ''}` : '-'}</div>
+                                                {client?.image && (
+                                                    <div className="mt-2">
+                                                        <Image src={client.image} alt={client.name || 'client image'} width={300} height={180} className="rounded-md object-cover" />
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h3 className="text-lg font-semibold">Service</h3>
-                                            <div><strong>Name:</strong> {service?.name || service?.service_name || service?.serviceName || '-'}</div>
-                                            <div><strong>Description:</strong> {service?.description ?? '-'}</div>
-                                            <div><strong>Category:</strong> {service?.categoryName ?? '-'}</div>
-                                            <div><strong>Price:</strong> {service?.price ?? payload.price ?? '-'} {service?.currency ?? payload.currency ?? ''}</div>
-                                            <div><strong>Billing:</strong> {service?.billingType ?? service?.cycle ?? payload.cycle ?? '-'}</div>
-                                            <div><strong>Duration (days):</strong> {service?.durationInDays ?? '-'}</div>
-                                            <div><strong>Featured:</strong> {service?.isFeatured ? 'Yes' : 'No'}</div>
-                                            <div className="mt-2">
-                                                <strong>Tags:</strong>
-                                                <div className="flex flex-wrap gap-2 mt-1">
-                                                    {parseArrayField(service?.tags).map((t: any, i: number) => (
-                                                        <span key={i} className="px-2 py-1 rounded bg-muted text-sm">{String(t)}</span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                            <div className="mt-2">
-                                                <strong>Features:</strong>
-                                                <div className="flex flex-wrap gap-2 mt-1">
-                                                    {parseArrayField(service?.features).map((f: any, i: number) => (
-                                                        <span key={i} className="px-2 py-1 rounded bg-muted text-sm">{String(f)}</span>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                            {service?.image && (
+                                        <div className="border rounded-lg p-4">
+                                            <h3 className="text-lg font-semibold mb-3">Service Details</h3>
+                                            <div className="space-y-2">
+                                                <div><strong>Name:</strong> {service?.name || service?.service_name || service?.serviceName || '-'}</div>
+                                                <div><strong>Description:</strong> {service?.description ?? '-'}</div>
+                                                <div><strong>Category:</strong> {service?.categoryName ?? '-'}</div>
+                                                <div><strong>Price:</strong> {service?.price ?? payload.price ?? '-'} {service?.currency ?? payload.currency ?? ''}</div>
+                                                <div><strong>Billing:</strong> {service?.billingType ?? service?.cycle ?? payload.cycle ?? '-'}</div>
+                                                <div><strong>Duration (days):</strong> {service?.durationInDays ?? '-'}</div>
+                                                <div><strong>Featured:</strong> {service?.isFeatured ? 'Yes' : 'No'}</div>
                                                 <div className="mt-2">
-                                                    <Image src={service.image} alt={service.name || 'service image'} width={300} height={180} className="rounded-md object-cover" />
+                                                    <strong>Tags:</strong>
+                                                    <div className="flex flex-wrap gap-2 mt-1">
+                                                        {parseArrayField(service?.tags).map((t: any, i: number) => (
+                                                            <Badge key={i} variant="secondary">{String(t)}</Badge>
+                                                        ))}
+                                                    </div>
                                                 </div>
-                                            )}
+                                                <div className="mt-2">
+                                                    <strong>Features:</strong>
+                                                    <div className="flex flex-wrap gap-2 mt-1">
+                                                        {parseArrayField(service?.features).map((f: any, i: number) => (
+                                                            <Badge key={i} variant="outline">{String(f)}</Badge>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                {service?.image && (
+                                                    <div className="mt-2">
+                                                        <Image src={service.image} alt={service.name || 'service image'} width={300} height={180} className="rounded-md object-cover" />
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
-
-                                  
                                 </div>
                             )
                         })() : (
@@ -328,8 +465,256 @@ const page = () => {
                     </div>
                 </DialogContent>
             </Dialog>
-        </>
 
+            {/* Renewal Dates Management Dialog */}
+            <Dialog open={renewalDialogOpen} onOpenChange={setRenewalDialogOpen}>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <CalendarIcon className="h-5 w-5" />
+                            Renewal Dates Management
+                        </DialogTitle>
+                        <DialogDescription>View, add, and manage renewal dates for this service</DialogDescription>
+                    </DialogHeader>
+                    
+                    {renewalDialogData && (() => {
+                        const totalRenewalPrice = (renewalDialogData.renewal_dates || []).reduce((sum: number, r: any) => sum + (Number(r.price) || 0), 0);
+                        const servicePrice = Number(renewalDialogData.price || 0);
+                        const remainingPrice = servicePrice - totalRenewalPrice;
+                        
+                        return (
+                            <div className="space-y-6">
+                                {/* Service Summary */}
+                                <div className="p-4 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border border-blue-200 dark:border-blue-800">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <p className="text-sm text-muted-foreground mb-1">Client</p>
+                                            <p className="font-semibold text-lg">{renewalDialogData.client_name}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm text-muted-foreground mb-1">Service</p>
+                                            <p className="font-semibold text-lg">{renewalDialogData.service_name}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-wrap items-center gap-3 mt-4">
+                                        <Badge variant="default" className="text-sm px-3 py-1">
+                                            Total: ${servicePrice.toFixed(2)}
+                                        </Badge>
+                                        <Badge variant="secondary" className="text-sm px-3 py-1">
+                                            Allocated: ${totalRenewalPrice.toFixed(2)}
+                                        </Badge>
+                                        <Badge variant={remainingPrice > 0 ? "outline" : "default"} className="text-sm px-3 py-1">
+                                            Remaining: ${remainingPrice.toFixed(2)}
+                                        </Badge>
+                                    </div>
+                                </div>
+                                
+                                {/* Existing Renewal Dates */}
+                                {renewalDialogData.renewal_dates && renewalDialogData.renewal_dates.length > 0 && (
+                                    <div className="border rounded-lg p-4">
+                                        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                                            <CalendarIcon className="h-5 w-5" />
+                                            Existing Renewal Dates ({renewalDialogData.renewal_dates.length})
+                                        </h3>
+                                        <div className="space-y-3 max-h-64 overflow-y-auto">
+                                            {renewalDialogData.renewal_dates.map((renewal: any, idx: number) => {
+                                                const renewalInfo = getDaysRemainingInfo(renewal.date);
+                                                return (
+                                                    <div key={idx} className="flex items-center justify-between gap-3 p-3 rounded-lg bg-muted/50 border hover:bg-muted/70 transition-colors">
+                                                        <div className="flex-1 space-y-2">
+                                                            <div className="flex items-center gap-3 flex-wrap">
+                                                                <Badge variant="secondary" className="capitalize font-medium">
+                                                                    {renewal.label}
+                                                                </Badge>
+                                                                <span className="text-sm font-medium">
+                                                                    {new Date(renewal.date).toLocaleDateString('en-US', { 
+                                                                        year: 'numeric', 
+                                                                        month: 'long', 
+                                                                        day: 'numeric' 
+                                                                    })}
+                                                                </span>
+                                                                {renewalInfo.text && (
+                                                                    <Badge variant={renewalInfo.variant} className="text-xs">
+                                                                        {renewalInfo.text}
+                                                                    </Badge>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex items-center gap-3">
+                                                                <Badge variant="outline" className="font-semibold">
+                                                                    ${renewal.price}
+                                                                </Badge>
+                                                                <Badge variant={renewal.haspaid ? "default" : "secondary"}>
+                                                                    {renewal.haspaid ? 'Paid' : 'Unpaid'}
+                                                                </Badge>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => handleEditRenewal(renewal._id ? { ...renewal, _id: renewal._id } : { ...renewal, id: renewal.id })}
+                                                            >
+                                                                <Edit2 className="h-4 w-4"  />
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                {/* Add/Edit Renewal Form */}
+                                <div className="border rounded-lg p-4 bg-muted/30">
+                                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                                        {loading && <SpinnerComponent />}
+                                        {isEditingRenewal ? (
+                                            <>
+                                                <Edit2 className="h-5 w-5" />
+                                                Edit Renewal Date
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Plus className="h-5 w-5" />
+                                                Add New Renewal
+                                            </>
+                                        )}
+                                    </h3>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium">Renewal Label *</label>
+                                            <Input 
+                                                type="text" 
+                                                placeholder="e.g., First Renewal, Q2 Payment" 
+                                                value={newRenewalLabel} 
+                                                onChange={(e) => setNewRenewalLabel(e.target.value)}
+                                            />
+                                        </div>
+                                        
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium">Renewal Date *</label>
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <Button
+                                                        variant="outline"
+                                                        className={cn(
+                                                            "w-full justify-start text-left font-normal",
+                                                            !newRenewalDate && "text-muted-foreground"
+                                                        )}
+                                                    >
+                                                        <CalendarIcon className="mr-2 h-4 w-4" />
+                                                        {newRenewalDate ? format(newRenewalDate, "PPP") : "Pick a date"}
+                                                    </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto p-0" align="start">
+                                                    <Calendar
+                                                        mode="single"
+                                                        selected={newRenewalDate}
+                                                        onSelect={setNewRenewalDate}
+                                                        initialFocus
+                                                    />
+                                                </PopoverContent>
+                                            </Popover>
+                                        </div>
+                                        
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium">Renewal Price *</label>
+                                            <Input 
+                                                type="number" 
+                                                placeholder="Enter price" 
+                                                value={newRenewalPrice} 
+                                                onChange={(e) => setNewRenewalPrice(e.target.value)}
+                                                min="0"
+                                                step="0.01"
+                                                max={isEditingRenewal ? servicePrice : remainingPrice}
+                                            />
+                                            <p className="text-xs text-muted-foreground">
+                                                {isEditingRenewal ? `Max: ${servicePrice.toFixed(2)}` : `Available: ${remainingPrice.toFixed(2)}`}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-2 mt-6">
+                                        <Button onClick={async () => {
+                                            if (!newRenewalDate) {
+                                                toast({ title: 'Error', description: 'Please select a date', variant: 'destructive' });
+                                                return;
+                                            }
+                                            if (!newRenewalLabel.trim()) {
+                                                toast({ title: 'Error', description: 'Please enter a renewal label', variant: 'destructive' });
+                                                return;
+                                            }
+                                            if (!newRenewalPrice || Number(newRenewalPrice) <= 0) {
+                                                toast({ title: 'Error', description: 'Please enter a valid price', variant: 'destructive' });
+                                                return;
+                                            }
+                                            
+                                            const priceNum = Number(newRenewalPrice);
+                                            if (!isEditingRenewal && priceNum > remainingPrice) {
+                                                toast({ 
+                                                    title: 'Price Exceeds Limit', 
+                                                    description: `Renewal price cannot exceed remaining amount of ${remainingPrice.toFixed(2)}`, 
+                                                    variant: 'destructive' 
+                                                });
+                                                return;
+                                            }
+                                            
+                                            try {
+                                                const id = renewalDialogData._id || renewalDialogData.id;
+                                                await dispatch(addRenewalDate({ 
+                                                    id, 
+                                                    renewal_date: format(newRenewalDate, 'yyyy-MM-dd'), 
+                                                    renewal_label: newRenewalLabel.trim(),
+                                                    renewal_price: priceNum,
+                                                    renewal_id: editingRenewalId ?? undefined
+                                                })).unwrap();
+                                                
+                                                toast({ 
+                                                    title: 'Success', 
+                                                    description: isEditingRenewal ? 'Renewal date updated successfully' : 'Renewal date added successfully' 
+                                                });
+                                                resetRenewalForm();
+                                                dispatch(getAssignedServices({ page: pageNumber, limit: limitNumber, search: debouncedSearch }));
+                                            } catch (err: any) {
+                                                toast({ title: 'Failed', description: err?.message || 'Could not save renewal date', variant: 'destructive' });
+                                            }
+                                        }}>
+                                            {isEditingRenewal ? 'Update Renewal' : 'Add Renewal Date'}
+                                        </Button>
+                                        {isEditingRenewal && (
+                                            <Button variant="outline" onClick={resetRenewalForm}>
+                                                Cancel Edit
+                                            </Button>
+                                        )}
+                                        <Button variant="ghost" onClick={() => {
+                                            setRenewalDialogOpen(false);
+                                            resetRenewalForm();
+                                        }}>
+                                            Close
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })()}
+                </DialogContent>
+            </Dialog>
+            {/* Delete Confirmation Dialog */}
+            <DeleteModel
+                deleteId={deleteid}
+                onsuccess={async () => {
+                    try {
+                        await dispatch(deleteAssignedService({ id: deleteid })).unwrap();
+                        setDeleteOpen(false);
+                        toast({ title: 'Deleted', description: 'Assigned service deleted successfully.' });
+                    }
+                    catch (err: any) {
+                        toast({ title: 'Deletion Failed', description: err?.message || 'Could not delete assigned service.', variant: 'destructive' });
+                    }
+                }}
+            />
+        </>
     )
 }
 

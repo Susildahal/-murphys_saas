@@ -2,6 +2,8 @@ import Service from "../models/service.model";
 import Category from "../models/category.model";
 import { Request, Response } from "express";
 import cloudinary from '../config/cloudinary';
+import AssignService from '../models/assignService.routes';
+
 
 // Create a new service. Expects optional image upload middleware to set
 // req.body.profile_image and req.body.public_id when a file is uploaded.
@@ -152,7 +154,11 @@ export const deleteService = async (req: Request, res: Response) => {
     const { id } = req.params;
     const service = await Service.findById(id);
     if (!service) return res.status(404).json({ success: false, message: 'Service not found' });
-
+    // Check for assigned services
+    const assignedService = await AssignService.findOne({ service_catalog_id: id });
+    if (assignedService) {
+      return res.status(400).json({ success: false, message: 'Cannot delete service with assigned clients' });
+    }
     if (service.publicid) {
       try {
         await cloudinary.uploader.destroy(service.publicid);
