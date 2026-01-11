@@ -21,7 +21,7 @@ const app = express();
 
 // Allow all origins for now - CORS needs to allow Vercel frontend
 app.use(cors({
-  origin: true,
+  origin: [ 'https://murphys-saas.vercel.app', 'http://localhost:3000' ,'https://murphys-saas.vercel.app/admin/profile', 'http://localhost:3000/admin/profile'],
   credentials: true,
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
