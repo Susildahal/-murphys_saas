@@ -21,7 +21,7 @@ import {
   updatePassword,
 } from "firebase/auth";
 import { showSuccessToast, showErrorToast } from "@/lib/toast-handler";
-import getFirebaseAuthErrorMessage from "@/lib/firebaseAuthError";
+import { formatAuthMessage } from "@/lib/firebaseAuthError";
 
 export default function ChangePasswordPage() {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -83,7 +83,8 @@ export default function ChangePasswordPage() {
     } catch (err: any) {
       // If this is a Firebase auth error with a string code like 'auth/xxx', map it to a friendly message
       if (typeof err?.code === "string" && /^auth\//i.test(err.code)) {
-        const fbMessage = getFirebaseAuthErrorMessage(err);
+        const code = String(err.code).replace(/^auth\//i, "").replace(/-/g, "_").toUpperCase();
+        const fbMessage = formatAuthMessage(code);
         showErrorToast(fbMessage, "Error");
         setLoading(false);
         return;
@@ -146,7 +147,7 @@ export default function ChangePasswordPage() {
       }
 
       // Final fallback
-      if (!message) message = "Failed to change password";
+      if (!message) message = "";
 
       // Remove any occurrence of the word "Firebase" and any auth code like "auth/xxx" (case-insensitive)
       try {
@@ -166,7 +167,8 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <div className="p-4  max-w-xl">
+    <div className="">
+    <div className="p-4 max-w-2xl mx-auto   ">
       <Card className="shadow-sm">
         <CardHeader>
           <CardTitle className="text-xl">Security Settings</CardTitle>
@@ -257,6 +259,7 @@ export default function ChangePasswordPage() {
           </form>
         </CardContent>
       </Card>
+    </div>
     </div>
   );
 }

@@ -171,8 +171,11 @@ const assignSlice = createSlice({
       .addCase(deleteAssignedService.fulfilled, (state, action: PayloadAction<any>) => {
         state.loading = false;
         // Optionally remove the deleted item from state.data
-        state.data = state.data.filter(item => item._id !== action.meta.arg.id);
-        state.total = (state.total || 1) - 1;
+        const deletedId = (action as any)?.meta?.arg?.id;
+        if (deletedId) {
+          state.data = state.data.filter(item => item._id !== deletedId);
+          state.total = Math.max(0, (state.total || 1) - 1);
+        }
       }
       )
       .addCase(deleteAssignedService.rejected, (state, action) => {

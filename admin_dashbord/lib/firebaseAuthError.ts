@@ -1,38 +1,19 @@
-export const getFirebaseAuthErrorMessage = (error: any): string => {
-  if (!error || !error.code) {
-    return "Something went wrong. Please try again.";
-  }
+function formatAuthMessage(message: string) {
+  switch (message) {
+    case "INVALID_LOGIN_CREDENTIALS":
+      return "Current password is incorrect";
 
-  switch (error.code) {
+    case "EMAIL_NOT_FOUND":
+      return "No account found with this email";
 
-    case "auth/invalid-email":
-      return "The email address is not valid.";
+    case "USER_DISABLED":
+      return "This account has been disabled";
 
-
-      case "INVALID_LOGIN_CREDENTIALS":
-      return "Invalid login credentials. Please check your email and password.";
-
-    case "auth/wrong-password":
-      return "Current password is incorrect.";
-
-    case "auth/weak-password":
-      return "New password is too weak. Please use at least 6 characters.";
-
-    case "auth/requires-recent-login":
-      return "For security reasons, please log in again and retry.";
-
-    case "auth/user-not-found":
-      return "User account not found.";
-
-    case "auth/too-many-requests":
-      return "Too many attempts. Please try again later.";
-
-    case "auth/network-request-failed":
-      return "Network error. Please check your internet connection.";
+    case "TOO_MANY_ATTEMPTS_TRY_LATER":
+      return "Too many attempts. Please try again later";
 
     default:
-      return "Failed to change password. Please try again.";
+      return message.replace(/_/g, " ").toLowerCase();
   }
-};
-
-export default getFirebaseAuthErrorMessage;
+}
+export { formatAuthMessage };

@@ -11,7 +11,7 @@ import {
   Shield,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useAppSelector } from "@/lib/redux/hooks"
+import { useAppSelector ,useAppDispatch } from "@/lib/redux/hooks"
 import { getAuth, signOut } from "firebase/auth"
 import { auth } from "@/app/config/firebase"
 
@@ -36,11 +36,14 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { Badge } from "@/components/ui/badge"
+import { useEffect } from "react"
+import { fetchProfile } from "@/lib/redux/slices/profileSlice"
 
 export function NavUser() {
   const { isMobile } = useSidebar()
   const router = useRouter()
   const profileState = useAppSelector((state) => state.profile)
+  const dispatch = useAppDispatch()
   const profile = Array.isArray(profileState.profile) ? profileState.profile[0] : profileState.profile
   
   const userName = profile?.name || profile?.firstName && profile?.lastName 
@@ -49,6 +52,7 @@ export function NavUser() {
   const userEmail = profile?.email || getAuth().currentUser?.email || "Not available"
   const userAvatar = profile?.profile_image || ""
   const userRole = profile?.role_type || "User"
+
   
   const getInitials = (name: string) => {
     return name
@@ -67,6 +71,16 @@ export function NavUser() {
       console.error('Logout error:', error)
     }
   }
+const getProfile = async () => {
+    // Dispatch an action to fetch the profile data
+    await dispatch(fetchProfile({ page: 1, limit: 1 })).unwrap()
+  }
+
+  useEffect(() => {
+    if(!profile){
+    getProfile()
+    }
+  }, [])
 
   return (
     <SidebarMenu>
@@ -123,6 +137,10 @@ export function NavUser() {
               <DropdownMenuItem onClick={() => router.push('/admin/settings')} className="cursor-pointer py-2.5">
                 <Settings className="h-4 w-4 mr-2" />
                 <span>Settings</span>
+              </DropdownMenuItem>
+                 <DropdownMenuItem onClick={() => router.push('/admin/change_password')} className="cursor-pointer py-2.5">
+                <Settings className="h-4 w-4 mr-2" />
+                <span>Change Password</span>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
