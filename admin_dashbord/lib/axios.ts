@@ -29,7 +29,7 @@ const waitForAuthReady = () => {
 
 // Create axios instance
 const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || '/api',
+  baseURL: 'https://murphys-saas-m62b.vercel.app/api',
   headers: {
     'Content-Type': 'application/json',
   },
