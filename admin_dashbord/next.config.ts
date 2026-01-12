@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
       {
         source: "/api/:path*",
         // expects NEXT_PUBLIC_API_URL without a trailing /api
-        destination: `${process.env.NEXT_PUBLIC_API_URL}/api/:path*`,
+        destination: `https://murphys-saas-l94u.vercel.app/api/:path*`,
       },
     ];
   },
