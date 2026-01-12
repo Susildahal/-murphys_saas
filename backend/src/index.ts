@@ -19,9 +19,17 @@ import rolerouter from "./routes/role.routes";
 
 const app = express();
 
-// Allow all origins for now - CORS needs to allow Vercel frontend
+// CORS: use ALLOWED_ORIGINS env var (comma-separated). If not set, allow localhost and the known Vercel preview domain.
+const allowedOriginsEnv =  'http://localhost:3000,https://murphys-saas-m62b.vercel.app,https://murphys-saas.vercel.app ,http://192.168.10.79:3000';
+const allowedOrigins = allowedOriginsEnv.split(',').map(s => s.trim()).filter(Boolean);
+
 app.use(cors({
-  origin: [ 'https://murphys-saas.vercel.app', 'http://localhost:3000' ,'https://murphys-saas.vercel.app/admin/profile', 'http://localhost:3000/admin/profile'],
+  origin: (origin, callback) => {
+    // Allow non-browser requests (no origin)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('CORS policy: This origin is not allowed'), false);
+  },
   credentials: true,
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
