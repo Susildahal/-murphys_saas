@@ -39,7 +39,17 @@ app.use(cors({
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 }));
+
+// Parse JSON bodies BEFORE routes
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Root route
+app.get("/", (_req, res) => {
+  res.send("API is running 🚀");
+});
+
+// Mount API routes
 app.use("/api", profilerouter);
 app.use("/api", inviterouter);
 app.use("/api", paymentrouter);
@@ -47,11 +57,6 @@ app.use("/api", categoryrouter);
 app.use("/api", servicerouter);
 app.use("/api", assignClientRouter);
 app.use("/api", rolerouter);
-
-app.use(express.json());
-app.get("/",(_req, res) => {
-  res.send("API is running 🚀");
-});
 
 // Protected route example
 app.get("/api/mee", verifyFirebaseToken, (req: AuthenticatedRequest, res) => {
