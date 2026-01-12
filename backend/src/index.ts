@@ -20,15 +20,20 @@ import rolerouter from "./routes/role.routes";
 const app = express();
 
 // CORS: use ALLOWED_ORIGINS env var (comma-separated). If not set, allow localhost and the known Vercel preview domain.
-const allowedOriginsEnv =  'http://localhost:3000,https://murphys-saas-m62b.vercel.app,https://murphys-saas.vercel.app ,http://192.168.10.79:3000';
+const allowedOriginsEnv = process.env.ALLOWED_ORIGINS || 'http://localhost:3000,https://murphys-saas-m62b.vercel.app,https://murphys-saas.vercel.app,http://192.168.10.79:3000';
 const allowedOrigins = allowedOriginsEnv.split(',').map(s => s.trim()).filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow non-browser requests (no origin)
+    // Allow non-browser requests (no origin header - e.g., Postman, curl, server-to-server)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error('CORS policy: This origin is not allowed'), false);
+    // Check if origin is in allowlist or wildcard is enabled
+    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    // Origin not allowed - DON'T throw error, just reject without error to prevent serverless loops
+    console.warn(`CORS blocked origin: ${origin}`);
+    return callback(null, false);
   },
   credentials: true,
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
@@ -44,7 +49,7 @@ app.use("/api", assignClientRouter);
 app.use("/api", rolerouter);
 
 app.use(express.json());
-app.get("/", (_req, res) => {
+app.get("/",(_req, res) => {
   res.send("API is running 🚀");
 });
 
