@@ -6,7 +6,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "vercel-build": "tsc",
-    "start": "node dist/server.js",
+    "start": "node dist/src/server.js",
     "seed:roles": "ts-node src/seeders/roleSeeder.ts"
   },
   "keywords": [],
