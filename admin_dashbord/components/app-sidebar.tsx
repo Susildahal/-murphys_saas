@@ -18,7 +18,6 @@ import {
   CreditCard,
   Search,
 } from "lucide-react"
-import { Collapsible } from "@radix-ui/react-collapsible"
 import { motion, AnimatePresence } from "motion/react"
 
 import { NavMain } from "@/components/nav-main"
@@ -43,7 +42,6 @@ const data = {
     avatar: "/avatars/shadcn.jpg",
   },
   teams: [
-   
     {
       name: "Evil Corp.",
       logo: Command,
@@ -51,30 +49,28 @@ const data = {
     },
   ],
   navMain: [
-   
     {
       title: "Users",
       url: "#",
       icon: SquareTerminal,
-      isActive: true,
       items: [
         {
           title: "Invite Users",
           url: "/admin/invte_users",
         },
+
         {
-          title: "Get All users",
+          title: "All users",
           url: "/admin/get_all_users",
         },
-         {
+        {
           title: "Admin Users",
           url: "/admin/admin_users",
         },
-          {
+        {
           title: "Clients Users",
           url: "/admin/clients_users",
         },
-      
       ],
     },
     {
@@ -83,20 +79,11 @@ const data = {
       icon: Bot,
       items: [
         {
-          title: " View Assigned Services",
+          title: "View Assigned Services",
           url: "/admin/view_assign_service",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
         },
       ],
     },
-  
     {
       title: "Settings",
       url: "#",
@@ -110,20 +97,12 @@ const data = {
           title: "Change Password",
           url: "/admin/change_password",
         },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
       ],
     },
   ],
   projects: [
     {
-      name: "Dashboard ",
+      name: "Dashboard",
       url: "/admin/dashboard",
       icon: LayoutDashboard,
     },
@@ -143,12 +122,10 @@ const data = {
       icon: Grid3x3,
     },
     {
-      name:" Payment",
-      url:"/admin/payment",
-      icon:CreditCard,
+      name: "Payment",
+      url: "/admin/payment",
+      icon: CreditCard,
     },
-
-   
     {
       name: "Role and Permission",
       url: "/admin/roles",
@@ -182,132 +159,130 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }, [searchQuery])
 
   return (
-    <Sidebar collapsible="icon" {...props} className="">
-      <motion.div
-        initial={false}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.2, ease: "easeInOut" }}
-      >
-        <SidebarHeader className="border-b z-50 border-border/40">
-          <motion.div 
-            className="flex h-16 items-center px-4"
-            animate={{ 
-              justifyContent: isCollapsed ? "center" : "flex-start"
-            }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-          >
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={isCollapsed ? "collapsed" : "expanded"}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Image
-                  src="/logo.png"
-                  alt="Murphys Logo"
-                  width={isCollapsed ? 32 : 140}
-                  height={isCollapsed ? 32 : 40}
-                  className="object-contain"
-                  priority
-                />
-              </motion.div>
-            </AnimatePresence>
-          </motion.div>
-          
-          <AnimatePresence>
-            {!isCollapsed && (
-              <motion.div 
-                className="px-3 pb-3"
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-              >
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="search"
-                    placeholder="Search navigation..."
-                    className="h-9 pl-8 bg-muted/50"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          
-          {isCollapsed && (
-            <motion.div 
-              className="px-2 pb-3"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.2 }}
+    <Sidebar collapsible="icon" {...props} className="border-r">
+      <style jsx global>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: hsl(var(--border));
+          border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: hsl(var(--muted-foreground) / 0.4);
+        }
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: hsl(var(--border)) transparent;
+        }
+      `}</style>
+
+      {/* Fixed Header */}
+      <SidebarHeader className=" border-border/40  backdrop-blur ">
+        <motion.div 
+          className="flex h-16 items-center px-4"
+          animate={{ 
+            justifyContent: isCollapsed ? "center" : "flex-start"
+          }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={isCollapsed ? "collapsed" : "expanded"}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.2 }}
             >
-              <div className="relative flex justify-center">
-                <Search className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-foreground transition-colors" />
+              <Image
+                src="/logo.png"
+                alt="Murphys Logo"
+                width={isCollapsed ? 32 : 140}
+                height={isCollapsed ? 32 : 40}
+                className="object-contain"
+                priority
+              />
+            </motion.div>
+          </AnimatePresence>
+        </motion.div>
+        
+        <AnimatePresence>
+          {!isCollapsed && (
+            <motion.div 
+              className="px-3 pb-3"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
+                <Input
+                  type="search"
+                  placeholder="Search navigation..."
+                  className="h-9 pl-8 bg-muted/50 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/20"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
             </motion.div>
           )}
-        </SidebarHeader>
-      </motion.div>
+        </AnimatePresence>
+        
+        {isCollapsed && (
+          <motion.div 
+            className="px-2 pb-3"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.2 }}
+          >
+            <div className="relative flex justify-center">
+              <Search className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-foreground transition-colors" />
+            </div>
+          </motion.div>
+        )}
+      </SidebarHeader>
+
+      {/* Scrollable Content */}
+      <SidebarContent className="overflow-y-auto custom-scrollbar flex-1 px-2 py-4">
+        <AnimatePresence mode="wait">
+          {filteredProjects.length === 0 && filteredNavMain.length === 0 ? (
+            <motion.div 
+              key="no-results"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-col items-center justify-center py-8 px-4 text-center"
+            >
+              <Search className="h-12 w-12 text-muted-foreground/50 mb-3" />
+              <p className="text-sm font-medium text-muted-foreground">No navigation items found</p>
+              <p className="text-xs text-muted-foreground/70 mt-1">Try a different search term</p>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="results"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-2"
+            >
+              <NavProjects projects={filteredProjects} />
+              <NavMain items={filteredNavMain} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </SidebarContent>
+
+      {/* Fixed Footer */}
+      <SidebarFooter className="border-t border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-2 mt-auto">
+        <NavUser />
+      </SidebarFooter>
       
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1, duration: 0.3 }}
-      >
-        <SidebarContent className="px-2 py-4 overflow-y-auto scrollbar-none">
-          <style jsx global>{`
-            .scrollbar-none::-webkit-scrollbar {
-              display: none;
-            }
-            .scrollbar-none {
-              -ms-overflow-style: none;
-              scrollbar-width: none;
-            }
-          `}</style>
-          <AnimatePresence mode="wait">
-            {filteredProjects.length === 0 && filteredNavMain.length === 0 ? (
-              <motion.div 
-                key="no-results"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="flex flex-col items-center justify-center py-8 px-4 text-center"
-              >
-                <Search className="h-12 w-12 text-muted-foreground/50 mb-3" />
-                <p className="text-sm font-medium text-muted-foreground">No navigation items found</p>
-                <p className="text-xs text-muted-foreground/70 mt-1">Try a different search term</p>
-              </motion.div>
-            ) : (
-              <motion.div
-                key="results"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <NavProjects projects={filteredProjects} />
-                <NavMain items={filteredNavMain} />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </SidebarContent>
-      </motion.div>
-      
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.15, duration: 0.3 }}
-      >
-        <SidebarFooter className="border-t border-border/40 p-2">
-          <NavUser />
-        </SidebarFooter>
-      </motion.div>
       <SidebarRail />
     </Sidebar>
   )

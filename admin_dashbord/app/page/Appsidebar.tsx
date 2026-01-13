@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation"
 import { ModeToggle } from "@/components/mode-toggle"
 import { Separator } from "@/components/ui/separator"
 import { NavUser } from "@/components/nav-user"
+import Link from "next/link"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -17,6 +18,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import {  Bell} from "lucide-react"
 
 interface SidebarProps {
   children: React.ReactNode;
@@ -60,6 +62,9 @@ const data = {
             </Breadcrumb>
           </div>
           <div className="flex items-center gap-2">
+            <Link href="/admin/notifications">
+          <Bell  className="cursor-pointer hover:text-blue-600 transition-all duration-200"/>
+          </Link>
                 <NavUser />
             <ModeToggle />
           </div>

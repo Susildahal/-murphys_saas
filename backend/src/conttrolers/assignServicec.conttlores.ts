@@ -31,6 +31,7 @@ export const assignServiceToClient = async (req: Request, res: Response) => {
     const fullname = clientProfile.firstName + ' ' + clientProfile.lastName;
 
     const assignedService = new AssignService({
+      invoice_id: `INV-${Date.now()}`, // Simple invoice ID generation
       client_id,
       service_catalog_id,
         status,
@@ -221,6 +222,7 @@ export const updateAssignedService = async (req: Request, res: Response) => {
     const {
       isaccepted,
       price,
+      end_date,
       add_renewal_date,
       renewal_date,
       renewal_label,
@@ -231,6 +233,10 @@ export const updateAssignedService = async (req: Request, res: Response) => {
     const updateSet: any = {};
     if (isaccepted !== undefined) updateSet.isaccepted = isaccepted;
     if (price !== undefined) updateSet.price = price;
+    // support updating end_date (allow null to clear it)
+    if (end_date !== undefined) {
+      updateSet.end_date = end_date ? new Date(end_date) : null;
+    }
 
     const renewalDateStr = add_renewal_date || renewal_date;
 

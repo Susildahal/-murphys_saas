@@ -152,7 +152,7 @@ function ClientsUsersPage() {
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
+                          <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
                             <MoreVertical className="h-4 w-4 rotate-90" />
                           </Button>
                         </DropdownMenuTrigger>

@@ -134,7 +134,7 @@ function Page() {
       />
 
       <div className="space-y-4">
-        <Card className=" border-none verflow-hidden  lg:w-[calc(100vw-300px)] overflow-x-auto">  
+        <div className=" border-none verflow-hidden  lg:w-[calc(100vw-300px)] overflow-x-auto">  
           <Table className=" overflow-x-hidden   ">
             <TableHeader>
               <TableRow className=" border-b">
@@ -242,7 +242,7 @@ function Page() {
               )}
             </TableBody>
           </Table>
-        </Card>
+        </div>
         
         <Pagination 
           page={currentPage}

@@ -50,7 +50,11 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
   const handleFile = (file: File) => {
     if (file && file.type.startsWith('image/')) {
       setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -131,7 +135,7 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
             <img 
               src={imagePreview} 
               alt="Service preview" 
-              className="w-full h-64 object-cover"
+              className="w-full h-64 object-contain rounded-lg "
             />
             
             {/* Overlay on hover */}

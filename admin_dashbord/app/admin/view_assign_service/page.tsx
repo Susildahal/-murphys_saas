@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+import React, { use, useEffect } from 'react'
 import Header from '@/app/page/common/header'
 import {
     Table,
@@ -9,7 +9,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { MoreVertical, RefreshCcw, Calendar as CalendarIcon, Plus, Edit2, Trash2, Delete } from 'lucide-react'
+import { MoreVertical, RefreshCcw, Calendar as CalendarIcon, Plus, Edit2, Trash2, Delete, ChevronDownIcon, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -34,6 +34,8 @@ import { updateAssignedService, addRenewalDate, deleteAssignedService } from '@/
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import DeleteModel from '@/app/page/common/DeleteModel'
+import { Label } from '@/components/ui/label'
+import InvoiceView from '@/app/page/InvoiceView'
 
 
 
@@ -58,6 +60,9 @@ const page = () => {
     const [newRenewalDate, setNewRenewalDate] = React.useState<Date | undefined>(undefined);
     const [newRenewalLabel, setNewRenewalLabel] = React.useState('');
     const [newRenewalPrice, setNewRenewalPrice] = React.useState('');
+    const [endOpen, setEndOpen] = React.useState(false)
+    const [invoiceOpen, setInvoiceOpen] = React.useState(false)
+    const [invoiceData, setInvoiceData] = React.useState<any>(null)
     const { toast } = useToast();
 
     // Debounce search input to avoid excessive requests
@@ -67,9 +72,8 @@ const page = () => {
     }, [searchTerm]);
 
     React.useEffect(() => {
+        // Fetch assigned services whenever page, limit or debounced search changes
         dispatch(getAssignedServices({ page: pageNumber, limit: limitNumber, search: debouncedSearch }));
-        
-  
     }, [dispatch, pageNumber, limitNumber, debouncedSearch]);
 
     // Helper function to calculate days ago
@@ -139,13 +143,19 @@ const page = () => {
     const [deleteOpen, setDeleteOpen] = React.useState(false);
 
 
+
+
+        // removed redundant search helper - main effect handles fetching on debouncedSearch changes
+
+  
+
     return (
         <>
-        { loading && <SpinnerComponent /> }
+            {loading && <SpinnerComponent />}
             <Header
                 title="Assigned Services"
                 description="Manage and view assigned services"
-               
+
                 total={total}
                 extraInfo={<div>
                     <Input
@@ -281,8 +291,11 @@ const page = () => {
                                                     }}>
                                                         View Details
                                                     </DropdownMenuItem>
-                                                    <DropdownMenuItem>View Invoice</DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={ ()=> { setDeleteOpen(true); setDeleteid(service._id); }}>Delete</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => {
+                                                        setInvoiceData(service);
+                                                        setInvoiceOpen(true);
+                                                    }}>View Invoice</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => { setDeleteOpen(true); setDeleteid(service._id); }}>Delete</DropdownMenuItem>
 
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -330,6 +343,37 @@ const page = () => {
                                         </SelectContent>
                                     </Select>
                                 </div>
+                                <div className="flex flex-col gap-3">
+                                    <Label htmlFor="end-date" className="px-1">
+                                        End Date
+                                    </Label>
+                                    <Popover open={endOpen} onOpenChange={setEndOpen} >
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                id="end-date"
+                                                className="justify-between font-normal"
+                                            >
+                                                {editData.end_date ? new Date(String(editData.end_date)).toLocaleDateString() : "Select end date"}
+                                                <ChevronDownIcon />
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto overflow-hidden p-0" align="start">
+                                            <Calendar
+                                                mode="single"
+                                                selected={editData.end_date ? new Date(String(editData.end_date)) : undefined}
+                                                captionLayout="dropdown"
+                                                onSelect={(d) => {
+                                                    setEditData((prev: any) => ({ ...prev, end_date: d ? d.toISOString() : null }))
+                                                    setEndOpen(false)
+                                                }}
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                    <div className="flex items-center gap-2">
+                                        <Button variant="ghost" size="sm" onClick={() => { setEditData((prev: any) => ({ ...prev, end_date: null })); setEndOpen(false); }}>Clear</Button>
+                                    </div>
+                                </div>
                                 <div className="flex items-center gap-2 mt-3">
                                     <Button onClick={async () => {
                                         try {
@@ -338,12 +382,21 @@ const page = () => {
                                                 price: editData.price,
                                             };
                                             if (editData.isaccepted !== undefined) payload.isaccepted = editData.isaccepted;
+                                            // include end_date if user selected/cleared it
+                                            if (editData.end_date !== undefined) {
+                                                // if it's already an ISO string, use it; if Date, convert
+                                                payload.end_date = typeof editData.end_date === 'string' ? editData.end_date : (editData.end_date ? new Date(editData.end_date).toISOString() : null);
+                                            }
+
                                             await dispatch(updateAssignedService({ id, data: payload })).unwrap();
+                                            // refresh list to reflect changes
+                                            dispatch(getAssignedServices({ page: pageNumber, limit: limitNumber, search: debouncedSearch }));
+                                            toast({ title: 'Success', description: 'Assigned service updated' });
                                             setEditOpen(false);
                                         } catch (err: any) {
                                             toast({ title: 'Update failed', description: err?.message || 'Could not update', variant: 'destructive' });
                                         }
-                                    }}>Save</Button>
+                                    }}>{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}</Button>
                                     <Button variant="ghost" onClick={() => setEditOpen(false)}>Cancel</Button>
                                 </div>
                             </>
@@ -353,6 +406,7 @@ const page = () => {
                     </div>
                 </DialogContent>
             </Dialog>
+
 
             <div className="mt-4 flex items-center justify-between">
                 <div>
@@ -476,12 +530,12 @@ const page = () => {
                         </DialogTitle>
                         <DialogDescription>View, add, and manage renewal dates for this service</DialogDescription>
                     </DialogHeader>
-                    
+
                     {renewalDialogData && (() => {
                         const totalRenewalPrice = (renewalDialogData.renewal_dates || []).reduce((sum: number, r: any) => sum + (Number(r.price) || 0), 0);
                         const servicePrice = Number(renewalDialogData.price || 0);
                         const remainingPrice = servicePrice - totalRenewalPrice;
-                        
+
                         return (
                             <div className="space-y-6">
                                 {/* Service Summary */}
@@ -508,7 +562,7 @@ const page = () => {
                                         </Badge>
                                     </div>
                                 </div>
-                                
+
                                 {/* Existing Renewal Dates */}
                                 {renewalDialogData.renewal_dates && renewalDialogData.renewal_dates.length > 0 && (
                                     <div className="border rounded-lg p-4">
@@ -527,10 +581,10 @@ const page = () => {
                                                                     {renewal.label}
                                                                 </Badge>
                                                                 <span className="text-sm font-medium">
-                                                                    {new Date(renewal.date).toLocaleDateString('en-US', { 
-                                                                        year: 'numeric', 
-                                                                        month: 'long', 
-                                                                        day: 'numeric' 
+                                                                    {new Date(renewal.date).toLocaleDateString('en-US', {
+                                                                        year: 'numeric',
+                                                                        month: 'long',
+                                                                        day: 'numeric'
                                                                     })}
                                                                 </span>
                                                                 {renewalInfo.text && (
@@ -554,7 +608,7 @@ const page = () => {
                                                                 size="sm"
                                                                 onClick={() => handleEditRenewal(renewal._id ? { ...renewal, _id: renewal._id } : { ...renewal, id: renewal.id })}
                                                             >
-                                                                <Edit2 className="h-4 w-4"  />
+                                                                <Edit2 className="h-4 w-4" />
                                                             </Button>
                                                         </div>
                                                     </div>
@@ -563,7 +617,7 @@ const page = () => {
                                         </div>
                                     </div>
                                 )}
-                                
+
                                 {/* Add/Edit Renewal Form */}
                                 <div className="border rounded-lg p-4 bg-muted/30">
                                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -580,18 +634,18 @@ const page = () => {
                                             </>
                                         )}
                                     </h3>
-                                    
+
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium">Renewal Label *</label>
-                                            <Input 
-                                                type="text" 
-                                                placeholder="e.g., First Renewal, Q2 Payment" 
-                                                value={newRenewalLabel} 
+                                            <Input
+                                                type="text"
+                                                placeholder="e.g., First Renewal, Q2 Payment"
+                                                value={newRenewalLabel}
                                                 onChange={(e) => setNewRenewalLabel(e.target.value)}
                                             />
                                         </div>
-                                        
+
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium">Renewal Date *</label>
                                             <Popover>
@@ -604,7 +658,7 @@ const page = () => {
                                                         )}
                                                     >
                                                         <CalendarIcon className="mr-2 h-4 w-4" />
-                                                        {newRenewalDate ? format(newRenewalDate, "PPP") : "Pick a date"}
+                                                        {newRenewalDate ? format(newRenewalDate as Date, "PPP") : "Pick a date"}
                                                     </Button>
                                                 </PopoverTrigger>
                                                 <PopoverContent className="w-auto p-0" align="start">
@@ -617,13 +671,13 @@ const page = () => {
                                                 </PopoverContent>
                                             </Popover>
                                         </div>
-                                        
+
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium">Renewal Price *</label>
-                                            <Input 
-                                                type="number" 
-                                                placeholder="Enter price" 
-                                                value={newRenewalPrice} 
+                                            <Input
+                                                type="number"
+                                                placeholder="Enter price"
+                                                value={newRenewalPrice}
                                                 onChange={(e) => setNewRenewalPrice(e.target.value)}
                                                 min="0"
                                                 step="0.01"
@@ -634,7 +688,7 @@ const page = () => {
                                             </p>
                                         </div>
                                     </div>
-                                    
+
                                     <div className="flex items-center gap-2 mt-6">
                                         <Button onClick={async () => {
                                             if (!newRenewalDate) {
@@ -649,30 +703,30 @@ const page = () => {
                                                 toast({ title: 'Error', description: 'Please enter a valid price', variant: 'destructive' });
                                                 return;
                                             }
-                                            
+
                                             const priceNum = Number(newRenewalPrice);
                                             if (!isEditingRenewal && priceNum > remainingPrice) {
-                                                toast({ 
-                                                    title: 'Price Exceeds Limit', 
-                                                    description: `Renewal price cannot exceed remaining amount of ${remainingPrice.toFixed(2)}`, 
-                                                    variant: 'destructive' 
+                                                toast({
+                                                    title: 'Price Exceeds Limit',
+                                                    description: `Renewal price cannot exceed remaining amount of ${remainingPrice.toFixed(2)}`,
+                                                    variant: 'destructive'
                                                 });
                                                 return;
                                             }
-                                            
+
                                             try {
                                                 const id = renewalDialogData._id || renewalDialogData.id;
-                                                await dispatch(addRenewalDate({ 
-                                                    id, 
-                                                    renewal_date: format(newRenewalDate, 'yyyy-MM-dd'), 
+                                                await dispatch(addRenewalDate({
+                                                    id,
+                                                    renewal_date: format(newRenewalDate, 'yyyy-MM-dd'),
                                                     renewal_label: newRenewalLabel.trim(),
                                                     renewal_price: priceNum,
                                                     renewal_id: editingRenewalId ?? undefined
                                                 })).unwrap();
-                                                
-                                                toast({ 
-                                                    title: 'Success', 
-                                                    description: isEditingRenewal ? 'Renewal date updated successfully' : 'Renewal date added successfully' 
+
+                                                toast({
+                                                    title: 'Success',
+                                                    description: isEditingRenewal ? 'Renewal date updated successfully' : 'Renewal date added successfully'
                                                 });
                                                 resetRenewalForm();
                                                 dispatch(getAssignedServices({ page: pageNumber, limit: limitNumber, search: debouncedSearch }));
@@ -714,6 +768,17 @@ const page = () => {
                     }
                 }}
             />
+
+            {/* Invoice View */}
+            {invoiceOpen && invoiceData && (
+                <InvoiceView
+                    assignmentData={invoiceData}
+                    onClose={() => {
+                        setInvoiceOpen(false);
+                        setInvoiceData(null);
+                    }}
+                />
+            )}
         </>
     )
 }

@@ -64,6 +64,7 @@ function Page() {
   }, [dispatch, mee]);
 
   React.useEffect(() => {
+    if(!data || data.length === 0 || page !== pagination?.page || limit !== pagination?.limit)
     dispatch(getinvite({ page, limit }));
   }, [dispatch, page, limit]);
 
@@ -142,11 +143,11 @@ function Page() {
     dispatch(deleteInvite(deleteId as string));
   }
 
-    if (loading) {
-      return <div><SpinnerComponent /></div>;
-    }
+
+  
   return (
     <>
+    {loading && <SpinnerComponent />}
       <Header
         title={selectedInvite ? "Sent Invite Again" : "Invite Users"}
         description="Send invitations to new users by entering their email addresses below."
@@ -271,7 +272,7 @@ function Page() {
         </div>
       </div>
       <div>
-        <CardContent>
+        <div>
         <Table>
         <TableHeader>
           <TableRow>
@@ -376,7 +377,7 @@ function Page() {
           )}
         </TableBody>
       </Table>
-        </CardContent>
+        </div>
       </div>
       {pagination && (
         <Pagination page={pagination.page || page} totalPages={pagination.totalPages || 1} onPageChange={setPage} />

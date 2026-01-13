@@ -538,7 +538,8 @@ function SidebarMenuButton({
       <TooltipContent
         side="right"
         align="center"
-        hidden={state !== "collapsed" || isMobile}
+        // Show tooltips on desktop; keep disabled on mobile.
+        hidden={isMobile}
         {...tooltip}
       />
     </Tooltip>

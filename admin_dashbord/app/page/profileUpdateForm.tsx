@@ -71,6 +71,7 @@ export default function ProfileUpdateForm() {
   const { loading, error, updateSuccess, profile: data } = useAppSelector((state) => state.profile);
   const pd = data as any;
   const { data: meeData } = useAppSelector((state) => state.mee);
+  const profileDisplayName = pd ? ((pd.firstName || pd.name || '') + (pd.lastName ? ' ' + pd.lastName : '')) : (meeData?.displayName || '');
   const searchParams = useSearchParams();
   const params = useParams();
   const nameParam = searchParams.get('name') || params?.name;
@@ -83,7 +84,6 @@ export default function ProfileUpdateForm() {
   const [date, setDate] = React.useState<Date | undefined>(undefined)
   const [dojDate, setDojDate] = React.useState<Date | undefined>(undefined)
   const [opendoj, setOpenDoj] = React.useState(false)
-  const [invitedata , setInvitedata] = useState<any>([]);
 
 
   // Fetch profile data when mee email is available
@@ -100,24 +100,8 @@ export default function ProfileUpdateForm() {
     }
   }, [dispatch]);
 
-  const invite = async () => {
-    if ( meeData?.email) {
-      try {
-        const response = await axiosInstance.get(`/invites`,{
-          params: {
-            email: meeData?.email,
-          },
-        });    
-            setInvitedata(response.data?.data);
-      } catch (error: any) {
-        console.error('Error sending invitation:', error);
-      }
-    }
-  };
-  console.log("invitedata", invitedata)
-  React.useEffect(() => {
-    invite();
-  }, [ meeData?.email]);
+  
+
   
 
   const form = useForm<ProfileFormData>({
@@ -125,9 +109,9 @@ export default function ProfileUpdateForm() {
     mode: 'onSubmit',
     reValidateMode: 'onChange',
     defaultValues: {
-      firstName: invitedata.firstName || '',
+      firstName: pd?.firstName || '',
       middleName: '',
-      lastName: invitedata.lastName || '',
+      lastName: pd?.lastName || '',
       email: meeData?.email || '',
       phone: '',
       gender: '',
@@ -142,21 +126,21 @@ export default function ProfileUpdateForm() {
     },
   });
 
-  // Reset form when invitedata loads so default values update after async fetch
+  // Reset form when profile data loads so default values update after async fetch
   React.useEffect(() => {
-    if (invitedata && (invitedata.firstName || invitedata.lastName)) {
+    if (pd && (pd.firstName || pd.lastName)) {
       try {
         form.reset({
           ...form.getValues(),
-          firstName: invitedata.firstName || '',
-          lastName: invitedata.lastName || '',
+          firstName: pd.firstName || '',
+          lastName: pd.lastName || '',
         });
       } catch (e) {
         // guard: form may not be ready in rare cases
-        console.warn('Could not reset form with invitedata', e);
+        console.warn('Could not reset form with profile data', e);
       }
     }
-  }, [invitedata, form]);
+  }, [pd, form]);
   
   // Fetch profile data when mee email is available
   React.useEffect(() => {
@@ -285,16 +269,16 @@ export default function ProfileUpdateForm() {
 
   return (
     <>    
-    <div className="min-h-screen p-4 md:p-8 flex justify-center items-start">
+    <div className="min-h-screen  md:p-8 flex justify-center items-start">
 
     
 
-      <Card className=" border-none w-full max-w-4xl">
+      <div  className="  border rounded-2xl p-2 w-full max-w-4xl">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-xl flex items-center gap-2">
-                {pd?._id ? 'Update Profile' : `Please Complete Your Profile Information First ${invitedata.firstName + ' ' + invitedata.lastName}   `}
+                {pd?._id ? 'Update Profile' : `Please Complete Your Profile Information First ${profileDisplayName}`}
               </CardTitle>
               <CardDescription className="text-base mt-1">
                 {pd?._id ? 'Update your profile information' : 'Complete your profile details'}
@@ -660,7 +644,7 @@ export default function ProfileUpdateForm() {
             </form>
           </Form>
         </CardContent>
-      </Card>
+      </div>
     </div>
     </>
   );

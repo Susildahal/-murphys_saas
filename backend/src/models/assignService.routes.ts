@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 
 const assignServiceSchema = new mongoose.Schema({
+    invoice_id:{ type:String, required:true },
     client_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     client_name: { type: String, required: true },
     service_catalog_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Service', required: true },
@@ -21,7 +22,6 @@ const assignServiceSchema = new mongoose.Schema({
     auto_invoice: { type: Boolean, default: false },
     isaccepted: { type: String,  enum: ["accepted", "rejected" ,"pending" ,], default: "pending" },
     email: { type: String, required: true },
-
 }, { timestamps: true });
 
 

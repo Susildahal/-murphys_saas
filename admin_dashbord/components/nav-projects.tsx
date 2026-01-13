@@ -7,14 +7,7 @@ import {
   Trash2,
   type LucideIcon,
 } from "lucide-react"
-
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { usePathname } from 'next/navigation'
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -35,7 +28,9 @@ export function NavProjects({
     icon: LucideIcon
   }[]
 }) {
- 
+  const pathname = usePathname();
+  const normalize = (u?: string) => (u || '').replace(/\/+$|(?<!^)\/$/, '')
+  const pathnameNormalized = pathname ? pathname.replace(/\/+$|(?<!^)\/$/, '') : ''
 
   return (
     <SidebarGroup>
@@ -43,20 +38,25 @@ export function NavProjects({
         Quick Access
       </SidebarGroupLabel>
       <SidebarMenu className="">
-        {projects.map((item) => (
-          <SidebarMenuItem key={item.name}>
-            <SidebarMenuButton 
-              asChild
-              tooltip={item.name}
-              className="hover:bg-blue-500/20 hover:text-blue-400 transition-all duration-200 data-[active=true]:bg-blue-500/30 data-[active=true]:text-blue-300 rounded-md"
-            >
-              <Link href={item.url}>
-                <item.icon className="h-4 w-4" />
-                <span className="font-medium">{item.name}</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        ))}
+        {projects.map((item) => {
+          const itemUrl = normalize(item.url)
+          const isActive = !!(item.url && (pathnameNormalized === itemUrl || pathnameNormalized.startsWith(itemUrl + '/')))
+          return (
+              <SidebarMenuItem key={item.name}>
+              <SidebarMenuButton 
+                asChild
+                tooltip={item.name}
+                isActive={isActive as any}
+                className="hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 data-[active=true]:bg-blue-600 data-[active=true]:text-white rounded-md"
+              >
+                <Link href={item.url}>
+                  <item.icon className="h-4 w-4" />
+                  <span className="font-medium">{item.name}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )
+        })}
        
       </SidebarMenu>
     </SidebarGroup>

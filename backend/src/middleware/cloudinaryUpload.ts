@@ -31,7 +31,7 @@ const cloudinaryUpload = async (req: Request, res: Response, next: NextFunction)
       try { fs.unlinkSync(uploadPath); } catch (e) { console.warn('Failed to delete local upload:', e); }
     }
     // Attach uploaded image info to the request body for downstream handlers
-    (req as any).body.profile_image = result.secure_url;
+    (req as any).body[fileReq.file.fieldname] = result.secure_url;
     (req as any).body.public_id = result.public_id;
     next();
   } catch (error: any) {
