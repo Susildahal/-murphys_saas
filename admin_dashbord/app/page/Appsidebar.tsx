@@ -19,6 +19,10 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import {  Bell} from "lucide-react"
+import {useEffect} from "react"
+import { useAppDispatch ,useAppSelector } from '@/lib/redux/hooks'
+import { fetchNotices } from "@/lib/redux/slices/noticSlicer"
+
 
 interface SidebarProps {
   children: React.ReactNode;
@@ -38,6 +42,17 @@ const data = {
   },
  
 }
+  const dispatch = useAppDispatch();
+  const { notices ,unreadCount } = useAppSelector((state) => state.notices);
+
+  useEffect(() => {
+    if(!notices || notices.length===0){
+      dispatch(fetchNotices({ page: 1, limit: 1 }));
+    }
+ 
+      
+  }, [dispatch]);
+  
   return (
     <SidebarProvider> 
       <div className=" ">
@@ -62,9 +77,34 @@ const data = {
             </Breadcrumb>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/admin/notifications">
-          <Bell  className="cursor-pointer hover:text-blue-600 transition-all duration-200"/>
-          </Link>
+
+<Link
+  href="/admin/notifications"
+  className="relative inline-flex items-center"
+>
+  {/* Bell Icon */}
+  <Bell className="h-6 w-6 cursor-pointer transition-colors duration-200 hover:text-blue-600" />
+
+  {/* Unread Count Badge */}
+  {unreadCount > 0 && (
+    <span
+      className="
+        absolute -top-1 -right-1
+        flex h-5 min-w-[20px]
+        items-center justify-center
+        rounded-full
+        bg-red-600
+        px-1
+        text-xs
+        font-bold
+        text-white
+      "
+    >
+      {unreadCount > 99 ? "99+" : unreadCount}
+    </span>
+  )}
+</Link>
+
                 <NavUser />
             <ModeToggle />
           </div>

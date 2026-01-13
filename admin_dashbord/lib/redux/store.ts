@@ -8,6 +8,7 @@ import assignSlice  from './slices/assignSlice';
 import roleReducer from './slices/roleSlice';
 import permissionReducer from './slices/permissionSlice';
 import siteSettingReducer from './slices/siteSettingSlice';
+import  noticeSlice from './slices/noticSlicer';
 
 export const store = configureStore({
   reducer: {
@@ -20,6 +21,7 @@ export const store = configureStore({
     role: roleReducer,
     permission: permissionReducer,
     siteSettings: siteSettingReducer,
+    notices: noticeSlice,
   },
 });
 

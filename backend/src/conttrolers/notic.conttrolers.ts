@@ -1,17 +1,19 @@
+import mongoose from "mongoose";
 import Notice from "../models/notic.models";
 import { Request, Response } from "express";
 
 // Create a new notice
 export const createNotice = async (req: Request, res: Response) => {
     try {
-        const { firstName, lastName, title, message, email, phone } = req.body;
+        const { firstName, lastName, title, message, email, phone ,status } = req.body;
         const newNotice = new Notice({
             firstName,
             lastName,
             title,
             message,
             email,
-            phone
+            phone,
+            status
         });
         const savedNotice = await newNotice.save();
         res.status(201).json(savedNotice);
@@ -27,14 +29,17 @@ export const getNotices = async (req: Request, res: Response) => {
         const limit = parseInt(req.query.limit as string) || 10;
         const skip = (page - 1) * limit;
 
-        const [total, notices] = await Promise.all([
+        const [total ,unread ,notices] = await Promise.all([
             Notice.countDocuments(),
-            Notice.find().skip(skip).limit(limit).sort({ createdAt: -1 })
+             Notice.countDocuments({ status: false }),
+            Notice.find().skip(skip).limit(limit).sort({ createdAt: -1 }),
         ]);
         
         
         res.status(200).json({
             data :notices,
+            unreadCount: unread,
+            
             pagination: {
                 Page: page,
                 totalPages: Math.ceil(total / limit),
@@ -62,3 +67,46 @@ export const deleteNotice = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Failed to delete notice', message: error instanceof Error ? error.message : 'Unknown error' });
     }
 };
+
+
+export const toggleNoticeStatus = async (req: Request, res: Response) => {
+  try {
+    const { noticeId, status } = req.body
+
+    // Validate noticeId
+    if (!mongoose.Types.ObjectId.isValid(noticeId)) {
+      return res.status(400).json({ error: "Invalid notice ID" })
+    }
+
+    // Validate status
+    if (typeof status !== "boolean") {
+      return res.status(400).json({ error: "Status must be boolean" })
+    }
+
+    // Update notice FIRST
+    const updatedNotice = await Notice.findByIdAndUpdate(
+      noticeId,
+      { status },
+      { new: true }
+    )
+
+    if (!updatedNotice) {
+      return res.status(404).json({ error: "Notice not found" })
+    }
+
+    // Count unread notices AFTER update
+    const unreadCount = await Notice.countDocuments({ status: false })
+
+    return res.status(200).json({
+      data: updatedNotice,
+      unreadCount,
+      message: "Notice status updated successfully",
+    })
+  } catch (error) {
+    return res.status(500).json({
+      error: "Failed to update notice status",
+      message: error instanceof Error ? error.message : "Unknown error",
+    })
+  }
+}
+

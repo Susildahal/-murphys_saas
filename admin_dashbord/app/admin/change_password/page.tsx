@@ -22,6 +22,7 @@ import {
 } from "firebase/auth";
 import { showSuccessToast, showErrorToast } from "@/lib/toast-handler";
 import { formatAuthMessage } from "@/lib/firebaseAuthError";
+import Header from "@/app/page/common/header";
 
 export default function ChangePasswordPage() {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -168,6 +169,7 @@ export default function ChangePasswordPage() {
 
   return (
     <div className="">
+    <Header title="Change Password" description="Update your account password securely" />
     <div className="p-4 max-w-2xl mx-auto   ">
       <Card className="shadow-sm">
         <CardHeader>

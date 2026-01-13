@@ -1,4 +1,6 @@
-import React from 'react'
+"use client"
+
+import React, { useEffect } from 'react'
 import {
     Table,
     TableBody,
@@ -16,7 +18,11 @@ import {
 } from '@/components/ui/tooltip'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import Header from '@/app/page/common/header'
-
+import  { fetchNotices ,toggleNoticeStatus } from "@/lib/redux/slices/noticSlicer"
+import { useAppDispatch ,useAppSelector } from '@/lib/redux/hooks'
+import SpinnerComponent from '@/app/page/common/Spinner'
+import Pagination from '@/app/page/common/Pagination'
+import DeleteModel from '@/app/page/common/DeleteModel'
 interface Notification {
     id: number;
     title: string;
@@ -27,38 +33,44 @@ interface Notification {
     email: string;
     phone: string;
 }
-const notifications: Notification[] = [
-    {
-        id: 1,
-        title: 'New User Registered',
-        message: 'A new user has registered on the platform.',
-        date: '2024-06-01',
-        isRead: false,
-        fullName: 'John Doe',
-        email: 'john.doe@example.com',
-        phone: '+1234567890',
 
-    },
-    {
-        id: 2,
-        title: 'Server Downtime',
-        message: 'Scheduled maintenance will occur at midnight.',
-        date: '2024-05-30',
-        isRead: true,
-        fullName: 'Jane Smith',
-        email: 'jane.smith@example.com',
-        phone: '+0987654321',
+import { Checkbox } from '@/components/ui/checkbox'
+
+
+
+const NotificationsPage = () => {
+
+    const dispatch = useAppDispatch();
+    const { notices, loading, error, total, page, limit, totalPages } = useAppSelector((state) => state.notices);
+
+    useEffect(() => {
+        if (!notices || notices.length === 0) {
+            dispatch(fetchNotices({ page: 1, limit: 10 }));
+        } else {
+            dispatch(fetchNotices());
+        }
+    }, [dispatch]);
+
+    if (!notices || notices.length === 0) {
+        return (
+            <div>
+                {loading && <SpinnerComponent />}
+                <div>No notifications found.</div>
+            </div>
+        );
     }
-];
+    const handletogglestatus=(id:string, status:boolean)=>{
+        dispatch(toggleNoticeStatus({ noticeId: id, status: status }));
+    }
 
-const page = () => {
     return (
         <div>
+            {loading && <SpinnerComponent />}
+
             <Header
                 title="Notifications"
                 description="Manage and view all system notifications."
-                total={notifications.length}
-
+                total={total}
             />
 
             <Table>
@@ -67,23 +79,31 @@ const page = () => {
                         <TableHead>Full Name</TableHead>
                         <TableHead>Title</TableHead>
                         <TableHead>Email</TableHead>
-
                         <TableHead>Phone</TableHead>
                         <TableHead>Message</TableHead>
+                         <TableHead>Status</TableHead>
                         <TableHead>Date</TableHead>
+                       
                         <TableHead>Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {notifications.map((notification) => (
-                        <TableRow key={notification.id} className={notification.isRead ? '' : 'bg-blue-50'}>
-                            <TableCell>{notification.fullName}</TableCell>
-                            <TableCell>{notification.title}</TableCell>
+                    {notices.map((notification) => (
+                        <TableRow key={notification._id} className={notification.status === true ? '' : 'bg-blue-50'}>
+                            <TableCell>{notification.firstName} {notification.lastName}</TableCell>
                             <TableCell>{notification.title}</TableCell>
                             <TableCell>{notification.email}</TableCell>
                             <TableCell>{notification.phone}</TableCell>
-<TableCell> <Tooltip> <TooltipTrigger>{notification.message.slice(0, 40)} ....</TooltipTrigger> <TooltipContent>{notification.message}</TooltipContent> </Tooltip> </TableCell>
-                            <TableCell>{notification.date}</TableCell>
+                            <TableCell>
+                                <Tooltip>
+                                    <TooltipTrigger>{notification.message?.slice(0, 40)} ....</TooltipTrigger>
+                                    <TooltipContent>{notification.message}</TooltipContent>
+                                </Tooltip>
+                            </TableCell>
+                            <TableCell>
+                                <Checkbox checked={notification.status === true} onCheckedChange={(val) => handletogglestatus(notification._id, !notification.status)} />
+                            </TableCell>
+                            <TableCell>{ new Date(notification.createdAt).toLocaleString()}</TableCell>
                             <TableCell>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -93,7 +113,7 @@ const page = () => {
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
                                         <DropdownMenuItem>
-                                            {notification.isRead ? 'Mark as Unread' : 'Mark as Read'}
+                                            {notification ? 'Mark as Unread' : 'Mark as Read'}
                                         </DropdownMenuItem>
                                         <DropdownMenuItem>
                                             Delete
@@ -105,8 +125,12 @@ const page = () => {
                     ))}
                 </TableBody>
             </Table>
+            <Pagination page={page} totalPages={totalPages} onPageChange={(newPage) => {
+                dispatch(fetchNotices({ page: newPage, limit }));
+            }} />
+            <DeleteModel />
         </div>
     )
 }
 
-export default page
+export default NotificationsPage
