@@ -10,13 +10,13 @@ import {
   getUsersByRole,
   getAvailablePermissions
 } from "../conttrolers/role.controllers";
-import { verifyFirebaseToken } from "../middleware/auth";
+// import { verifyFirebaseToken } from "../middleware/auth";
 import { isAdmin, checkPermission, Permission } from "../middleware/rbac";
 
 const rolerouter = Router();
 
 // All role management routes require admin access
-rolerouter.use(verifyFirebaseToken, isAdmin);
+// rolerouter.use(verifyFirebaseToken, isAdmin);
 
 // Role CRUD operations (require manage_roles permission)
 rolerouter.post("/roles", createRole);

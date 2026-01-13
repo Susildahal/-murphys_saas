@@ -15,7 +15,7 @@ import {
 } from "../conttrolers/profile.conttrolers";
 import upload from "../middleware/upload";
 import cloudinaryUpload from "../middleware/cloudinaryUpload";
-import { verifyFirebaseToken } from "../middleware/auth";
+// import { verifyFirebaseToken } from "../middleware/auth";
 import { isAdmin, isOwnerOrAdmin, checkPermission, Permission } from "../middleware/rbac";
 
 const profilerouter = Router();
@@ -24,18 +24,18 @@ const profilerouter = Router();
 profilerouter.post("/profiles", upload.single('profile_image'), cloudinaryUpload, createProfile);
 
 // Protected routes (authentication required)
-profilerouter.get("/profiles", verifyFirebaseToken, getProfiles);
-profilerouter.get("/profiles/types", verifyFirebaseToken, isAdmin, getAdminProfiles);
-profilerouter.get("/profiles/:id", verifyFirebaseToken, isOwnerOrAdmin, getProfileById);
-profilerouter.get("/profiles/email/:email", verifyFirebaseToken, isOwnerOrAdmin, getProfileByEmail);
-profilerouter.put("/profiles/:id", verifyFirebaseToken, isOwnerOrAdmin, upload.single('profile_image'), cloudinaryUpload, updateProfile);
-profilerouter.delete("/profiles/:id", verifyFirebaseToken, deleteProfile);
+profilerouter.get("/profiles",  getProfiles);
+profilerouter.get("/profiles/types", isAdmin, getAdminProfiles);
+profilerouter.get("/profiles/:id", isOwnerOrAdmin, getProfileById);
+profilerouter.get("/profiles/email/:email", isOwnerOrAdmin, getProfileByEmail);
+profilerouter.put("/profiles/:id", isOwnerOrAdmin, upload.single('profile_image'), cloudinaryUpload, updateProfile);
+profilerouter.delete("/profiles/:id", deleteProfile);
 
 // Email route (admin only)
-profilerouter.post("/send-email", verifyFirebaseToken, isAdmin, sentemail);
-profilerouter.post("/profiles/permissions/toggle", verifyFirebaseToken, isAdmin, toggleUserPermission);
-profilerouter.post("/profiles/permissions/role", verifyFirebaseToken, isAdmin, updateUserRole);
-profilerouter.post("/profiles/permissions/status", verifyFirebaseToken, isAdmin, updateUserStatus);
-profilerouter.get("/profiles/permissions/:userId", verifyFirebaseToken, isAdmin, getUserPermissions);
+profilerouter.post("/send-email", isAdmin, sentemail);
+profilerouter.post("/profiles/permissions/toggle", isAdmin, toggleUserPermission);
+profilerouter.post("/profiles/permissions/role", isAdmin, updateUserRole);
+profilerouter.post("/profiles/permissions/status", isAdmin, updateUserStatus);
+profilerouter.get("/profiles/permissions/:userId", isAdmin, getUserPermissions);
 
 export default profilerouter;   

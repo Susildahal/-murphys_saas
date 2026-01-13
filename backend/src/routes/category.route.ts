@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { createCategory , updateCategory ,getCategories ,getCategoryById ,deleteCategory ,updateCategorystatus} from "../conttrolers/category.conttrolers"
 const categoryrouter = Router();
-import { verifyFirebaseToken } from "../middleware/auth";
+// import { verifyFirebaseToken } from "../middleware/auth";
 import {checkPermission, Permission} from "../middleware/rbac";
 
 // All category routes require authentication
-categoryrouter.use(verifyFirebaseToken);
+    // categoryrouter.use(verifyFirebaseToken);
 
 categoryrouter.post("/categories",  createCategory);
 categoryrouter.get("/categories", getCategories);

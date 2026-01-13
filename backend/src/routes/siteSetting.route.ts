@@ -2,7 +2,7 @@ import { Router } from "express";
 import { getSiteSettings, updateSiteSettings } from "../conttrolers/siteSetting.controller";
 import upload from "../middleware/upload";
 import cloudinaryUpload from "../middleware/cloudinaryUpload";
-import { verifyFirebaseToken } from "../middleware/auth";
+// import { verifyFirebaseToken } from "../middleware/auth";
 import { isAdmin } from "../middleware/rbac";
 
 const siteSettingRouter = Router();
@@ -11,6 +11,6 @@ const siteSettingRouter = Router();
 siteSettingRouter.get("/", getSiteSettings);
 
 // Protected routes for updates
-siteSettingRouter.put("/", verifyFirebaseToken, isAdmin, upload.single('logo'), cloudinaryUpload, updateSiteSettings);
+siteSettingRouter.put("/", isAdmin, upload.single('logo'), cloudinaryUpload, updateSiteSettings);
 
 export default siteSettingRouter;

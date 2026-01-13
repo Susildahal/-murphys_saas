@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import Profile from '../models/profile.model';
 import Role from '../models/role.model';
-import { AuthenticatedRequest } from './auth';
+// import { AuthenticatedRequest } from './auth';
 
 // Define available permissions
 export enum Permission {
@@ -77,7 +77,7 @@ export const RolePermissions: { [key: string]: Permission[] } = {
  * @param requiredPermissions - Array of permissions required to access the route
  */
 export const checkPermission = (...requiredPermissions: Permission[]) => {
-  return async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  return async (req: any, res: Response, next: NextFunction): Promise<void> => {
     try {
       // Check if user is authenticated
       if (!req.user || !req.user.email) {
@@ -156,7 +156,7 @@ export const checkPermission = (...requiredPermissions: Permission[]) => {
 /**
  * Middleware to check if user has admin role
  */
-export const isAdmin = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+export const isAdmin = async (req: any, res: Response, next: NextFunction): Promise<void> => {
   try {
     if (!req.user || !req.user.email) {
       res.status(401).json({ 
@@ -227,7 +227,7 @@ export const isAdmin = async (req: AuthenticatedRequest, res: Response, next: Ne
 /**
  * Middleware to check if user can access their own resource or is admin
  */
-export const isOwnerOrAdmin = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+export const isOwnerOrAdmin = async (req: any, res: Response, next: NextFunction): Promise<void> => {
   try {
     if (!req.user || !req.user.email) {
       res.status(401).json({ 

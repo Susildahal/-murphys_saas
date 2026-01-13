@@ -1,6 +1,6 @@
 import router from "express";
 import { assignServiceToClient ,acceptedAssignedService,acceptAssignedService  ,getAllAssignedServices ,getAssignDetails ,updateAssignedService ,deleteAssignedService } from "../conttrolers/assignServicec.conttlores";
-import { verifyFirebaseToken } from "../middleware/auth";
+// import { verifyFirebaseToken } from "../middleware/auth";
 import { checkPermission, Permission } from "../middleware/rbac";
 
 const assignClientRouter = router();
@@ -9,7 +9,7 @@ const assignClientRouter = router();
 assignClientRouter.post('/verify_token', acceptedAssignedService);
 
 // All other routes require authentication
-assignClientRouter.use(verifyFirebaseToken);
+// assignClientRouter.use(verifyFirebaseToken);
 
 assignClientRouter.post('/assign-service', assignServiceToClient);
 assignClientRouter.patch('/accept-assigned-service/:id',  acceptAssignedService);

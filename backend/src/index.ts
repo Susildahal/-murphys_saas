@@ -5,7 +5,6 @@ dotenv.config();
 
 import express from "express";
 import cors from "cors";
-import { verifyFirebaseToken, AuthenticatedRequest } from "./middleware/auth";
 import profilerouter from "./routes/profile.routes";
 import inviterouter from "./routes/invite.route";
 import paymentrouter from "./routes/payment.route";
@@ -51,7 +50,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Root route
 app.get("/", (_req, res) => {
-  res.send("API is running 🚀");
+  res.send("API is runningeeeeeeee 🚀");
 });
 
 // Mount API routes
