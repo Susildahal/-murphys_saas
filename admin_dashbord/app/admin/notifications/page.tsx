@@ -48,7 +48,7 @@ const NotificationsPage = () => {
     // Enhanced Empty State
     if (!loading && (!notices || notices.length === 0)) {
         return (
-            <div className="space-y-6">
+            <div className="">
                 <Header
                     title="Notifications"
                     description="Manage and view all system notifications."
@@ -137,7 +137,7 @@ const NotificationsPage = () => {
     const isAllSelected = notices.length > 0 && selectedNotices.length === notices.length;
 
     return (
-        <div className="space-y-6">
+        <div className="">
             {loading && <SpinnerComponent />}
 
             <Header
@@ -172,7 +172,7 @@ const NotificationsPage = () => {
             />
 
             <div className="border-none overflow-hidden">
-                <CardHeader className="bg-card">
+                <CardHeader >
 
                 </CardHeader>
                 <CardContent className="p-0">

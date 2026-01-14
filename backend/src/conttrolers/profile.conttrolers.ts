@@ -2,6 +2,7 @@ import Profile from "../models/profile.model";
 import { Request, Response } from "express";
 import transporter from "../config/nodemiller";
 import AssignService from '../models/assignService.routes';
+import admin from "../config/firebaseAdmin";
 
 
 
@@ -157,7 +158,7 @@ export const updateProfile = async (req: Request, res: Response) => {
 
 export const sentemail = async (req: Request, res: Response) => {
   const { to, subject, body } = req.body;
-  
+
   try {
     // Create styled HTML email template
     const htmlTemplate = `
@@ -260,14 +261,38 @@ export const getProfileByEmail = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteProfile= async (req: Request, res: Response) => {
+export const deleteProfile = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const profile = await Profile.findByIdAndDelete(id);
+
+    // Find profile first to get details for Firebase deletion
+    const profile = await Profile.findById(id);
     if (!profile) {
       return res.status(404).json({ message: 'Profile not found' });
     }
-    res.status(200).json({ data: profile, message: 'Profile deleted successfully' });
+
+    // Delete from Firebase Auth if email exists
+    if (profile.email) {
+      try {
+        const firebaseUser = await admin.auth().getUserByEmail(profile.email);
+        if (firebaseUser) {
+          await admin.auth().deleteUser(firebaseUser.uid);
+          console.log(`Firebase user ${firebaseUser.uid} deleted for email ${profile.email}`);
+        }
+      } catch (firebaseError: any) {
+        // If user not found in Firebase, just proceed. Log other errors.
+        if (firebaseError.code !== 'auth/user-not-found') {
+          console.error('Error deleting Firebase user:', firebaseError);
+          // Optional: Decide if we want to block DB deletion if Firebase fails. 
+          // Usually better to proceed or return error. stick to logging for now to prevent blocking.
+        }
+      }
+    }
+
+    // Delete from MongoDB
+    await Profile.findByIdAndDelete(id);
+
+    res.status(200).json({ data: profile, message: 'Profile and associated account deleted successfully' });
   }
   catch (error) {
     res.status(400).json({ message: (error as Error).message });
@@ -328,8 +353,8 @@ export const toggleUserPermission = async (req: Request, res: Response) => {
     const { userId, permission } = req.body;
 
     if (!userId || !permission) {
-      return res.status(400).json({ 
-        message: 'User ID and permission are required' 
+      return res.status(400).json({
+        message: 'User ID and permission are required'
       });
     }
 
@@ -375,15 +400,15 @@ export const updateUserRole = async (req: Request, res: Response) => {
     const { userId, role_type } = req.body;
 
     if (!userId || !role_type) {
-      return res.status(400).json({ 
-        message: 'User ID and role type are required' 
+      return res.status(400).json({
+        message: 'User ID and role type are required'
       });
     }
     // Validate role_type
     const validRoles = ['admin user', 'client user'];
     if (!validRoles.includes(role_type)) {
-      return res.status(400).json({ 
-        message: 'Invalid role type. Must be "admin user" or "client user"' 
+      return res.status(400).json({
+        message: 'Invalid role type. Must be "admin user" or "client user"'
       });
     }
 
@@ -409,16 +434,16 @@ export const updateUserStatus = async (req: Request, res: Response) => {
     const { userId, status } = req.body;
 
     if (!userId || !status) {
-      return res.status(400).json({ 
-        message: 'User ID and status are required' 
+      return res.status(400).json({
+        message: 'User ID and status are required'
       });
     }
 
     // Validate status
     const validStatuses = ['active', 'inactive', 'suspended'];
     if (!validStatuses.includes(status)) {
-      return res.status(400).json({ 
-        message: 'Invalid status. Must be "active", "inactive", or "suspended"' 
+      return res.status(400).json({
+        message: 'Invalid status. Must be "active", "inactive", or "suspended"'
       });
     }
 
@@ -450,17 +475,17 @@ export const getUserPermissions = async (req: Request, res: Response) => {
     }
 
     // Get role-based permissions
-    const rolePermissions = profile.role_type === 'admin user' 
+    const rolePermissions = profile.role_type === 'admin user'
       ? [
-          'create_profile', 'read_profile', 'update_profile', 'delete_profile',
-          'manage_users', 'manage_roles', 'manage_permissions',
-          'create_service', 'update_service', 'delete_service', 'assign_service',
-          'view_payments', 'manage_payments',
-          'send_invitation', 'manage_invitations',
-          'create_role', 'update_role', 'delete_role',
-          'create_category', 'update_category', 'delete_category'
-          
-        ]
+        'create_profile', 'read_profile', 'update_profile', 'delete_profile',
+        'manage_users', 'manage_roles', 'manage_permissions',
+        'create_service', 'update_service', 'delete_service', 'assign_service',
+        'view_payments', 'manage_payments',
+        'send_invitation', 'manage_invitations',
+        'create_role', 'update_role', 'delete_role',
+        'create_category', 'update_category', 'delete_category'
+
+      ]
       : ['read_profile', 'update_profile', 'view_payments'];
     // Merge with custom permissions
     const allPermissions = [...new Set([...rolePermissions, ...(profile.permissions || [])])];

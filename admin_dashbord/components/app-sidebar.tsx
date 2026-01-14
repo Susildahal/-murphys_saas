@@ -97,6 +97,10 @@ const data = {
           title: "Change Password",
           url: "/admin/change_password",
         },
+        {
+          title: "Delete Account",
+          url: "/admin/delete_account",
+        },
       ],
     },
   ],

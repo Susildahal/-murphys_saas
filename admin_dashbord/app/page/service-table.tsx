@@ -33,7 +33,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { MoreHorizontal, Edit, Trash2,  ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { MoreHorizontal, Edit, Trash2, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -41,7 +41,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Tooltip, TooltipContent, TooltipTrigger} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
@@ -83,7 +83,7 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
   const [assignPrice, setAssignPrice] = useState<number | undefined>(undefined);
   const [assignAutoInvoice, setAssignAutoInvoice] = useState<boolean>(false);
   const [assignNotes, setAssignNotes] = useState<string>('');
-  const [clickImage ,setClickImage] = useState<string>('');
+  const [clickImage, setClickImage] = useState<string>('');
   const router = useRouter();
   const profileState = useAppSelector((s) => s.profile);
   const profiles = Array.isArray(profileState.profile) ? profileState.profile : profileState.profile ? [profileState.profile] : [];
@@ -156,7 +156,7 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
 
   const handleAssignSubmit = async () => {
     if (!assigningService || !selectedClient) {
-      toast({ title: 'Error', description: 'Please select a client' , variant: 'destructive'});
+      toast({ title: 'Error', description: 'Please select a client', variant: 'destructive' });
       return;
     }
     const payload = {
@@ -165,7 +165,7 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
       service_catalog_id: (assigningService as any)._id || (assigningService as any).id,
       status: assignStatus,
       start_date: assignStartDate,
-      renewal_date: assignRenewalDate || null,
+      end_date: assignRenewalDate || null,
       cycle: assignCycle,
       price: assignPrice,
       auto_invoice: assignAutoInvoice,
@@ -208,7 +208,7 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
       <>
         <SpinnerComponent />
       </>
-    
+
     );
   }
 
@@ -240,22 +240,22 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
 
   return (
     <>
-    {
-      clickImage && (
-        <Dialog open={Boolean(clickImage)} onOpenChange={() => setClickImage('')}>
-          <DialogContent className="overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-xl">Service Image</DialogTitle>
-              <DialogDescription>Full size view of the service image</DialogDescription>
-            </DialogHeader>
-            <div className="flex justify-center items-center ">
-              <img src={clickImage} alt="Service Full Size" className="max-w-full object-contain" />
-            </div>
-          </DialogContent>
-        </Dialog>
-      )
+      {
+        clickImage && (
+          <Dialog open={Boolean(clickImage)} onOpenChange={() => setClickImage('')}>
+            <DialogContent className="overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-xl">Service Image</DialogTitle>
+                <DialogDescription>Full size view of the service image</DialogDescription>
+              </DialogHeader>
+              <div className="flex justify-center items-center ">
+                <img src={clickImage} alt="Service Full Size" className="max-w-full object-contain" />
+              </div>
+            </DialogContent>
+          </Dialog>
+        )
 
-    }
+      }
       <div className="">
         <Table>
           <TableHeader>
@@ -274,14 +274,14 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedServices.map((service , index) => (
+            {paginatedServices.map((service, index) => (
               <TableRow key={(service as any)._id || (service as any).id}>
                 <TableCell>{startIndex + index + 1}</TableCell>
                 <TableCell
-                  onClick={() => {  
+                  onClick={() => {
                     const imgSrc = (service as any).image || (service as any).imageUrl || '';
                     setClickImage(imgSrc);
-                    }
+                  }
                   }
                   className="cursor-pointer"
                 >
@@ -309,18 +309,18 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
                 <TableCell className="font-medium">
                   <div>
                     <div className="font-semibold">{service.name}</div>
-                
+
                   </div>
                 </TableCell>
-                  <TableCell className="font-medium">
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <span className="truncate max-w-xs block">{service.description.slice(0,40)} {service.description.length > 40 ? "..." : ""}</span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        {service.description}
-                      </TooltipContent>
-                    </Tooltip>
+                <TableCell className="font-medium">
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <span className="truncate max-w-xs block">{service.description.slice(0, 40)} {service.description.length > 40 ? "..." : ""}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {service.description}
+                    </TooltipContent>
+                  </Tooltip>
                 </TableCell>
                 <TableCell>
                   <Badge variant="secondary">{service.categoryName || 'Unknown'}</Badge>
@@ -328,7 +328,7 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
                 <TableCell className="font-semibold">
                   {formatPrice(service.price, service.billingType, service.currency)}
                 </TableCell>
-                <TableCell>  <div>{  formatBillingType(service.billingType) }</div></TableCell>
+                <TableCell>  <div>{formatBillingType(service.billingType)}</div></TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Switch
@@ -342,11 +342,11 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
                     >
                       {service.status}
                     </Badge>
-                                      </div>
-                                      
+                  </div>
+
                 </TableCell>
                 <TableCell>
-                    <Button
+                  <Button
                     variant="outline"
                     size="sm"
                     onClick={() => openAssignDialog(service)}
@@ -366,7 +366,7 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                     
+
                       <DropdownMenuItem
                         onClick={() => handleViewClick(service)}
                         className="cursor-pointer"

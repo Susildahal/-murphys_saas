@@ -9,6 +9,8 @@ import {
   Settings,
   User,
   Shield,
+  Trash,
+
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useAppSelector ,useAppDispatch } from "@/lib/redux/hooks"
@@ -38,6 +40,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { useEffect } from "react"
 import { fetchProfile } from "@/lib/redux/slices/profileSlice"
+import Link from "next/link"
 
 export function NavUser() {
   const { isMobile } = useSidebar()
@@ -148,6 +151,12 @@ const getProfile = async () => {
               <LogOut className="h-4 w-4 mr-2" />
               <span>Log out</span>
             </DropdownMenuItem>
+            <Link href="/admin/delete_account"> 
+            <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive py-2.5">
+              <Trash className="h-4 w-4 mr-2" />
+              <span>Delete Account</span>
+            </DropdownMenuItem>
+            </Link>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

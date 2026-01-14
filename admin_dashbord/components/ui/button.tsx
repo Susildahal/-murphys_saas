@@ -15,8 +15,10 @@ variant: {
   destructive:
     "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500/50",
 
-  outline:
-    "border border-blue-600 text-blue-600 hover:bg-blue-50",
+outline:
+  "border border-muted-foreground text-muted-foreground hover:bg-muted/60",
+
+
 
   secondary:
     "bg-blue-100 text-blue-900 hover:bg-blue-200",

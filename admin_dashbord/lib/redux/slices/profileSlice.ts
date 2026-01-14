@@ -3,6 +3,7 @@ import axiosInstance from '@/lib/axios';
 
 export interface ProfileData {
   id?: string;
+  _id?: string;
   name: string;
   email: string;
   phone: string;
@@ -47,7 +48,7 @@ export const fetchProfile = createAsyncThunk(
   'profile/fetchProfile',
   async (params: { page?: number; limit?: number; search?: string } = {}, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get('/profiles',{
+      const response = await axiosInstance.get('/profiles', {
         params: {
           populate: 'true',
           page: params.page || 1,
@@ -114,7 +115,7 @@ export const uploadProfileImage = createAsyncThunk(
     try {
       const formData = new FormData();
       formData.append('profile_image', file);
-      
+
       const response = await axiosInstance.post('/profiles/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -173,12 +174,12 @@ export const getadminProfile = createAsyncThunk(
 
 const profileSlice = createSlice({
   name: 'profile',
-  
+
   initialState,
   reducers: {
     clearError: (state) => {
       state.error = null;
-      
+
     },
     clearUpdateSuccess: (state) => {
       state.updateSuccess = false;
@@ -278,7 +279,7 @@ const profileSlice = createSlice({
       state.loading = false;
       state.profile = null;
       state.total = state.total - 1;
- 
+
     });
     builder.addCase(deleteProfile.rejected, (state, action) => {
       state.loading = false;
@@ -302,7 +303,7 @@ const profileSlice = createSlice({
       state.loading = false;
       state.error = action.payload as string;
     });
-   
+
   },
 });
 

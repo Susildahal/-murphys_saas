@@ -83,21 +83,24 @@ const data = {
   className="relative inline-flex items-center"
 >
   {/* Bell Icon */}
-  <Bell className="h-6 w-6 cursor-pointer transition-colors duration-200 hover:text-blue-600" />
+  <Bell className="h-5 w-5 cursor-pointer transition-colors duration-200 hover:text-blue-600" />
 
   {/* Unread Count Badge */}
   {unreadCount > 0 && (
     <span
       className="
         absolute -top-1 -right-1
-        flex h-5 min-w-[20px]
+        flex  
         items-center justify-center
         rounded-full
-        bg-red-600
-        px-1
-        text-xs
+      text-red-900
+      bg-red-500
+      h-4
+      w-4
+      
+        text-[10px]
         font-bold
-        text-white
+        
       "
     >
       {unreadCount > 99 ? "99+" : unreadCount}

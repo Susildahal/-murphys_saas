@@ -431,7 +431,7 @@ export default function ProfileUpdateForm() {
                           <PopoverTrigger asChild>
                             <FormControl>
                               <Button
-                                variant="outline"
+                                variant="outline" 
                                 className={cn(
                                   "justify-between font-normal",
                                   !date && "text-muted-foreground"
