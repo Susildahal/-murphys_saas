@@ -1,5 +1,5 @@
 'use client'
-import React, {  useEffect } from 'react'
+import React, { useEffect } from 'react'
 import Header from '@/app/page/common/header'
 import {
     Table,
@@ -39,6 +39,8 @@ import { useToast } from '@/hooks/use-toast'
 import Image from 'next/image'
 import { Select, SelectContent, SelectGroup, SelectTrigger, SelectItem, SelectValue } from '@/components/ui/select';
 import { updateAssignedService, addRenewalDate, deleteAssignedService } from '@/lib/redux/slices/assignSlice';
+import { fetchServices } from '@/lib/redux/slices/serviceSlice';
+import { getadminProfile } from '@/lib/redux/slices/profileSlice';
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import DeleteModel from '@/app/page/common/DeleteModel'
@@ -73,6 +75,22 @@ const page = () => {
     const [invoiceData, setInvoiceData] = React.useState<any>(null)
     const { toast } = useToast();
 
+    // Filters state
+    const [selectedClient, setSelectedClient] = React.useState<string>('all');
+    const [selectedService, setSelectedService] = React.useState<string>('all');
+    const [clientsList, setClientsList] = React.useState<any[]>([]);
+    const [servicesList, setServicesList] = React.useState<any[]>([]);
+
+    // Fetch clients and services for filters
+    React.useEffect(() => {
+        dispatch(getadminProfile({ role_type: 'client', limit: 100 })).then((res: any) => {
+            if (res.payload?.data) setClientsList(res.payload.data);
+        });
+        dispatch(fetchServices({ limit: 100 })).then((res: any) => {
+            if (res.payload?.services) setServicesList(res.payload.services);
+        });
+    }, [dispatch]);
+
     // Debounce search input to avoid excessive requests
     React.useEffect(() => {
         const handler = setTimeout(() => setDebouncedSearch(searchTerm), 500);
@@ -81,8 +99,14 @@ const page = () => {
 
     React.useEffect(() => {
         // Fetch assigned services whenever page, limit or debounced search changes
-        dispatch(getAssignedServices({ page: pageNumber, limit: limitNumber, search: debouncedSearch }));
-    }, [dispatch, pageNumber, limitNumber, debouncedSearch]);
+        dispatch(getAssignedServices({
+            page: pageNumber,
+            limit: limitNumber,
+            search: debouncedSearch,
+            client_id: selectedClient === 'all' ? undefined : selectedClient,
+            service_catalog_id: selectedService === 'all' ? undefined : selectedService
+        }));
+    }, [dispatch, pageNumber, limitNumber, debouncedSearch, selectedClient, selectedService]);
 
     // Helper function to calculate days ago
     const getDaysAgo = (date: string | Date) => {
@@ -166,29 +190,58 @@ const page = () => {
 
                 total={total}
                 extraInfo={
-                    <div className="relative">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            type='text'
-                            placeholder='Search by service or client...'
-                            className='pl-9 max-w-sm'
-                            value={searchTerm}
-                            onChange={(e) => {
-                                setSearchTerm(e.target.value);
-                                setPageNumber(1);
-                            }}
-                        />
+                    <div className="flex flex-wrap items-center gap-3">
+                        <div className="relative">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type='text'
+                                placeholder='Search...'
+                                className='pl-9 w-[200px]'
+                                value={searchTerm}
+                                onChange={(e) => {
+                                    setSearchTerm(e.target.value);
+                                    setPageNumber(1);
+                                }}
+                            />
+                        </div>
+                        <Select value={selectedClient} onValueChange={(val) => { setSelectedClient(val); setPageNumber(1); }}>
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="All Clients" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Clients</SelectItem>
+                                {clientsList.map((client) => (
+                                    <SelectItem key={client._id} value={client._id}>
+                                        {client.firstName} {client.lastName}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Select value={selectedService} onValueChange={(val) => { setSelectedService(val); setPageNumber(1); }}>
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="All Services" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Services</SelectItem>
+                                {servicesList.map((service) => (
+                                    <SelectItem key={service.id || service._id} value={service.id || service._id}>
+                                        {service.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
                     </div>
                 }
             />
 
             <div className="border-none bg-none overflow-hidden">
-             
+
                 <div className="p-0">
                     <div className="overflow-x-auto">
                         <Table>
                             <TableHeader>
                                 <TableRow>
+                                    <TableHead>#</TableHead>
                                     <TableHead>Client Name</TableHead>
                                     <TableHead>Service Name</TableHead>
                                     <TableHead>Assigned Date</TableHead>
@@ -201,7 +254,7 @@ const page = () => {
                             </TableHeader>
                             <TableBody>
                                 {rows && rows.length > 0 ? (
-                                    rows.map((service: any) => {
+                                    rows.map((service: any, index) => {
                                         const assignedDate = service.start_date || service.assignedDate || service.createdAt;
                                         const daysAgo = getDaysAgo(assignedDate);
                                         const totalRenewalPrice = (service.renewal_dates || []).reduce((sum: number, r: any) => sum + (r.price || 0), 0);
@@ -209,6 +262,7 @@ const page = () => {
 
                                         return (
                                             <TableRow key={service._id ?? service.id}>
+                                                <TableCell>{pageNumber + index }</TableCell>
                                                 <TableCell>{service.client_name || (service.userProfile ? `${service.userProfile.firstName || ''} ${service.userProfile.lastName || ''}`.trim() : (service.userName || service.clientName || service.email || '-'))}</TableCell>
                                                 <TableCell>{service.service_name || service.serviceName || service.service_catalog_id || '-'}</TableCell>
                                                 <TableCell>

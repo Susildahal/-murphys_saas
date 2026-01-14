@@ -17,7 +17,7 @@ import {
   DialogFooter,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { MoreVertical, Search, Mail, Phone, Calendar, Briefcase, User, MapPin, Clock, Send, User2 } from 'lucide-react';
+import { MoreVertical, Search, Mail, Phone, Calendar, Briefcase, User, MapPin, Clock, Send, User2, ArrowUpDown } from 'lucide-react';
 import axiosInstance from '@/lib/axios';
 import { showSuccessToast, showErrorToast } from '@/lib/toast-handler';
 import {
@@ -25,6 +25,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -44,6 +45,8 @@ function Page() {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [currentPage, setCurrentPage] = React.useState(1);
   const [deleteId, setDeleteId] = React.useState<string | null>(null);
+  const [sortConfig, setSortConfig] = React.useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+
   const dispatch = useAppDispatch();
   const profileState = useAppSelector((state) => state.profile);
   const { profile, loading, error, total, page, limit, totalPages } = profileState;
@@ -53,6 +56,45 @@ function Page() {
   const [emailData, setEmailData] = React.useState({ userId: '', userName: '', userEmail: '', title: '', message: '' });
 
   const profiles = Array.isArray(profile) ? profile : (profile ? [profile] : []);
+
+  const handleSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedProfiles = React.useMemo(() => {
+    let sortableItems = [...profiles];
+    if (sortConfig !== null) {
+      sortableItems.sort((a: any, b: any) => {
+        let aValue = a[sortConfig.key];
+        let bValue = b[sortConfig.key];
+
+        // Handle nested or specific fields
+        if (sortConfig.key === 'name') {
+          aValue = `${a.firstName || ''} ${a.lastName || ''}`.toLowerCase();
+          bValue = `${b.firstName || ''} ${b.lastName || ''}`.toLowerCase();
+        } else if (sortConfig.key === 'location') {
+          aValue = (a.country || '').toLowerCase();
+          bValue = (b.country || '').toLowerCase();
+        } else if (typeof aValue === 'string') {
+          aValue = aValue.toLowerCase();
+          bValue = (bValue || '').toLowerCase();
+        }
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [profiles, sortConfig]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -106,9 +148,9 @@ function Page() {
       showErrorToast(error?.message || 'Failed to delete user');
     }
   }
-    
+
   return (
-    <div className="space-y-3  overflow-x-hidden"> 
+    <div className="space-y-3  overflow-x-hidden">
       <Header
         title="All Users"
         description="Manage and view all registered users"
@@ -120,139 +162,210 @@ function Page() {
         }}
         total={total}
         extra={
-          <div className="relative max-w-md w-full">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <Input 
-              placeholder="Search by name, email, or position..."
+          <div className="relative max-w-sm w-full">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 pointer-events-none" />
+            <Input
+              placeholder="Search users..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              type="text" 
-              className="pl-10" 
+              type="text"
+              className="pl-9 h-9 bg-background/50 border-input focus-visible:ring-1 focus-visible:ring-primary transition-all rounded-lg"
             />
           </div>
         }
       />
 
-      <div className="space-y-4">
-        <div className=" border-none verflow-hidden  lg:w-[calc(100vw-300px)] overflow-x-auto">  
-          <Table className=" overflow-x-hidden   ">
-            <TableHeader>
-              <TableRow className=" border-b">
-                <TableHead className="">Image</TableHead>
-                <TableHead>   Name</TableHead>
-                <TableHead> Contract</TableHead>
-                <TableHead className=" w-[100px]">Role Type</TableHead>
-                <TableHead className="">City</TableHead>
-                <TableHead className="">Country</TableHead>
-                <TableHead className="">Joined</TableHead>
-                <TableHead className="text-right  font-medium text-sm">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={9} className="text-center py-12">
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="w-8 h-8 border-3 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
-                      <p className="text-sm text-muted-foreground">Loading users...</p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : profiles.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={9} className="text-center py-12">
-                    <div className="flex flex-col items-center gap-2">
-                      <User className="w-12 h-12 text-muted-foreground/50" />
-                      <p className="text-sm text-muted-foreground">No users found</p>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                profiles.map((u: any, i: number) => (
-                  <TableRow key={u._id || u.email || i} className="border-b hover:bg-muted/50 transition-colors">
-                    <TableCell className="px-3 py-2 sm:p-4">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={u.profile_image} alt={u.firstName || 'User'} />
-                        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                          {getInitials(u.firstName, u.lastName)}
-                        </AvatarFallback>
-                      </Avatar>
-                    </TableCell>
-                    <TableCell className=" ">
-                      <div className="flex flex-col">
-                        <span className="font-medium">{`${u.firstName || ''} ${u.lastName || ''}`.trim() || '-'}</span>
-                        <span className="text-xs text-muted-foreground">{u.email || '-'}</span>
+      <div className="">
+        <div className="p-0">
+          <div className="overflow-hidden rounded-md">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader className="">
+                  <TableRow className="">
+                    <TableHead className="w-[80px] pl-6">Image</TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => handleSort('name')}
+                    >
+                      <div className="flex items-center gap-2">
+                        User Details
+                        <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
                       </div>
-                    </TableCell>
-                    <TableCell className=" ">
-                      <div className="flex flex-col gap-1">
-                        {u.email && (
-                          <div className="flex items-center gap-1.5 text-sm">
-                            <Mail className="w-3.5 h-3.5 text-muted-foreground" />
-                            <span className="text-xs">{u.email}</span>
-                          </div>
-                        )}
-                        {u.phone && (
-                          <div className="flex items-center gap-1.5 text-sm">
-                            <Phone className="w-3.5 h-3.5 text-muted-foreground" />
-                            <span className="text-xs">{u.phone}</span>
-                          </div>
-                        )}
+                    </TableHead>
+                    <TableHead className="hidden md:table-cell">Contact</TableHead>
+                    <TableHead
+                      className="cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => handleSort('role_type')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Role
+                        <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
                       </div>
-                    </TableCell>
-                    <TableCell>{u.role_type || '-'}</TableCell>
-                    <TableCell className="">{u.city || '-'}</TableCell>
-                    <TableCell className="">{u.country || '-'}</TableCell>
-                 
-                    <TableCell className=" ">
-                      <span className="text-sm text-muted-foreground">
-                        {u.createdAt ? new Date(String(u.createdAt)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-'}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <MoreVertical className="h-4 w-4 cursor-pointer rotate-90" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => setViewUser(u)}>
-                            <User className="mr-2 h-4 w-4" />
-                            View Details
-                          </DropdownMenuItem>
-                        
-                          <DropdownMenuItem onClick={() => openEmailModal(u)}>
-                            <Mail className="mr-2 h-4 w-4" />
-                            Send Email
-                          </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => window.location.href = `/admin/assign_service/${u._id}`}>
-                            <User2 className="mr-2 h-4 w-4" />
-                            Assign Service to client
-                          </DropdownMenuItem>
-                           <DropdownMenuItem onClick={() => setDeleteId(u._id)} className="text-red-600">
-                            <User2 className="mr-2 h-4 w-4" />
-                           Delete User
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+                    </TableHead>
+                    <TableHead
+                      className="hidden lg:table-cell cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => handleSort('location')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Location
+                        <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                    </TableHead>
+                    <TableHead className="hidden lg:table-cell">Gender</TableHead>
+                    <TableHead
+                      className="hidden xl:table-cell cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => handleSort('createdAt')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Joined Date
+                        <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                    </TableHead>
+
+                    <TableHead
+                      className="hidden xl:table-cell cursor-pointer hover:bg-muted/50 transition-colors"
+                      onClick={() => handleSort('status')}
+                    >
+                      <div className="flex items-center gap-2">
+                        Status
+                        <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                    </TableHead>
+                    <TableHead className="text-right pr-6">Actions</TableHead>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={9} className="text-center py-16">
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                          <p className="text-sm text-muted-foreground font-medium">Loading users...</p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : sortedProfiles.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={9} className="text-center py-16">
+                        <div className="flex flex-col items-center gap-3">
+                          <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
+                            <User className="w-6 h-6 text-muted-foreground" />
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-sm font-medium">No users found</p>
+                            <p className="text-xs text-muted-foreground">Try adjusting your search terms</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    sortedProfiles.map((u: any, i: number) => (
+                      <TableRow key={u._id || u.email || i} className="transition-colors group">
+                        <TableCell className="pl-6 py-4">
+                          <Avatar className="h-9 w-9 border border-border/50">
+                            <AvatarImage src={u.profile_image} alt={u.firstName || 'User'} />
+                            <AvatarFallback className="bg-primary/5 text-primary text-xs font-semibold">
+                              {getInitials(u.firstName, u.lastName)}
+                            </AvatarFallback>
+                          </Avatar>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1">
+                            <span className="font-semibold text-sm text-foreground/90 group-hover:text-foreground transition-colors">
+                              {`${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Unknown User'}
+                            </span>
+                            <span className="text-xs text-muted-foreground truncate max-w-[180px]">{u.email || ''}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <div className="flex flex-col gap-1.5">
+                            {u.phone ? (
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <Phone className="w-3 h-3" />
+                                <span>{u.phone}</span>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-muted-foreground/50">-</span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="capitalize font-normal text-xs bg-secondary/50 hover:bg-secondary/70">
+                            {u.role_type || u.role || 'User'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">
+                          <div className="text-xs text-muted-foreground">
+                            {u.city && u.country ? `${u.city}, ${u.country}` : u.country || u.city || '-'}
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell">
+                          <div className="text-xs text-muted-foreground">
+                            {u.gender || '-'}
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden xl:table-cell">
+                          <span className="text-xs text-muted-foreground">
+                            {u.createdAt ? new Date(String(u.createdAt)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-'}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary" className="capitalize font-normal text-xs bg-secondary/50 hover:bg-secondary/70">
+                            {u.status || 'Active'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right pr-6">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground cursor-pointer hover:text-foreground">
+                                <MoreVertical className="h-4 w-4 rotate-90" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-[180px]">
+                              <DropdownMenuItem onClick={() => setViewUser(u)} className="cursor-pointer">
+                                <User className="mr-2 h-4 w-4 text-muted-foreground" />
+                                View Profile
+                              </DropdownMenuItem>
+
+                              <DropdownMenuItem onClick={() => openEmailModal(u)} className="cursor-pointer">
+                                <Mail className="mr-2 h-4 w-4 text-muted-foreground" />
+                                Send Email
+                              </DropdownMenuItem>
+
+                              <DropdownMenuItem onClick={() => window.location.href = `/admin/assign_service/${u._id}`} className="cursor-pointer">
+                                <Briefcase className="mr-2 h-4 w-4 text-muted-foreground" />
+                                Assign Service
+                              </DropdownMenuItem>
+
+                              <DropdownMenuSeparator />
+
+                              <DropdownMenuItem onClick={() => setDeleteId(u._id)} className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10">
+                                <User2 className="mr-2 h-4 w-4" />
+                                Delete User
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            <div className="border-t border-border/50 p-4 bg-muted/20">
+              <Pagination
+                page={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          </div>
         </div>
-        
-        <Pagination 
-          page={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
       </div>
 
       {/* Delete Modal */}
-      <DeleteModel 
+      <DeleteModel
         deleteId={deleteId}
         onsuccess={handelDelete}
       />
@@ -268,7 +381,7 @@ function Page() {
                   {viewUser && getInitials(viewUser.firstName, viewUser.lastName)}
                 </AvatarFallback>
               </Avatar>
-                <div>
+              <div>
                 <DialogTitle className="text-2xl">
                   {viewUser && `${viewUser.firstName || ''} ${viewUser.lastName || ''}`.trim()}
                 </DialogTitle>
@@ -351,10 +464,10 @@ function Page() {
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">Date of Birth</p>
                       <p className="text-sm font-medium">
-                        {new Date(viewUser.dob).toLocaleDateString('en-US', { 
-                          month: 'long', 
-                          day: 'numeric', 
-                          year: 'numeric' 
+                        {new Date(viewUser.dob).toLocaleDateString('en-US', {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric'
                         })}
                       </p>
                     </div>
@@ -363,10 +476,10 @@ function Page() {
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">Date of Joining</p>
                       <p className="text-sm font-medium">
-                        {new Date(viewUser.doj).toLocaleDateString('en-US', { 
-                          month: 'long', 
-                          day: 'numeric', 
-                          year: 'numeric' 
+                        {new Date(viewUser.doj).toLocaleDateString('en-US', {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric'
                         })}
                       </p>
                     </div>
@@ -378,10 +491,10 @@ function Page() {
                         Account Created
                       </p>
                       <p className="text-sm font-medium">
-                        {new Date(viewUser.createdAt).toLocaleDateString('en-US', { 
-                          month: 'long', 
-                          day: 'numeric', 
-                          year: 'numeric' 
+                        {new Date(viewUser.createdAt).toLocaleDateString('en-US', {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric'
                         })}
                       </p>
                     </div>
@@ -390,10 +503,10 @@ function Page() {
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground">Last Updated</p>
                       <p className="text-sm font-medium">
-                        {new Date(viewUser.updatedAt).toLocaleDateString('en-US', { 
-                          month: 'long', 
-                          day: 'numeric', 
-                          year: 'numeric' 
+                        {new Date(viewUser.updatedAt).toLocaleDateString('en-US', {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric'
                         })}
                       </p>
                     </div>
@@ -404,30 +517,30 @@ function Page() {
 
             {/* Additional Information */}
             {viewUser && Object.entries(viewUser)
-              .filter(([k]) => !['_id', 'firstName', 'lastName', 'email', 'phone', 'profile_image', 
-                'position', 'department', 'role', 'status', 'address', 'dob', 'doj', 
+              .filter(([k]) => !['_id', 'firstName', 'lastName', 'email', 'phone', 'profile_image',
+                'position', 'department', 'role', 'status', 'address', 'dob', 'doj',
                 'createdAt', 'updatedAt', 'invite_type', 'inviteStatus', 'invite_status', '__v'].includes(k))
               .length > 0 && (
-              <Card>
-                <CardContent className="pt-6">
-                  <h3 className="text-sm font-semibold mb-4">Additional Information</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {Object.entries(viewUser)
-                      .filter(([k]) => !['_id', 'firstName', 'lastName', 'email', 'phone', 'profile_image', 
-                        'position', 'department', 'role', 'status', 'address', 'dob', 'doj', 
-                        'createdAt', 'updatedAt', 'invite_type', 'inviteStatus', 'invite_status', '__v'].includes(k))
-                      .map(([key, val]) => (
-                        <div key={key} className="space-y-1">
-                          <p className="text-xs text-muted-foreground capitalize">
-                            {key.replace(/_/g, ' ')}
-                          </p>
-                          <p className="text-sm font-medium">{String(val ?? '-')}</p>
-                        </div>
-                      ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                <Card>
+                  <CardContent className="pt-6">
+                    <h3 className="text-sm font-semibold mb-4">Additional Information</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {Object.entries(viewUser)
+                        .filter(([k]) => !['_id', 'firstName', 'lastName', 'email', 'phone', 'profile_image',
+                          'position', 'department', 'role', 'status', 'address', 'dob', 'doj',
+                          'createdAt', 'updatedAt', 'invite_type', 'inviteStatus', 'invite_status', '__v'].includes(k))
+                        .map(([key, val]) => (
+                          <div key={key} className="space-y-1">
+                            <p className="text-xs text-muted-foreground capitalize">
+                              {key.replace(/_/g, ' ')}
+                            </p>
+                            <p className="text-sm font-medium">{String(val ?? '-')}</p>
+                          </div>
+                        ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
           </div>
         </DialogContent>
       </Dialog>
@@ -452,7 +565,7 @@ function Page() {
           <div className="space-y-4 mt-4">
             <div className="space-y-2">
               <Label htmlFor="recipient">Recipient</Label>
-              <Input 
+              <Input
                 id="recipient"
                 value={emailData.userEmail}
                 disabled
@@ -462,7 +575,7 @@ function Page() {
 
             <div className="space-y-2">
               <Label htmlFor="title">Email Subject</Label>
-              <Input 
+              <Input
                 id="title"
                 placeholder="Enter email subject..."
                 value={emailData.title}
@@ -472,7 +585,7 @@ function Page() {
 
             <div className="space-y-2">
               <Label htmlFor="message">Message</Label>
-              <Textarea 
+              <Textarea
                 id="message"
                 placeholder="Type your message here..."
                 rows={8}
@@ -484,14 +597,14 @@ function Page() {
           </div>
 
           <div className="flex gap-3 mt-6">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="flex-1"
               onClick={() => setEmailModalOpen(false)}
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               className="flex-1"
               onClick={handleSendEmail}
               disabled={!emailData.title || !emailData.message}

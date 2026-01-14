@@ -79,7 +79,7 @@ const data = {
       icon: Bot,
       items: [
         {
-          title: "View Assigned Services",
+          title: "Assigned Services",
           url: "/admin/view_assign_service",
         },
       ],
@@ -146,7 +146,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   // Filter projects based on search
   const filteredProjects = React.useMemo(() => {
     if (!searchQuery) return data.projects
-    return data.projects.filter(project => 
+    return data.projects.filter(project =>
       project.name.toLowerCase().includes(searchQuery.toLowerCase())
     )
   }, [searchQuery])
@@ -156,7 +156,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     if (!searchQuery) return data.navMain
     return data.navMain.map(item => ({
       ...item,
-      items: item.items?.filter(subItem => 
+      items: item.items?.filter(subItem =>
         subItem.title.toLowerCase().includes(searchQuery.toLowerCase())
       )
     })).filter(item => item.items && item.items.length > 0)
@@ -185,10 +185,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       `}</style>
 
       {/* Fixed Header */}
-      <SidebarHeader className=" border-border/40  backdrop-blur ">
-        <motion.div 
-          className="flex h-16 items-center px-4"
-          animate={{ 
+      <SidebarHeader className="border-b border-border/40 bg-background/50 backdrop-blur-xl pb-4">
+        <motion.div
+          className="flex h-14 items-center px-4 pt-2"
+          animate={{
             justifyContent: isCollapsed ? "center" : "flex-start"
           }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
@@ -196,15 +196,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <AnimatePresence mode="wait">
             <motion.div
               key={isCollapsed ? "collapsed" : "expanded"}
-              initial={{ opacity: 0, scale: 0.8 }}
+              initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
+              exit={{ opacity: 0, scale: 0.9 }}
               transition={{ duration: 0.2 }}
+              className="flex items-center"
             >
               <Image
                 src="/logo.png"
                 alt="Murphys Logo"
-                width={isCollapsed ? 32 : 140}
+                width={isCollapsed ? 32 : 130}
                 height={isCollapsed ? 32 : 40}
                 className="object-contain"
                 priority
@@ -212,22 +213,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </motion.div>
           </AnimatePresence>
         </motion.div>
-        
+
         <AnimatePresence>
           {!isCollapsed && (
-            <motion.div 
-              className="px-3 pb-3"
+            <motion.div
+              className="px-4"
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3, ease: "easeInOut" }}
             >
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <div className="relative group">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors pointer-events-none" />
                 <Input
                   type="search"
                   placeholder="Search navigation..."
-                  className="h-9 pl-8 bg-muted/50 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/20"
+                  className="h-9 pl-9 bg-muted/40 border-transparent shadow-none hover:bg-muted/60 focus-visible:bg-background focus-visible:border-primary/20 focus-visible:ring-2 focus-visible:ring-primary/10 transition-all rounded-lg text-sm"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -235,16 +236,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </motion.div>
           )}
         </AnimatePresence>
-        
+
         {isCollapsed && (
-          <motion.div 
-            className="px-2 pb-3"
+          <motion.div
+            className="px-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.2 }}
           >
-            <div className="relative flex justify-center">
-              <Search className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-foreground transition-colors" />
+            <div className="relative flex justify-center py-2">
+              <Search className="h-5 w-5 text-muted-foreground/70 cursor-pointer hover:text-primary transition-colors" />
             </div>
           </motion.div>
         )}
@@ -254,7 +255,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent className="overflow-y-auto custom-scrollbar flex-1 px-2 py-4">
         <AnimatePresence mode="wait">
           {filteredProjects.length === 0 && filteredNavMain.length === 0 ? (
-            <motion.div 
+            <motion.div
               key="no-results"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -286,7 +287,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarFooter className="border-t border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-2 mt-auto">
         <NavUser />
       </SidebarFooter>
-      
+
       <SidebarRail />
     </Sidebar>
   )

@@ -1,4 +1,5 @@
 import React from 'react'
+import { Button } from '@/components/ui/button'
 
 interface PaginationProps {
   page: number
@@ -17,41 +18,41 @@ const Pagination: React.FC<PaginationProps> = ({ page, totalPages, onPageChange 
 
   return (
     <div className="flex items-center justify-between space-x-4 mt-4">
-      <button
+      <Button
         className="px-3 py-1 rounded border"
         onClick={() => onPageChange(Math.max(1, page - 1))}
         disabled={page === 1}
       >
         Prev
-      </button>
+      </Button>
 
       <div className="flex gap-2">
         {start > 1 && (
-          <button className="px-3 py-1 rounded border" onClick={() => onPageChange(1)}>1</button>
+          <Button className="px-3 py-1 rounded border" onClick={() => onPageChange(1)}>1</Button>
         )}
         {start > 2 && <span className="px-2">...</span>}
         {pages.map((p) => (
-          <button
+          <Button
             key={p}
-            className={`px-3 py-1 rounded border ${p === page ? 'bg-primary text-white' : ''}`}
+            className={`px-3 py-1 rounded border  ${p === page ? 'bg-black cursor-not-allowed disabled' : ''}`}
             onClick={() => onPageChange(p)}
           >
             {p}
-          </button>
+          </Button>
         ))}
         {end < totalPages - 1 && <span className="px-2">...</span>}
         {end < totalPages && (
-          <button className="px-3 py-1 rounded border" onClick={() => onPageChange(totalPages)}>{totalPages}</button>
+          <Button className="px-3 py-1 rounded border" onClick={() => onPageChange(totalPages)}>{totalPages}</Button>
         )}
       </div>
 
-      <button
+      <Button
         className="px-3 py-1 rounded border"
         onClick={() => onPageChange(Math.min(totalPages, page + 1))}
         disabled={page === totalPages}
       >
         Next
-      </button>
+      </Button>
     </div>
   )
 }

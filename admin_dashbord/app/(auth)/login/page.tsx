@@ -18,7 +18,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { EmailModal } from "@/app/page/email-model";
 import Image from "next/image";
-import { useAppDispatch } from "@/lib/redux/hooks";
 import axiosInstance from "@/lib/axios";
 
 export default function AdminLoginPage() {
@@ -46,8 +45,6 @@ export default function AdminLoginPage() {
     email: Yup.string().email("Invalid email").required("Required"),
     password: Yup.string()
       .min(6, "Password too short")
-      .matches(/[A-Z]/, 'Password must contain at least one uppercase letter')
-      .matches(/[a-z]/, 'Password must contain at least one lowercase letter')
       .required("Required"),
   });
 
@@ -57,12 +54,12 @@ export default function AdminLoginPage() {
   ) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
-      
+
       const user = userCredential.user;
       await user.getIdToken(true);
-      
+
       await new Promise(resolve => setTimeout(resolve, 500));
-      
+
       const checkProfile = async () => {
         try {
           const response = await axiosInstance.get('/profiles', {
@@ -79,7 +76,7 @@ export default function AdminLoginPage() {
         }
       };
       await checkProfile();
-     
+
     } catch (err: any) {
       console.error('Login error:', err);
       setStatus({ error: "Invalid credentials. Please try again." });
@@ -103,221 +100,200 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-50 p-6">
-      {/* Minimal Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-100/40 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-100/40 rounded-full blur-3xl" />
-      </div>
-
-      {/* Main Container */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative w-full max-w-6xl grid lg:grid-cols-2 gap-12 items-center"
-      >
-        {/* Left Side - Minimal Branding */}
-        <div className="hidden lg:block space-y-8">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <div className="inline-flex items-center gap-3 mb-6">
-              <div className="w-2 h-2 rounded-full bg-black" />
-              <span className="text-sm font-medium text-neutral-600">ADMIN ACCESS</span>
-            </div>
-            
-            <h1 className="text-6xl font-light text-neutral-900 mb-4 leading-tight">
-              Welcome<br />back
-            </h1>
-            
-            <p className="text-lg text-neutral-500 leading-relaxed max-w-md">
-              Sign in to access your dashboard and manage your platform with ease.
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.4 }}
-            className="space-y-3"
-          >
-            {["Secure authentication", "Real-time analytics", "Advanced controls"].map((text, i) => (
-              <div key={i} className="flex items-center gap-3 text-neutral-600">
-                <div className="w-1 h-1 rounded-full bg-neutral-400" />
-                <span className="text-sm">{text}</span>
-              </div>
-            ))}
-          </motion.div>
+    <div className="min-h-screen w-full lg:grid lg:grid-cols-2 h-full">
+      {/* Left Side - Hero/Branding */}
+      <div className="hidden lg:flex flex-col justify-center p-12 relative overflow-hidden bg-neutral-900 text-white">
+        {/* Animated Gradient Background */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] bg-purple-600/30 rounded-full blur-[120px] mix-blend-screen animate-pulse" />
+          <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-blue-600/20 rounded-full blur-[100px] mix-blend-screen animate-pulse delay-1000" />
+          <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-neutral-900 to-neutral-800/90 z-10" />
         </div>
 
-        {/* Right Side - Minimal Form */}
+        <div className="relative z-20 max-w-lg mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+          >
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-md border border-white/10 shadow-lg">
+                <Image src="/logo.png" alt="Murphys Logo" width={40} height={40} className="object-contain" />
+              </div>
+              <span className="text-xl font-bold tracking-tight">Murphys Admin</span>
+            </div>
+
+            <h1 className="text-5xl font-bold leading-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
+              Manage your platform with confidence.
+            </h1>
+
+            <p className="text-lg text-neutral-400 leading-relaxed mb-8">
+              Access powerful tools, real-time analytics, and comprehensive user management in one unified dashboard.
+            </p>
+
+            <div className="space-y-4">
+              {[
+                { title: "Secure Dashboard", desc: "Enterprise-grade security for your data" },
+                { title: "Real-time Insights", desc: "Monitor performance as it happens" }
+              ].map((item, i) => (
+                <div key={i} className="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                  <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
+                    <div className="w-2 h-2 rounded-full bg-blue-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-white">{item.title}</h3>
+                    <p className="text-sm text-neutral-400">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Right Side - Login Form */}
+      <div className="flex flex-col justify-center items-center p-6 lg:p-24 bg-white">
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 }}
-          className="w-full"
+          className="w-full max-w-md space-y-8"
         >
-          <div className="bg-white rounded-2xl p-10 shadow-sm border border-neutral-200/50">
-            {/* Mobile Header */}
-            <div className="lg:hidden mb-8">
-              <div className="inline-flex items-center gap-3 mb-4">
-                <div className="w-2 h-2 rounded-full bg-black" />
-                <span className="text-sm font-medium text-neutral-600">ADMIN ACCESS</span>
-              </div>
-              <h2 className="text-3xl font-light text-neutral-900">Welcome back</h2>
-            </div>
+          <div className="text-center lg:text-left">
+            <h2 className="text-3xl font-bold tracking-tight text-neutral-900">Welcome back</h2>
+            <p className="mt-2 text-neutral-500">Please enter your details to sign in.</p>
+          </div>
 
-            <Formik
-              initialValues={{ email: "", password: "" }}
-              validationSchema={validationSchema}
-              onSubmit={handleLogin}
-            >
-              {({ isSubmitting, status, touched, errors }) => (
-                <Form className="space-y-6">
-                  {/* Email Field */}
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-medium text-neutral-700">
-                      Email
-                    </Label>
-                    <div className="relative">
-                      <Field
-                        as={Input}
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="admin@company.com"
-                        className={`h-12 pl-4 pr-4 bg-neutral-50 border-neutral-200 rounded-lg focus:bg-white transition-all ${
-                          touched.email && errors.email
-                            ? "border-red-300 focus-visible:ring-red-400"
-                            : "focus-visible:ring-neutral-900"
+          <Formik
+            initialValues={{ email: "", password: "" }}
+            validationSchema={validationSchema}
+            onSubmit={handleLogin}
+          >
+            {({ isSubmitting, status, touched, errors }) => (
+              <Form className="space-y-6">
+                {/* Email Field */}
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-medium text-neutral-700">Email Address</Label>
+                  <div className="relative group">
+                    <Mail className="absolute left-3 top-3.5 h-5 w-5 text-neutral-400 group-focus-within:text-neutral-600 transition-colors" />
+                    <Field
+                      as={Input}
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="name@company.com"
+                      className={`h-12 pl-10 bg-neutral-50 border-neutral-200 focus:bg-white transition-all duration-200 ${touched.email && errors.email
+                        ? "border-red-500 focus-visible:ring-red-500"
+                        : "focus-visible:ring-blue-600 border-neutral-200"
                         }`}
-                      />
-                    </div>
-                    {touched.email && errors.email && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-xs text-red-600 flex items-center gap-1"
-                      >
-                        <AlertCircle className="w-3 h-3" />
-                        {errors.email}
-                      </motion.p>
-                    )}
+                    />
                   </div>
+                  {touched.email && errors.email && (
+                    <motion.p
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="text-xs text-red-500 font-medium ml-1"
+                    >
+                      {errors.email}
+                    </motion.p>
+                  )}
+                </div>
 
-                  {/* Password Field */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <Label htmlFor="password" className="text-sm font-medium text-neutral-700">
-                        Password
-                      </Label>
-                      <button
-                        type="button"
-                        onClick={() => router.push("/forgot-password")}
-                        className="text-xs text-neutral-500 cursor-pointer hover:text-neutral-900 transition"
-                      > 
-                        Forgot password ?
-                      </button>
-                    </div>
-                    <div className="relative">
-                      <Field
-                        as={Input}
-                        id="password"
-                        name="password"
-                        type={passwordClick ? "text" : "password"}
-                        placeholder="Enter password"
-                        className={`h-12 pl-4 pr-12 bg-neutral-50 border-neutral-200 rounded-lg focus:bg-white transition-all ${
-                          touched.password && errors.password
-                            ? "border-red-300 focus-visible:ring-red-400"
-                            : "focus-visible:ring-neutral-900"
+                {/* Password Field */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label htmlFor="password" className="text-sm font-medium text-neutral-700">Password</Label>
+                    <button
+                      type="button"
+                      onClick={() => router.push("/forgot-password")}
+                      className="text-xs font-medium text-blue-600 hover:text-blue-700 transition"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                  <div className="relative group">
+                    <Lock className="absolute left-3 top-3.5 h-5 w-5 text-neutral-400 group-focus-within:text-neutral-600 transition-colors" />
+                    <Field
+                      as={Input}
+                      id="password"
+                      name="password"
+                      type={passwordClick ? "text" : "password"}
+                      placeholder="••••••••"
+                      className={`h-12 pl-10 pr-10 bg-neutral-50 border-neutral-200 focus:bg-white transition-all duration-200 ${touched.password && errors.password
+                        ? "border-red-500 focus-visible:ring-red-500"
+                        : "focus-visible:ring-blue-600 border-neutral-200"
                         }`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setPasswordClick(!passwordClick)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition"
-                      >
-                        {passwordClick ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                    {touched.password && errors.password && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-xs text-red-600 flex items-center gap-1"
-                      >
-                        <AlertCircle className="w-3 h-3" />
-                        {errors.password}
-                      </motion.p>
-                    )}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setPasswordClick(!passwordClick)}
+                      className="absolute right-3 top-3.5 text-neutral-400 hover:text-neutral-600 transition-colors"
+                    >
+                      {passwordClick ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
                   </div>
+                  {touched.password && errors.password && (
+                    <motion.p
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="text-xs text-red-500 font-medium ml-1"
+                    >
+                      {errors.password}
+                    </motion.p>
+                  )}
+                </div>
 
-                  {/* Error Message */}
-                  <AnimatePresence>
-                    {status?.error && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg border border-red-200 flex items-center gap-2"
-                      >
-                        <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                        <span>{status.error}</span>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                {/* Error Banner */}
+                <AnimatePresence>
+                  {status?.error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="p-4 rounded-lg bg-red-50 border border-red-100 flex items-start gap-3"
+                    >
+                      <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                      <div className="text-sm text-red-600">
+                        <span className="font-semibold block mb-1">Authentication Error</span>
+                        {status.error}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-                  {/* Sign In Button */}
+                <div className="space-y-4 pt-2">
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full h-12 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white font-medium transition-all active:scale-[0.98] disabled:opacity-50 group"
+                    className="w-full h-12 text-base font-semibold bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/20 transition-all hover:scale-[1.01] active:scale-[0.98]"
                   >
-                    {isSubmitting ? (
-                      <span className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Signing in...
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-2">
-                        Sign in
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                      </span>
-                    )}
+                    {isSubmitting ? <span className="animate-pulse">Signing in...</span> : "Sign in to Dashboard"}
                   </Button>
 
-                  {/* Divider */}
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t border-neutral-200" />
-                    </div>
-                    <div className="relative flex justify-center text-xs">
-                      <span className="bg-white px-3 text-neutral-400 uppercase tracking-wider">
-                        or
-                      </span>
-                    </div>
+                  <div className="relative py-2">
+                    <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-neutral-200" /></div>
+                    <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-neutral-400">Or continue with</span></div>
                   </div>
 
-                  {/* Magic Link Button */}
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => setModalOpen(true)}
-                    className="w-full h-12 rounded-lg border-neutral-200 hover:bg-neutral-50 font-medium transition-all"
+                    className="w-full h-12 font-medium border-neutral-200 hover:bg-neutral-50 hover:border-neutral-300 transition-all text-neutral-700"
                   >
-                    <Mail className="w-4 h-4 mr-2 text-neutral-600" />
-                    Continue with magic link
+                    <Mail className="w-4 h-4 mr-2" />
+                    Send Magic Link
                   </Button>
-                </Form>
-              )}
-            </Formik>
-          </div>
-        </motion.div>
-      </motion.div>
+                </div>
+              </Form>
+            )}
+          </Formik>
 
-      {/* Email Modal */}
+          <p className="text-center text-sm text-neutral-500">
+            Don't have an account? <span className="text-blue-600 hover:underline cursor-pointer">Contact Support</span>
+          </p>
+        </motion.div>
+      </div>
+
       <EmailModal
         open={modalOpen}
         loading={modalLoading}
@@ -325,19 +301,20 @@ export default function AdminLoginPage() {
         onSubmit={handleSendEmailLink}
       />
 
-      {/* Toast Notification */}
       <AnimatePresence>
         {modalStatus && (
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-neutral-900 text-white px-6 py-3 rounded-full shadow-lg z-50"
+            className="fixed bottom-8 right-8 bg-neutral-900 text-white px-6 py-4 rounded-xl shadow-2xl z-50 flex items-center gap-3"
           >
-            <span className="text-sm">{modalStatus}</span>
+            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+            <span className="font-medium">{modalStatus}</span>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
 }
+

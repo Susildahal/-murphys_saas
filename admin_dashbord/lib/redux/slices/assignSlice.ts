@@ -10,26 +10,26 @@ interface AssignState {
   totalPages?: number;
 }
 const initialState: AssignState = {
-data: [],
+  data: [],
   loading: false,
-    error: null,
-    total: 0,
-    page: 1,
-    limit: 10,
-    totalPages: 0,
+  error: null,
+  total: 0,
+  page: 1,
+  limit: 10,
+  totalPages: 0,
 };
 
 
 export const getAssignedServices = createAsyncThunk(
   'assign/getAssignedServices',
   async (
-    params: { page?: number; limit?: number; search?: string } = { page: 1, limit: 10 },
+    params: { page?: number; limit?: number; search?: string; client_id?: string; service_catalog_id?: string } = { page: 1, limit: 10 },
     { rejectWithValue }
   ) => {
     try {
-      const { page = 1, limit = 10, search = '' } = params;
+      const { page = 1, limit = 10, search = '', client_id, service_catalog_id } = params;
       const response = await axiosInstance.get(`/assigned_services`, {
-        params: { page, limit, search },
+        params: { page, limit, search, client_id, service_catalog_id },
       });
       // Expect response.data.data to be an array of assigned services
       const data = response.data.data || [];
@@ -121,10 +121,10 @@ export const addRenewalDate = createAsyncThunk(
 const assignSlice = createSlice({
   name: 'assign',
   initialState,
-    reducers: {},
-    extraReducers: (builder) => {
+  reducers: {},
+  extraReducers: (builder) => {
     builder
-        .addCase(getAssignedServices.pending, (state) => {
+      .addCase(getAssignedServices.pending, (state) => {
         state.loading = true;
         state.error = null;
         state.data = [];
@@ -133,8 +133,8 @@ const assignSlice = createSlice({
         state.limit = 10;
 
       }
-        )
-        .addCase(getAssignedServices.fulfilled, (state, action: PayloadAction<any>) => {
+      )
+      .addCase(getAssignedServices.fulfilled, (state, action: PayloadAction<any>) => {
         state.loading = false;
         // action.payload should be { data: [], pagination: { ... } }
         state.data = action.payload?.data || [];
@@ -143,12 +143,12 @@ const assignSlice = createSlice({
         state.limit = action.payload?.pagination?.limit || 10;
         state.totalPages = action.payload?.pagination?.totalPages || 0;
       }
-        )
-        .addCase(getAssignedServices.rejected, (state, action) => {
+      )
+      .addCase(getAssignedServices.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       }
-        )
+      )
       .addCase(getAssignDetails.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -179,7 +179,7 @@ const assignSlice = createSlice({
       }
       )
       .addCase(deleteAssignedService.rejected, (state, action) => {
-        state.loading = false;  
+        state.loading = false;
         state.error = action.payload as string;
       }
       )
@@ -221,9 +221,9 @@ const assignSlice = createSlice({
         state.error = action.payload as string;
       }
       );
-      
-      
-    },
+
+
+  },
 });
 
 export default assignSlice.reducer;

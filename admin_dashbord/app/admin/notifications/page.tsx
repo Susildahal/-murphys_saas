@@ -35,6 +35,12 @@ const NotificationsPage = () => {
     const dispatch = useAppDispatch();
     const { notices, loading, error, total, page, limit, totalPages } = useAppSelector((state) => state.notices);
     const [selectedNotices, setSelectedNotices] = useState<string[]>([]);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isMarkReadModalOpen, setIsMarkReadModalOpen] = useState(false);
+
+    // View Modal State
+    const [viewNotice, setViewNotice] = useState<any | null>(null);
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
 
     useEffect(() => {
@@ -98,13 +104,6 @@ const NotificationsPage = () => {
         }
     };
 
-    // Bulk Actions
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [isMarkReadModalOpen, setIsMarkReadModalOpen] = useState(false);
-
-    // View Modal State
-    const [viewNotice, setViewNotice] = useState<any | null>(null);
-    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
     const handleViewDetails = (notice: any) => {
         setViewNotice(notice);
@@ -206,7 +205,7 @@ const NotificationsPage = () => {
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex flex-col">
-                                                <div className="flex items-center gap-2 font-medium">
+                                                <div className="flex items-center uppercase gap-2 font-medium">
                                                     <User className="h-3 w-3 text-muted-foreground" />
                                                     {notification.firstName} {notification.lastName}
                                                 </div>

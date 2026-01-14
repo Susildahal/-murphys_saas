@@ -119,7 +119,18 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* app/globals.css */
+@theme {
+  --font-montserrat: var(--font-montserrat);
+}
+
+/* Optional: Set it as the default for all text */
+body {
+  font-family: var(--font-montserrat), sans-serif;
 }

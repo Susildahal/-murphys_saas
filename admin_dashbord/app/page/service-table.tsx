@@ -1,6 +1,5 @@
 'use client';
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { deleteService, toggleServiceStatus, setSelectedService, fetchServices, assignServiceToClient } from '@/lib/redux/slices/serviceSlice';
 import { fetchProfile } from '@/lib/redux/slices/profileSlice';
@@ -33,7 +32,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { MoreHorizontal, Edit, Trash2, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { MoreHorizontal, Edit, Trash2, ChevronLeft, ChevronRight, Eye, ArrowUpDown } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -88,6 +87,48 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
   const profileState = useAppSelector((s) => s.profile);
   const profiles = Array.isArray(profileState.profile) ? profileState.profile : profileState.profile ? [profileState.profile] : [];
 
+  // Sorting state
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+
+  const handleSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedServices = useMemo(() => {
+    let items = [...services];
+    if (sortConfig !== null) {
+      items.sort((a: any, b: any) => {
+        let aValue = a[sortConfig.key];
+        let bValue = b[sortConfig.key];
+
+        // Handle specific fields
+        if (sortConfig.key === 'price') {
+          // numeric sort
+          aValue = Number(a.price);
+          bValue = Number(b.price);
+        } else if (sortConfig.key === 'createdAt') {
+          aValue = new Date(a.createdAt).getTime();
+          bValue = new Date(b.createdAt).getTime();
+        } else if (typeof aValue === 'string') {
+          aValue = aValue.toLowerCase();
+          bValue = (bValue || '').toLowerCase();
+        }
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return items;
+  }, [services, sortConfig]);
 
   // Fetch services when page or category changes (server-driven pagination)
   useEffect(() => {
@@ -234,10 +275,6 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
   const endIndex = startIndex + (storeLimit || ITEMS_PER_PAGE);
   const paginatedServices = services;
 
-
-
-
-
   return (
     <>
       {
@@ -262,19 +299,67 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
             <TableRow>
               <TableHead>Index</TableHead>
               <TableHead>       Image</TableHead>
-              <TableHead>Service Name</TableHead>
+              <TableHead
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => handleSort('name')}
+              >
+                <div className="flex items-center gap-2">
+                  Service Name
+                  <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                </div>
+              </TableHead>
               <TableHead>Description</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Billing Type</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => handleSort('categoryName')}
+              >
+                <div className="flex items-center gap-2">
+                  Category
+                  <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                </div>
+              </TableHead>
+              <TableHead
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => handleSort('price')}
+              >
+                <div className="flex items-center gap-2">
+                  Price
+                  <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                </div>
+              </TableHead>
+              <TableHead
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => handleSort('billingType')}
+              >
+                <div className="flex items-center gap-2">
+                  Billing Type
+                  <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                </div>
+              </TableHead>
+              <TableHead
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => handleSort('status')}
+              >
+                <div className="flex items-center gap-2">
+                  Status
+                  <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                </div>
+              </TableHead>
               <TableHead>Assign to Client</TableHead>
-              <TableHead> Date</TableHead>
+              <TableHead
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => handleSort('createdAt')}
+              >
+                <div className="flex items-center gap-2">
+                  Date
+                  <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                </div>
+              </TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedServices.map((service, index) => (
+            {sortedServices.map((service, index) => (
               <TableRow key={(service as any)._id || (service as any).id}>
                 <TableCell>{startIndex + index + 1}</TableCell>
                 <TableCell

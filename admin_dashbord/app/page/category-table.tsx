@@ -34,7 +34,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { MoreHorizontal, Edit, Trash2, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { MoreHorizontal, Edit, Trash2, ChevronLeft, ChevronRight, Eye, ArrowUpDown } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import {
   Tooltip,
@@ -49,6 +49,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import SpinnerComponent from './common/Spinner';
+import { cn } from '@/lib/utils';
 
 interface CategoryTableProps {
   onEdit: (category: Category) => void;
@@ -64,12 +65,53 @@ export default function CategoryTable({ onEdit }: CategoryTableProps) {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [selectedViewCategory, setSelectedViewCategory] = useState<Category | null>(null);
 
+  // Client-side sorting states
+  const [sortKey, setSortKey] = useState<keyof Category | null>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+
   // Fetch categories when page changes
-  React.useEffect(() => {
+  useEffect(() => {
     dispatch(fetchCategories({ page: currentPage, limit: storeLimit }));
   }, [dispatch, currentPage, storeLimit]);
 
-  const handleToggleStatus = async ( _id: string, currentStatus: 'active' | 'inactive') => {
+  // Client-side sorting logic
+  const sortedCategories = React.useMemo(() => {
+    if (!sortKey) return categories;
+
+    return [...categories].sort((a, b) => {
+      const aValue = a[sortKey];
+      const bValue = b[sortKey];
+
+      if (!aValue || !bValue) return 0;
+
+      // String sorting
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortOrder === 'asc'
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+
+      // Date sorting
+      if (aValue as any instanceof Date || bValue as any instanceof Date || sortKey === 'createdAt') {
+        return sortOrder === 'asc'
+          ? new Date(aValue).getTime() - new Date(bValue).getTime()
+          : new Date(bValue).getTime() - new Date(aValue).getTime();
+      }
+
+      return 0;
+    });
+  }, [categories, sortKey, sortOrder]);
+
+  const handleSort = (key: keyof Category) => {
+    if (sortKey === key) {
+      setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortKey(key);
+      setSortOrder('asc');
+    }
+  };
+
+  const handleToggleStatus = async (_id: string, currentStatus: 'active' | 'inactive') => {
     const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
     try {
       await dispatch(toggleCategoryStatus({ _id, status: newStatus })).unwrap();
@@ -118,15 +160,11 @@ export default function CategoryTable({ onEdit }: CategoryTableProps) {
     }
   };
 
-  if (loading && categories.length === 0) {
-    return (
-      <SpinnerComponent />
-    );
-  }
+  if (loading && categories.length === 0) return <SpinnerComponent />;
 
   if (categories.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center  border-dashed rounded-lg">
+      <div className="flex flex-col items-center justify-center border-dashed rounded-lg p-6">
         <h3 className="text-lg font-semibold mb-2">No categories yet</h3>
         <p className="text-sm text-muted-foreground">
           Create your first category to get started
@@ -146,39 +184,55 @@ export default function CategoryTable({ onEdit }: CategoryTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-               
-              <TableHead> Index</TableHead>
-              <TableHead>Category Name</TableHead>
+              <TableHead>Index</TableHead>
+              <TableHead
+                className="cursor-pointer flex items-center gap-2"
+                onClick={() => handleSort('name')}
+              >
+                Category Name
+                <ArrowUpDown
+                  className={cn(
+                    "h-4 w-4 transition-colors",
+                    sortKey === 'name' ? "text-primary" : "text-muted-foreground"
+                  )}
+                />
+              </TableHead>
               <TableHead>Description</TableHead>
-              <TableHead>Created</TableHead>
+              <TableHead
+                className="cursor-pointer flex items-center gap-2"
+                onClick={() => handleSort('createdAt')}
+              >
+                Created
+                <ArrowUpDown
+                  className={cn(
+                    "h-4 w-4 transition-colors",
+                    sortKey === 'createdAt' ? "text-primary" : "text-muted-foreground"
+                  )}
+                />
+              </TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {categories.map((category, index) => (
+            {sortedCategories.map((category, index) => (
               <TableRow key={category._id}>
                 <TableCell>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">{startIndex + index + 1}</span>
-                  </div>
+                  <span className="text-sm text-muted-foreground">{startIndex + index + 1}</span>
                 </TableCell>
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold">{category.name}</span>
-                  </div>
-                </TableCell>
+                <TableCell className="font-medium">{category.name}</TableCell>
                 <TableCell>
-                  <p className="text-sm text-muted-foreground line-clamp-2 max-w-md">
-                   <Tooltip>
+                  <Tooltip>
                     <TooltipTrigger asChild>
-                      <span>{category.description.split(' ').slice(0, 40).join(' ')}  {category.description.length > 40 ? '......' : ''}</span>
+                      <span className="text-sm text-muted-foreground line-clamp-2 max-w-md">
+                        {category.description.split(' ').slice(0, 40).join(' ')}
+                        {category.description.length > 40 ? '...' : ''}
+                      </span>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>{category.description}</p>
                     </TooltipContent>
                   </Tooltip>
-                  </p>
                 </TableCell>
                 <TableCell>
                   <span className="text-sm text-muted-foreground">
@@ -211,26 +265,17 @@ export default function CategoryTable({ onEdit }: CategoryTableProps) {
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => handleViewClick(category)}
-                        className="cursor-pointer"
-                      >
-                        <Eye className="mr-2 h-4 w-4" />
-                        View
+                      <DropdownMenuItem onClick={() => handleViewClick(category)}>
+                        <Eye className="mr-2 h-4 w-4" /> View
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => onEdit(category)}
-                        className="cursor-pointer"
-                      >
-                        <Edit className="mr-2 h-4 w-4" />
-                        Edit
+                      <DropdownMenuItem onClick={() => onEdit(category)}>
+                        <Edit className="mr-2 h-4 w-4" /> Edit
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => handleDeleteClick(category._id)}
-                        className="cursor-pointer text-destructive"
+                        className="text-destructive"
                       >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Delete
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -254,35 +299,32 @@ export default function CategoryTable({ onEdit }: CategoryTableProps) {
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
             >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Previous
+              <ChevronLeft className="h-4 w-4 mr-1" /> Previous
             </Button>
-            <div className="flex items-center gap-1">
-              {Array.from({ length: effectiveTotalPages }, (_, i) => i + 1).map((page) => (
-                <Button
-                  key={page}
-                  variant={currentPage === page ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setCurrentPage(page)}
-                  className="w-8 h-8 p-0"
-                >
-                  {page}
-                </Button>
-              ))}
-            </div>
+            {Array.from({ length: effectiveTotalPages }, (_, i) => i + 1).map(page => (
+              <Button
+                key={page}
+                variant={currentPage === page ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setCurrentPage(page)}
+                className="w-8 h-8 p-0"
+              >
+                {page}
+              </Button>
+            ))}
             <Button
               variant="outline"
               size="sm"
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, effectiveTotalPages))}
               disabled={currentPage === effectiveTotalPages}
             >
-              Next
-              <ChevronRight className="h-4 w-4 ml-1" />
+              Next <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
         </div>
       )}
 
+      {/* View Dialog */}
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -309,39 +351,12 @@ export default function CategoryTable({ onEdit }: CategoryTableProps) {
                 <label className="text-sm font-medium text-muted-foreground">Description</label>
                 <p className="text-base mt-1">{selectedViewCategory.description}</p>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Created At</label>
-                  <p className="text-sm">
-                    {new Date(selectedViewCategory.createdAt).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </p>
-                </div>
-                {selectedViewCategory.updatedAt && (
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">Last Updated</label>
-                    <p className="text-sm">
-                      {new Date(selectedViewCategory.updatedAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </p>
-                  </div>
-                )}
-              </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
 
+      {/* Delete Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

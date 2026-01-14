@@ -31,7 +31,12 @@ const formSchema = z.object({
     twitter: z.string().default(''),
     linkedin: z.string().default(''),
     instagram: z.string().default(''),
-  }).default({}),
+  }).default(() => ({
+    facebook: '',
+    twitter: '',
+    linkedin: '',
+    instagram: '',
+  })),
   maintenanceMode: z.boolean().default(false),
   publicid: z.string().default(''),
 })

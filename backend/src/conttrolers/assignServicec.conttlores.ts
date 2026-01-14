@@ -5,6 +5,7 @@ import { Request, Response } from "express";
 import transporter from "../config/nodemiller";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import mongoose from 'mongoose';
 dotenv.config()
 
 interface JwtPayload {
@@ -15,7 +16,7 @@ interface JwtPayload {
 
 export const assignServiceToClient = async (req: Request, res: Response) => {
   try {
-    const {   client_id, service_catalog_id, status, note, price, cycle , auto_invoice, start_date, end_date  } = req.body;
+    const { client_id, service_catalog_id, status, note, price, cycle, auto_invoice, start_date, end_date } = req.body;
     if (!client_id || !service_catalog_id || !price || !cycle) {
       return res.status(400).json({ message: 'client_id, service_catalog_id, price, and cycle are required' });
     }
@@ -34,26 +35,26 @@ export const assignServiceToClient = async (req: Request, res: Response) => {
       invoice_id: `INV-${Date.now()}`, // Simple invoice ID generation
       client_id,
       service_catalog_id,
-        status,
-        note,
-        price,
-        cycle,
-        isaccepted: "pending",
-        auto_invoice,
-        start_date,
-        end_date,
-        email,
-        client_name: fullname,
-        service_name: useExistingService.name,
+      status,
+      note,
+      price,
+      cycle,
+      isaccepted: "pending",
+      auto_invoice,
+      start_date,
+      end_date,
+      email,
+      client_name: fullname,
+      service_name: useExistingService.name,
     });
     const token = jwt.sign({ email: email }, process.env.JWT_SECRET as string, { expiresIn: '7d' }); // Token valid for 7 days
-    
+
     await assignedService.save();
- const emailoptions = {
+    const emailoptions = {
       from: `Murphys Client <${process.env.EMAIL_FROM}>`,
-        to: email,
-        subject: 'New Service Assigned',
-        html: `<p>Dear ${fullname},</p>
+      to: email,
+      subject: 'New Service Assigned',
+      html: `<p>Dear ${fullname},</p>
                <p>A new service has been assigned to you. this is start from the ${start_date} Please log in to your account to view the details.</p>
                 <p>Service Details:</p>
                 <ul>
@@ -70,56 +71,56 @@ export const assignServiceToClient = async (req: Request, res: Response) => {
                </p>
                <p>Best regards,<br/>Murphys Team</p>`
     };
-    await transporter.sendMail(emailoptions); 
+    await transporter.sendMail(emailoptions);
     res.status(201).json({ data: assignedService, message: 'Service assigned to client successfully' });
   }
-    catch (error) {
+  catch (error) {
     res.status(400).json({ message: (error as Error).message });
   }
 };
 
 export const acceptedAssignedService = async (req: Request, res: Response) => {
-    try {
-        const {token } = req.body;
-        const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { email: string };
-        const decodedToken = jwt.decode(token) as { exp?: number } | null;
-        if (decodedToken?.exp && Math.floor(Date.now() / 1000) > decodedToken.exp) {
-          return res.status(401).json({ message: 'Token has expired' });
-        }
-        const assignedService = await AssignService.findOne({ email: decoded.email, isaccepted: 'pending' });
-        
-    
-        if (!assignedService) {
-            return res.status(404).json({ message: 'No pending assigned service found for this email' });
-        }
-const userProfile = await Profile.findOne({ email: decoded.email });
-        if (!userProfile) {
-            return res.status(404).json({ message: 'User profile not found' });
-        }
-  
-        res.status(200).json({ data: {assignedService, userProfile}, message: 'Assigned service accepted successfully' });
+  try {
+    const { token } = req.body;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { email: string };
+    const decodedToken = jwt.decode(token) as { exp?: number } | null;
+    if (decodedToken?.exp && Math.floor(Date.now() / 1000) > decodedToken.exp) {
+      return res.status(401).json({ message: 'Token has expired' });
     }
-    catch (error) {
-        res.status(400).json({ message: (error as Error).message });
+    const assignedService = await AssignService.findOne({ email: decoded.email, isaccepted: 'pending' });
+
+
+    if (!assignedService) {
+      return res.status(404).json({ message: 'No pending assigned service found for this email' });
     }
+    const userProfile = await Profile.findOne({ email: decoded.email });
+    if (!userProfile) {
+      return res.status(404).json({ message: 'User profile not found' });
+    }
+
+    res.status(200).json({ data: { assignedService, userProfile }, message: 'Assigned service accepted successfully' });
+  }
+  catch (error) {
+    res.status(400).json({ message: (error as Error).message });
+  }
 };
 
- export const acceptAssignedService = async (req: Request, res: Response) => {
-    try {
-        const { id } = req.params;
-        const {isaccepted } = req.body;
-        const assignedService = await AssignService.findById(id);
-        if (!assignedService) {
-            return res.status(404).json({ message: 'Assigned service not found' });
-        }
-        assignedService.isaccepted = isaccepted;
-        await assignedService.save();
-        res.status(200).json({ data: assignedService, message: 'Assigned service accepted successfully' });
+export const acceptAssignedService = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { isaccepted } = req.body;
+    const assignedService = await AssignService.findById(id);
+    if (!assignedService) {
+      return res.status(404).json({ message: 'Assigned service not found' });
     }
-    catch (error) {
+    assignedService.isaccepted = isaccepted;
+    await assignedService.save();
+    res.status(200).json({ data: assignedService, message: 'Assigned service accepted successfully' });
+  }
+  catch (error) {
 
-        res.status(400).json({ message: (error as Error).message });
-    }
+    res.status(400).json({ message: (error as Error).message });
+  }
 };
 
 
@@ -130,17 +131,23 @@ export const getAllAssignedServices = async (req: Request, res: Response) => {
   const limit = parseInt(req.query.limit as string) || 10;
   const skip = (page - 1) * limit;
   const searchQuery = req.query.search as string || '';
+  const clientId = req.query.client_id as string || '';
+  const serviceCatalogId = req.query.service_catalog_id as string || '';
 
   try {
     let query: any = {};
     if (searchQuery) {
-      query = {
-        $or: [
-          { client_name: { $regex: searchQuery, $options: 'i' } },
-          { service_name: { $regex: searchQuery, $options: 'i' } },
-          { email: { $regex: searchQuery, $options: 'i' } },
-        ],
-      };
+      query.$or = [
+        { client_name: { $regex: searchQuery, $options: 'i' } },
+        { service_name: { $regex: searchQuery, $options: 'i' } },
+        { email: { $regex: searchQuery, $options: 'i' } },
+      ];
+    }
+    if (clientId) {
+      query.client_id = new mongoose.Types.ObjectId(clientId);
+    }
+    if (serviceCatalogId) {
+      query.service_catalog_id = new mongoose.Types.ObjectId(serviceCatalogId);
     }
 
     // count documents matching same query
@@ -169,16 +176,18 @@ export const getAllAssignedServices = async (req: Request, res: Response) => {
       },
       { $unwind: { path: '$service', preserveNullAndEmptyArrays: true } },
       // Prefer looked-up values; fall back to stored values if lookup missing
-      { $addFields: {
+      {
+        $addFields: {
           client_name: {
             $cond: [
-              { $and: [ { $ifNull: ['$client.firstName', false] }, { $ifNull: ['$client.lastName', false] } ] },
+              { $and: [{ $ifNull: ['$client.firstName', false] }, { $ifNull: ['$client.lastName', false] }] },
               { $concat: ['$client.firstName', ' ', '$client.lastName'] },
               '$client_name'
             ]
           },
           service_name: { $ifNull: ['$service.name', '$service_name'] }
-      } },
+        }
+      },
       { $project: { client: 0, service: 0 } },
       { $skip: skip },
       { $limit: limit }
@@ -255,8 +264,8 @@ export const updateAssignedService = async (req: Request, res: Response) => {
       const oldPrice =
         renewal_id
           ? (currentService.renewal_dates || []).find(
-              (r: any) => String(r._id) === String(renewal_id)
-            )?.price || 0
+            (r: any) => String(r._id) === String(renewal_id)
+          )?.price || 0
           : 0;
 
       const newTotal =
