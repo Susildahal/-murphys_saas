@@ -1,36 +1,47 @@
 'use client';
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { Camera, Loader2, User, Mail, Globe, Briefcase } from 'lucide-react';
+import {
+  Camera,
+  Loader2,
+  User,
+  Mail,
+  Globe,
+  Briefcase,
+  Phone,
+  Calendar as CalendarIcon,
+  MapPin,
+  Info,
+  CheckCircle2,
+  Github,
+  Twitter,
+  Linkedin
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { updateProfile, clearUpdateSuccess, fetchProfileByEmail, createProfile } from '@/lib/redux/slices/profileSlice';
 import { useToast } from '@/hooks/use-toast';
-import {
-  RegionDropdown,
-} from 'react-country-region-selector';
+import { RegionDropdown } from 'react-country-region-selector';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Calendar } from "@/components/ui/calendar"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from '@/lib/utils';
 import { getMee } from "@/lib/redux/slices/meeSlice";
-import { ChevronDownIcon } from "lucide-react"
-import { useSearchParams, useParams, useRouter, usePathname } from 'next/navigation';
-
+import { ChevronDownIcon } from "lucide-react";
+import { format } from 'date-fns';
+import { useRouter, usePathname } from 'next/navigation';
+import { Separator } from '@/components/ui/separator';
 import { COUNTRIES } from '@/lib/countries';
 
-// Validation schema
 const profileSchema = z.object({
   firstName: z.string().min(2, { message: 'First name must be at least 2 characters' }),
   middleName: z.string().optional(),
@@ -45,9 +56,7 @@ const profileSchema = z.object({
     const now = new Date();
     let age = now.getFullYear() - d.getFullYear();
     const m = now.getMonth() - d.getMonth();
-    if (m < 0 || (m === 0 && now.getDate() < d.getDate())) {
-      age--;
-    }
+    if (m < 0 || (m === 0 && now.getDate() < d.getDate())) { age--; }
     return age >= 17;
   }, { message: 'You must be at least 17 years old' }),
   doj: z.string().optional(),
@@ -61,56 +70,37 @@ const profileSchema = z.object({
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
-
-
 export default function ProfileUpdateForm() {
   const dispatch = useAppDispatch();
   const { toast } = useToast();
-  const { loading, error, updateSuccess, profile: data } = useAppSelector((state) => state.profile);
+  const { loading, profile: data } = useAppSelector((state) => state.profile);
   const pd = data as any;
   const { data: meeData } = useAppSelector((state) => state.mee);
-  const profileDisplayName = pd ? ((pd.firstName || pd.name || '') + (pd.lastName ? ' ' + pd.lastName : '')) : (meeData?.displayName || '');
-  const searchParams = useSearchParams();
-  const params = useParams();
-  const nameParam = searchParams.get('name') || params?.name;
   const router = useRouter();
   const pathname = usePathname();
 
   const [imagePreview, setImagePreview] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [open, setOpen] = React.useState(false)
-  const [date, setDate] = React.useState<Date | undefined>(undefined)
-  const [dojDate, setDojDate] = React.useState<Date | undefined>(undefined)
-  const [opendoj, setOpenDoj] = React.useState(false)
+  const [dobOpen, setDobOpen] = useState(false);
+  const [dojOpen, setDojOpen] = useState(false);
+  const [date, setDate] = useState<Date | undefined>(undefined);
+  const [dojDate, setDojDate] = useState<Date | undefined>(undefined);
 
-
-  // Fetch profile data when mee email is available
-  React.useEffect(() => {
-    if (meeData?.email) {
-      dispatch(fetchProfileByEmail(meeData.email));
-    }
+  useEffect(() => {
+    if (meeData?.email) dispatch(fetchProfileByEmail(meeData.email));
   }, [dispatch, meeData?.email]);
 
-  // Always fetch mee data on mount
-  React.useEffect(() => {
-    if (!meeData) {
-      dispatch(getMee());
-    }
-  }, [dispatch]);
-
-
-
-
+  useEffect(() => {
+    if (!meeData) dispatch(getMee());
+  }, [dispatch, meeData]);
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
-    mode: 'onSubmit',
-    reValidateMode: 'onChange',
     defaultValues: {
-      firstName: pd?.firstName || '',
+      firstName: '',
       middleName: '',
-      lastName: pd?.lastName || '',
-      email: meeData?.email || '',
+      lastName: '',
+      email: '',
       phone: '',
       gender: '',
       dob: '',
@@ -124,536 +114,487 @@ export default function ProfileUpdateForm() {
     },
   });
 
-  // Reset form when profile data loads so default values update after async fetch
-  React.useEffect(() => {
-    if (pd && (pd.firstName || pd.lastName)) {
-      try {
-        form.reset({
-          ...form.getValues(),
-          firstName: pd.firstName || '',
-          lastName: pd.lastName || '',
-        });
-      } catch (e) {
-        // guard: form may not be ready in rare cases
-        console.warn('Could not reset form with profile data', e);
-      }
-    }
-  }, [pd, form]);
-
-  // Fetch profile data when mee email is available
-  React.useEffect(() => {
+  useEffect(() => {
     if (data) {
-
       form.reset({
-        firstName: (data as any).firstName || '',
-        middleName: (data as any).middleName || '',
-        lastName: (data as any)?.lastName || '',
-        email: meeData.email || '',
-        phone: (data as any).phone || '',
-        gender: (data as any).gender || '',
-        dob: (data as any).dob || '',
-        doj: (data as any).doj || '',
-        bio: (data as any).bio || '',
-        website: (data as any).website || '',
-        country: (data as any).country || '',
-        state: (data as any).state || '',
-        city: (data as any).city || '',
-        position: (data as any).position || '',
+        firstName: pd.firstName || '',
+        middleName: pd.middleName || '',
+        lastName: pd.lastName || '',
+        email: meeData?.email || pd.email || '',
+        phone: pd.phone || '',
+        gender: pd.gender || '',
+        dob: pd.dob || '',
+        doj: pd.doj || '',
+        bio: pd.bio || '',
+        website: pd.website || '',
+        country: pd.country || '',
+        state: pd.state || '',
+        city: pd.city || '',
+        position: pd.position || '',
       });
-
-      // Set image preview if profile image exists
-      if (data.profile_image) {
-        setImagePreview(data.profile_image);
-      }
-
-      // Set dates if available
-      if ((data as any).dob) {
-        setDate(new Date((data as any).dob));
-      }
-      if ((data as any).doj) {
-        setDojDate(new Date((data as any).doj));
-      }
+      if (data.profile_image) setImagePreview(data.profile_image);
+      if (pd.dob) setDate(new Date(pd.dob));
+      if (pd.doj) setDojDate(new Date(pd.doj));
     }
-  }, [data, form]);
+  }, [data, meeData, form]);
 
-
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast({
-        title: 'Invalid file type',
-        description: 'Please select an image file',
-        variant: 'destructive',
-      });
+      toast({ title: 'Invalid file', description: 'Please select an image', variant: 'destructive' });
       return;
     }
-
-    // Validate file size (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: 'File too large',
-        description: 'Image must be less than 5MB',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setImageFile(file);
-    const imageUrl = URL.createObjectURL(file);
-    setImagePreview(imageUrl);
+    setImagePreview(URL.createObjectURL(file));
   };
 
-  // Update onSubmit to merge name fields and handle both create and update
   const onSubmit = async (formData: ProfileFormData) => {
     try {
-      // Merge name fields
       const email = meeData?.email || formData.email || '';
-      const submitData = { ...formData, email };
-
-      // Prepare FormData with binary image
       const fd = new FormData();
-      Object.entries(submitData).forEach(([key, value]) => {
+      Object.entries({ ...formData, email }).forEach(([key, value]) => {
         if (value) fd.append(key, String(value));
       });
-      if (imageFile) {
-        fd.append('profile_image', imageFile);
-      }
+      if (imageFile) fd.append('profile_image', imageFile);
 
-      // Determine if we're creating or updating
-      let result;
-      const isUpdate = Boolean(pd?._id);
-
-      if (isUpdate) {
-        // Update existing profile
-        const id = String(pd?._id);
-        result = await dispatch(updateProfile({ id, formData: fd as any })).unwrap();
-        toast({
-          title: 'Success!',
-          description: 'Profile updated successfully',
-        });
+      if (pd?._id) {
+        await dispatch(updateProfile({ id: String(pd._id), formData: fd as any })).unwrap();
+        toast({ title: 'Success', description: 'Profile updated' });
       } else {
-        // Create new profile
-        result = await dispatch(createProfile(fd as any)).unwrap();
-        toast({
-          title: 'Success!',
-          description: 'Profile created successfully',
-        });
+        await dispatch(createProfile(fd as any)).unwrap();
+        toast({ title: 'Success', description: 'Profile created' });
       }
 
-
-
-
-      setTimeout(() => {
-        dispatch(clearUpdateSuccess());
-      }, 3000);
-
-      // Navigate based on current route
-      if (pathname === '/profile') {
-        setTimeout(() => {
-          router.push('/admin/dashboard');
-        }, 2000);
-      }
+      setTimeout(() => dispatch(clearUpdateSuccess()), 3000);
+      if (pathname === '/profile') setTimeout(() => router.push('/admin/dashboard'), 2000);
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error || 'Failed to save profile',
-        variant: 'destructive',
-      });
+      toast({ title: 'Error', description: error || 'Failed to save', variant: 'destructive' });
     }
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4, staggerChildren: 0.1 } }
+  };
+
+  const sectionVariants = {
+    hidden: { opacity: 0, x: -10 },
+    visible: { opacity: 1, x: 0 }
   };
 
   return (
-    <>
-      <div className="min-h-screen  md:p-8 flex justify-center items-start">
-
-
-
-        <div className="  border rounded-2xl p-2 w-full max-w-4xl">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-xl flex items-center gap-2">
-                  {pd?._id ? 'Update Profile' : `Please Complete Your Profile Information First ${profileDisplayName}`}
-                </CardTitle>
-                <CardDescription className="text-base mt-1">
-                  {pd?._id ? 'Update your profile information' : 'Complete your profile details'}
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                {/* Profile Image */}
-                <div className="flex flex-col items-center gap-4">
-                  <Avatar className="w-32 h-32 border-4 border-muted shadow-lg">
+    <div className="w-full max-w-5xl mx-auto pb-20">
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-1 lg:grid-cols-12 gap-8"
+      >
+        {/* Left Column: Avatar & Summary */}
+        <div className="lg:col-span-4 space-y-6">
+          <Card className="border-none shadow-xl bg-card overflow-hidden">
+            <div className="h-24 bg-gradient-to-r from-[#480082] to-indigo-600" />
+            <CardContent className="relative pt-0">
+              <div className="flex flex-col items-center -mt-12">
+                <div className="relative group">
+                  <Avatar className="w-32 h-32 border-4 border-background shadow-2xl transition-transform duration-300 group-hover:scale-105">
                     <AvatarImage src={imagePreview} className="object-cover" />
                     <AvatarFallback className="text-4xl bg-muted">
-                      {form.watch('firstName')?.[0] || <User className="w-12 h-12 text-muted-foreground" />}
+                      {form.watch('firstName')?.[0] || <User className="w-12 h-12" />}
                     </AvatarFallback>
                   </Avatar>
-                  <label className="cursor-pointer">
-                    <Button type="button" variant="outline" className="gap-2" asChild>
-                      <span>
-                        <Camera className="w-4 h-4" />
-                        Upload Photo
-                        <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
-                      </span>
-                    </Button>
+                  <label className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full cursor-pointer shadow-lg hover:bg-primary/90 transition-colors">
+                    <Camera className="w-4 h-4" />
+                    <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
                   </label>
                 </div>
 
-                {/* Basic Info */}
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="firstName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>First Name *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="John" {...field} />
+                <div className="mt-4 text-center">
+                  <h2 className="text-xl font-bold text-foreground">
+                    {form.watch('firstName')} {form.watch('lastName')}
+                  </h2>
+                  <p className="text-sm text-muted-foreground font-medium">{form.watch('position') || 'Role not set'}</p>
+                </div>
 
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="middleName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Middle Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Michael" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="lastName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Last Name *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Doe" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                <Separator className="my-6" />
+
+                <div className="w-full space-y-4">
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                      <Mail className="w-4 h-4" />
+                    </div>
+                    <span>{meeData?.email || 'No email set'}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                      <Briefcase className="w-4 h-4" />
+                    </div>
+                    <span>{form.watch('position') || 'Position pending'}</span>
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
 
-                {/* Contact Info */}
-                <div className="space-y-4">
+          <Card className="border-none bg-primary/5 p-6">
+            <div className="flex items-center gap-3 mb-2">
+              <Info className="w-5 h-5 text-primary" />
+              <h4 className="font-semibold text-primary">Profile Completeness</h4>
+            </div>
+            <div className="h-2 w-full bg-primary/10 rounded-full overflow-hidden mt-3">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: pd?._id ? '100%' : '40%' }}
+                className="h-full bg-primary"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              {pd?._id ? 'Your profile is looking great!' : 'Complete your details to access all features.'}
+            </p>
+          </Card>
+        </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email Address</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="email"
-                              placeholder="john@example.com"
-                              {...field}
-                              value={meeData?.email || field.value}
-                              disabled
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="phone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Phone Number</FormLabel>
-                          <FormControl>
-                            <Input placeholder="+1 (555) 123-4567" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
+        {/* Right Column: Main Form */}
+        <div className="lg:col-span-8">
+          <Card className="border-none  bg-card">
+            <CardContent className="p-8">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
 
-                {/* Personal Info */}
-                <div className="space-y-4">
+                  {/* Personal Information */}
+                  <motion.div variants={sectionVariants} className="space-y-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500">
+                        <User className="w-5 h-5" />
+                      </div>
+                      <h3 className="text-lg font-bold">Personal Details</h3>
+                    </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="gender"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Gender</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl className='w-full'>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select gender" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="male">Male</SelectItem>
-                              <SelectItem value="female">Female</SelectItem>
-                              <SelectItem value="other">Other</SelectItem>
-                              <SelectItem value="prefer-not-to-say">Prefer not to say</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="dob"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>Date of Birth</FormLabel>
-                          <Popover open={open} onOpenChange={setOpen}>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "justify-between font-normal",
-                                    !date && "text-muted-foreground"
-                                  )}
-                                >
-                                  {date ? date.toLocaleDateString() : "Select date"}
-                                  <ChevronDownIcon className="w-4 h-4" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={date}
-                                captionLayout="dropdown"
-                                onSelect={(selectedDate) => {
-                                  setDate(selectedDate);
-                                  if (selectedDate) {
-                                    field.onChange(selectedDate.toISOString().split('T')[0]);
-                                  }
-                                  setOpen(false);
-                                }}
-                                disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
-                                fromYear={1940}
-                                toYear={new Date().getFullYear()}
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="doj"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>Date of Joining</FormLabel>
-                          <Popover open={opendoj} onOpenChange={setOpenDoj}>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "justify-between font-normal",
-                                    !dojDate && "text-muted-foreground"
-                                  )}
-                                >
-                                  {dojDate ? dojDate.toLocaleDateString() : "Select date"}
-                                  <ChevronDownIcon className="w-4 h-4" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={dojDate}
-                                captionLayout="dropdown"
-                                onSelect={(selectedDate) => {
-                                  setDojDate(selectedDate);
-                                  if (selectedDate) {
-                                    field.onChange(selectedDate.toISOString().split('T')[0]);
-                                  }
-                                  setOpenDoj(false);
-                                }}
-                                disabled={(date) => date > new Date()}
-                                fromYear={2000}
-                                toYear={new Date().getFullYear()}
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-
-                {/* Professional Info */}
-                <div className="space-y-4">
-
-                  <FormField
-                    control={form.control}
-                    name="position"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Position / Title *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Senior Developer" {...field} />
-                        </FormControl>
-                        <FormDescription>Your current role or position</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* About */}
-                <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="bio"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Bio</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Tell us about yourself..."
-                            className="resize-none min-h-[120px]"
-                            {...field}
-                          />
-                        </FormControl>
-                        <div className="flex justify-between text-xs text-muted-foreground">
-                          <span>Professional biography</span>
-                          <span>{field.value?.length || 0}/500</span>
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="website"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Website</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Globe className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input placeholder="https://your-website.com" {...field} className="pl-9" />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* Location */}
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="country"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Country</FormLabel>
-                          <Select
-                            onValueChange={(val) => {
-                              field.onChange(val);
-                              form.setValue('state', '');
-                            }}
-                            value={field.value}
-                          >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="firstName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>First Name <span className="text-destructive">*</span></FormLabel>
                             <FormControl>
-                              <SelectTrigger className="w-full  ">
-                                <SelectValue placeholder="Select Country" />
-                              </SelectTrigger>
+                              <Input placeholder="John" {...field} className="bg-muted/50 border-none focus:bg-background transition-all" />
                             </FormControl>
-                            <SelectContent className="max-h-[300px] overflow-y-auto">
-                              {COUNTRIES.map((country ,index) => (
-                                <SelectItem key={index} value={country}>
-                                   {country}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="lastName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Last Name <span className="text-destructive">*</span></FormLabel>
+                            <FormControl>
+                              <Input placeholder="Doe" {...field} className="bg-muted/50 border-none focus:bg-background transition-all" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="gender"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Gender</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl className="w-full">
+                                <SelectTrigger className="bg-muted/50 border-none">
+                                  <SelectValue placeholder="Select gender" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="male">Male</SelectItem>
+                                <SelectItem value="female">Female</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                                <SelectItem value="prefer-not-to-say">Keep Private</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="dob"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col">
+                            <FormLabel>Date of Birth</FormLabel>
+                            <Popover open={dobOpen} onOpenChange={setDobOpen}>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button variant="outline" className={cn("justify-between font-normal bg-muted/50 border-none", !date && "text-muted-foreground")}>
+                                    {date ? format(date, "PPP") : "Select date"}
+                                    <CalendarIcon className="w-4 h-4 ml-2 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={date}
+                                  onSelect={(d) => {
+                                    setDate(d);
+                                    if (d) field.onChange(d.toISOString().split('T')[0]);
+                                    setDobOpen(false);
+                                  }}
+                                  disabled={(d) => d > new Date() || d < new Date("1900-01-01")}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </motion.div>
+
+                  <Separator />
+
+                  {/* Professional Information */}
+                  <motion.div variants={sectionVariants} className="space-y-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-500">
+                        <Briefcase className="w-5 h-5" />
+                      </div>
+                      <h3 className="text-lg font-bold">Professional Info</h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="position"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Job Title <span className="text-destructive">*</span></FormLabel>
+                            <FormControl>
+                              <Input placeholder="e.g. Creative Director" {...field} className="bg-muted/50 border-none" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="doj"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col">
+                            <FormLabel>Join Date</FormLabel>
+                            <Popover open={dojOpen} onOpenChange={setDojOpen}>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button variant="outline" className={cn("justify-between font-normal bg-muted/50 border-none", !dojDate && "text-muted-foreground")}>
+                                    {dojDate ? format(dojDate, "PPP") : "Select date"}
+                                    <CalendarIcon className="w-4 h-4 ml-2 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={dojDate}
+                                  onSelect={(d) => {
+                                    setDojDate(d);
+                                    if (d) field.onChange(d.toISOString().split('T')[0]);
+                                    setDojOpen(false);
+                                  }}
+                                  disabled={(d) => d > new Date()}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
                     <FormField
                       control={form.control}
-                      name="state"
+                      name="bio"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>State / Region</FormLabel>
+                          <FormLabel>Professional Bio</FormLabel>
                           <FormControl>
-                            <RegionDropdown
-                              country={form.watch('country') || ''}
-                              value={field.value || ''}
-                              onChange={field.onChange}
-                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                              disabled={!form.watch('country')}
+                            <Textarea
+                              placeholder="Tell us about your professional journey..."
+                              className="bg-muted/50 border-none resize-none min-h-[120px]"
+                              {...field}
                             />
                           </FormControl>
+                          <div className="text-[10px] text-right text-muted-foreground">
+                            {field.value?.length || 0}/500 characters
+                          </div>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+                  </motion.div>
+
+                  <Separator />
+
+                  {/* Contact & Social */}
+                  <motion.div variants={sectionVariants} className="space-y-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500">
+                        <Phone className="w-5 h-5" />
+                      </div>
+                      <h3 className="text-lg font-bold">Contact & Social</h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Mobile Number</FormLabel>
+                            <FormControl>
+                              <Input placeholder="+1 234 567 890" {...field} className="bg-muted/50 border-none" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="website"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Portfolio / Website</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Globe className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <Input placeholder="https://portfolio.com" {...field} className="pl-9 bg-muted/50 border-none" />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </motion.div>
+
+                  <Separator />
+
+                  {/* Location Information */}
+                  <motion.div variants={sectionVariants} className="space-y-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500">
+                        <MapPin className="w-5 h-5" />
+                      </div>
+                      <h3 className="text-lg font-bold">Location</h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="country"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Country</FormLabel>
+                            <Select
+                              onValueChange={(val) => { field.onChange(val); form.setValue('state', ''); }}
+                              value={field.value}
+                            >
+                              <FormControl className=' w-full'>
+                                <SelectTrigger className="bg-muted/50 border-none">
+                                  <SelectValue placeholder="Select Country" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="max-h-[300px]">
+                                {COUNTRIES.map((c, i) => (
+                                  <SelectItem key={i} value={c}>{c}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="state"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>State / Province</FormLabel>
+                            <FormControl>
+                              <RegionDropdown
+                                country={form.watch('country') || ''}
+                                value={field.value || ''}
+                                onChange={field.onChange}
+                                className="flex h-10 w-full rounded-md border-none bg-muted/50 px-3 py-2 text-sm focus:outline-none disabled:opacity-50"
+                                disabled={!form.watch('country')}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                     <FormField
                       control={form.control}
                       name="city"
                       render={({ field }) => (
-                        <FormItem className="md:col-span-2">
+                        <FormItem>
                           <FormLabel>City</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter your city" {...field} />
+                            <Input placeholder="San Francisco" {...field} className="bg-muted/50 border-none" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                  </div>
-                </div>
+                  </motion.div>
 
-                {/* Submit Button */}
-                <div className="flex justify-end pt-4">
-                  <Button type="submit" disabled={loading} className="min-w-[160px]">
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                        {pd?._id ? 'Updating...' : 'Creating...'}
-                      </>
-                    ) : (
-                      <>{pd?._id ? 'Update Profile' : 'Create Profile'}</>
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </CardContent>
+                  {/* Actions */}
+                  <div className="flex items-center justify-end gap-4 pt-10 border-t border-border">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      disabled={loading}
+                      onClick={() => router.back()}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={loading}
+                      className="min-w-[200px] h-11 bg-[#480082] hover:bg-[#3a006b] shadow-lg shadow-indigo-500/20"
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          {pd?._id ? (
+                            <><CheckCircle2 className="w-4 h-4 mr-2" /> Update Profile</>
+                          ) : (
+                            'Save Profile Information'
+                          )}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
         </div>
-      </div>
-    </>
+      </motion.div>
+    </div>
   );
 }

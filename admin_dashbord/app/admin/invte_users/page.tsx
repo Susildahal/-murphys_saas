@@ -24,7 +24,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { getMee } from '@/lib/redux/slices/meeSlice'
-import { getinvite, createInvite, updateInvite, resendInvite ,deleteInvite  } from '@/lib/redux/slices/inviteSlicer'
+import { getinvite, createInvite, updateInvite, resendInvite, deleteInvite } from '@/lib/redux/slices/inviteSlicer'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { useAppSelector } from '@/lib/redux/hooks'
 import {
@@ -58,14 +58,14 @@ function Page() {
 
   React.useEffect(() => {
     if (!mee) {
-      
+
       dispatch(getMee());
     }
   }, [dispatch, mee]);
 
   React.useEffect(() => {
-    if(!data || data.length === 0 || page !== pagination?.page || limit !== pagination?.limit)
-    dispatch(getinvite({ page, limit }));
+    if (!data || data.length === 0 || page !== pagination?.page || limit !== pagination?.limit)
+      dispatch(getinvite({ page, limit }));
   }, [dispatch, page, limit]);
 
   // Sync local page/limit state when server pagination updates
@@ -94,7 +94,7 @@ function Page() {
     firstName: selectedInvite?.firstName || '',
     lastName: selectedInvite?.lastName || '',
     invite_email: mee?.email,
-    role_type: selectedInvite?.role_type || 'user',
+    role_type: selectedInvite?.role_type || '',
   };
 
   const validationSchema = Yup.object().shape({
@@ -118,7 +118,7 @@ function Page() {
       resetForm();
       setModalOpen(false);
       setSelectedInvite(null);
-  
+
     } catch (error) {
       setSubmitting(false);
       // Optionally handle error here
@@ -144,21 +144,21 @@ function Page() {
   }
 
 
-  
+
   return (
     <>
-    {loading && <SpinnerComponent />}
+      {loading && <SpinnerComponent />}
       <Header
         title={selectedInvite ? "Sent Invite Again" : "Invite Users"}
         description="Send invitations to new users by entering their email addresses below."
         buttonText="Invite New User"
         onButtonClick={() => setModalOpen(true)}
-        total={ pagination.total }
+        total={pagination.total}
 
       />
       {/* Debug: show pagination state */}
       <div className=" text-sm text-muted-foreground">
-      
+
       </div>
       <div>
         <div>
@@ -234,32 +234,37 @@ function Page() {
                         <div className="text-red-600 text-sm mt-1">{errors.lastName}</div>
                       )}
                     </div>
-                      <div>
-                      <Label htmlFor="role_type" className="block mb-1">Role Type</Label>
+                    <div>
+                      <Label htmlFor="role_type" className="block mb-1">
+                        Role Type
+                      </Label>
+
                       <Select
                         name="role_type"
+                        value={values.role_type}
                         onValueChange={(value) => {
                           handleChange({
-                            target: { name: 'role_type', value },
+                            target: { name: "role_type", value },
                           } as React.ChangeEvent<any>);
                         }}
-                        value={values.role_type || 'user'}
                       >
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select a role" />
                         </SelectTrigger>
+
                         <SelectContent>
                           <SelectItem value="admin user">Admin User</SelectItem>
                           <SelectItem value="client user">Client User</SelectItem>
                         </SelectContent>
                       </Select>
 
-              
-                   
-                      {errors.lastName && touched.lastName && (
-                        <div className="text-red-600 text-sm mt-1">{errors.lastName}</div>
+                      {errors.role_type && touched.role_type && (
+                        <div className="text-red-600 text-sm mt-1">
+                          {errors.role_type}
+                        </div>
                       )}
                     </div>
+
 
                     <Button type="submit" disabled={isSubmitting}>
                       {isSubmitting ? (selectedInvite ? 'Updating...' : 'Inviting...') : (selectedInvite ? 'Update Invite' : 'Send Invitation')}
@@ -273,110 +278,110 @@ function Page() {
       </div>
       <div>
         <div>
-        <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>User</TableHead>
-            <TableHead> Invite By </TableHead>
-            <TableHead> Users Name  </TableHead>
-              <TableHead> Invite Status  </TableHead>
-              <TableHead> Invite Date </TableHead>
-            <TableHead> Actions </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {loading ? (
-            <TableRow>
-              <TableCell colSpan={7}>Loading invites...</TableCell>
-            </TableRow>
-          ) : data.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={7}>No invites found</TableCell>
-            </TableRow>
-          ) : (
-            data.map((inviteUser: any, idx: number) => (
-              <TableRow key={inviteUser.id || inviteUser._id || inviteUser.email || idx}>
-                <TableCell className=' flex  gap-3'>
-                  {inviteUser.email || '-'}
-                  <div className=' flex gap-4'>
-                    <Tooltip>
-                      <TooltipTrigger>
-
-
-                        <Files
-                          className="inline-block h-4 w-4 ml-2 cursor-pointer"
-                          onClick={() => {
-                            navigator.clipboard.writeText(inviteUser.email || '');
-                            toast({
-                              title: "Copied to clipboard",
-                              description: `${inviteUser.email || ''} has been copied to clipboard.`,
-                              duration: 2000,
-                            });
-                          }}
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Click to copy email</p>
-                      </TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        {((inviteUser.inviteStatus || inviteUser.status || inviteUser.invite_status) || 'pending').toString().toLowerCase() === 'pending' && (
-
-
-
-                          <Send
-                            className="inline-block h-4 w-4 ml-2 cursor-pointer text-blue-600"
-                            onClick={async () => {
-                              try {
-                                await dispatch(resendInvite({ id: inviteUser._id || inviteUser.id }));
-                                toast({ title: 'Invite resent', description: `${inviteUser.email || ''} invitation resent.`, duration: 3000 });
-                                // dispatch(getinvite());
-                              } catch (err: any) {
-                                toast({ title: 'Resend failed', description: err?.message || 'Failed to resend invite', duration: 3000 });
-                              }
-                            }}
-                          />
-                        )}
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Resend Invite</p>
-                      </TooltipContent>
-                    </Tooltip>
-
-                  </div>
-                </TableCell>
-                <TableCell>{inviteUser.invite_email || '-'}</TableCell>
-                <TableCell>{(inviteUser.firstName || '') + ' ' + (inviteUser.lastName || '')}</TableCell>
-                <TableCell>
-                  <Badge variant={getStatus(inviteUser).variant}>
-                    {getStatus(inviteUser).label}
-                  </Badge>
-                </TableCell>
-              
-                <TableCell>{inviteUser.createdAt ? new Date(inviteUser.createdAt).toLocaleDateString() : '-'}</TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-
-                      <MoreVertical className="h-4 w-4 rotate-90 cursor-pointer" />
-
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-
-                      <DropdownMenuItem onClick={() => { setSelectedInvite(inviteUser); setModalOpen(true); }}> Update  </DropdownMenuItem>
-                      {((inviteUser.inviteStatus || inviteUser.status || inviteUser.invite_status) || 'pending').toString().toLowerCase() === 'pending' && (
-                        <DropdownMenuItem onClick={() => { dispatch(resendInvite({ id: inviteUser._id || inviteUser.id })); }}>Resend Invite</DropdownMenuItem>
-                      )}
-                      <DropdownMenuItem onClick={() => { setDeleteId(inviteUser._id) }}> Delete  </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>User</TableHead>
+                <TableHead> Invite By </TableHead>
+                <TableHead> Users Name  </TableHead>
+                <TableHead> Invite Status  </TableHead>
+                <TableHead> Invite Date </TableHead>
+                <TableHead> Actions </TableHead>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={7}>Loading invites...</TableCell>
+                </TableRow>
+              ) : data.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7}>No invites found</TableCell>
+                </TableRow>
+              ) : (
+                data.map((inviteUser: any, idx: number) => (
+                  <TableRow key={inviteUser.id || inviteUser._id || inviteUser.email || idx}>
+                    <TableCell className=' flex  gap-3'>
+                      {inviteUser.email || '-'}
+                      <div className=' flex gap-4'>
+                        <Tooltip>
+                          <TooltipTrigger>
+
+
+                            <Files
+                              className="inline-block h-4 w-4 ml-2 cursor-pointer"
+                              onClick={() => {
+                                navigator.clipboard.writeText(inviteUser.email || '');
+                                toast({
+                                  title: "Copied to clipboard",
+                                  description: `${inviteUser.email || ''} has been copied to clipboard.`,
+                                  duration: 2000,
+                                });
+                              }}
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Click to copy email</p>
+                          </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            {((inviteUser.inviteStatus || inviteUser.status || inviteUser.invite_status) || 'pending').toString().toLowerCase() === 'pending' && (
+
+
+
+                              <Send
+                                className="inline-block h-4 w-4 ml-2 cursor-pointer text-blue-600"
+                                onClick={async () => {
+                                  try {
+                                    await dispatch(resendInvite({ id: inviteUser._id || inviteUser.id }));
+                                    toast({ title: 'Invite resent', description: `${inviteUser.email || ''} invitation resent.`, duration: 3000 });
+                                    // dispatch(getinvite());
+                                  } catch (err: any) {
+                                    toast({ title: 'Resend failed', description: err?.message || 'Failed to resend invite', duration: 3000 });
+                                  }
+                                }}
+                              />
+                            )}
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Resend Invite</p>
+                          </TooltipContent>
+                        </Tooltip>
+
+                      </div>
+                    </TableCell>
+                    <TableCell>{inviteUser.invite_email || '-'}</TableCell>
+                    <TableCell>{(inviteUser.firstName || '') + ' ' + (inviteUser.lastName || '')}</TableCell>
+                    <TableCell>
+                      <Badge variant={getStatus(inviteUser).variant}>
+                        {getStatus(inviteUser).label}
+                      </Badge>
+                    </TableCell>
+
+                    <TableCell>{inviteUser.createdAt ? new Date(inviteUser.createdAt).toLocaleDateString() : '-'}</TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+
+                          <MoreVertical className="h-4 w-4 rotate-90 cursor-pointer" />
+
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+
+                          <DropdownMenuItem onClick={() => { setSelectedInvite(inviteUser); setModalOpen(true); }}> Update  </DropdownMenuItem>
+                          {((inviteUser.inviteStatus || inviteUser.status || inviteUser.invite_status) || 'pending').toString().toLowerCase() === 'pending' && (
+                            <DropdownMenuItem onClick={() => { dispatch(resendInvite({ id: inviteUser._id || inviteUser.id })); }}>Resend Invite</DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem onClick={() => { setDeleteId(inviteUser._id) }}> Delete  </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
       </div>
       {pagination && (

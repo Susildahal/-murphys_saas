@@ -69,7 +69,7 @@ export default function DashboardPage() {
     },
     {
       title: "Assigned Services",
-      value: totalAssigned.toString(),
+      value: (totalAssigned ?? 0).toString(),
       icon: CheckCircle2,
       trend: "+18%",
       color: "text-emerald-500",

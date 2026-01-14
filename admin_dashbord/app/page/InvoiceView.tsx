@@ -41,7 +41,7 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
           // Remove all existing stylesheets
           const allStyles = clonedDoc.querySelectorAll('style, link[rel="stylesheet"]')
           allStyles.forEach(style => style.remove())
-          
+
           // Create a comprehensive inline style sheet
           const safeStylesheet = clonedDoc.createElement('style')
           safeStylesheet.textContent = `
@@ -77,13 +77,13 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
             }
           `
           clonedDoc.head.appendChild(safeStylesheet)
-          
+
           // Force inline styles on all elements
           const allElements = clonedDoc.querySelectorAll('*')
           allElements.forEach((el) => {
             if (el instanceof HTMLElement) {
               const computedStyle = window.getComputedStyle(el)
-              
+
               // Preserve critical layout styles
               const criticalStyles = [
                 'display', 'width', 'height', 'padding', 'margin',
@@ -92,7 +92,7 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
                 'flex-direction', 'justify-content', 'align-items',
                 'grid-template-columns', 'gap', 'line-height'
               ]
-              
+
               let inlineStyle = ''
               criticalStyles.forEach(prop => {
                 const value = computedStyle.getPropertyValue(prop)
@@ -110,7 +110,7 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
                   inlineStyle += `${prop}: ${cleanValue}; `
                 }
               })
-              
+
               if (inlineStyle) {
                 el.setAttribute('style', inlineStyle)
               }
@@ -125,7 +125,7 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
       const pdfHeight = pdf.internal.pageSize.getHeight()
       const ratio = pdfWidth / canvas.width
       const imgHeight = canvas.height * ratio
-      
+
       let heightLeft = imgHeight
       let position = 0
 
@@ -157,17 +157,17 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
   }
 
   const getNextRenewalDate = () => {
-      if (!assignmentData.end_date || assignmentData.cycle === 'none') return null
-      const endDate = new Date(assignmentData.end_date)
-      if (isNaN(endDate.getTime())) return null
-      
-      const now = new Date()
-      let nextDate = new Date(endDate)
-      
-      if (assignmentData.cycle === 'monthly') nextDate = addMonths(endDate, 1)
-      else if (assignmentData.cycle === 'annual') nextDate = addYears(endDate, 1)
-      
-      return nextDate > now ? nextDate : null
+    if (!assignmentData.end_date || assignmentData.cycle === 'none') return null
+    const endDate = new Date(assignmentData.end_date)
+    if (isNaN(endDate.getTime())) return null
+
+    const now = new Date()
+    let nextDate = new Date(endDate)
+
+    if (assignmentData.cycle === 'monthly') nextDate = addMonths(endDate, 1)
+    else if (assignmentData.cycle === 'annual') nextDate = addYears(endDate, 1)
+
+    return nextDate > now ? nextDate : null
   }
 
   const nextRenewalDate = getNextRenewalDate()
@@ -193,7 +193,7 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
         borderRadius: '8px',
         boxShadow: '0 10px 40px rgba(0,0,0,0.3)'
       }}>
-        
+
         {/* Header */}
         <div style={{
           position: 'sticky',
@@ -257,24 +257,24 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
             fontFamily: 'Arial, sans-serif',
             boxSizing: 'border-box'
           }}>
-            
+
             {/* Logo & Header */}
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              marginBottom: '40px', 
-              borderBottom: '2px solid #e5e7eb', 
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              marginBottom: '40px',
+              borderBottom: '2px solid #e5e7eb',
               paddingBottom: '20px',
               flexWrap: 'wrap',
               gap: '20px'
             }}>
               <div style={{ flex: '1', minWidth: '250px' }}>
                 {settings?.logo && (
-                  <img 
-                    src={settings.logo} 
-                    alt="Logo" 
+                  <img
+                    src={settings.logo}
+                    alt="Logo"
                     style={{ height: '60px', marginBottom: '20px', display: 'block' }}
-                    crossOrigin="anonymous" 
+                    crossOrigin="anonymous"
                   />
                 )}
                 <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 10px 0', color: '#111827' }}>
@@ -310,10 +310,10 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
             </div>
 
             {/* Bill To Section */}
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: '1fr 1fr', 
-              gap: '40px', 
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '40px',
               marginBottom: '40px',
               width: '100%'
             }}>
@@ -351,44 +351,44 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
             </div>
 
             {/* Items Table */}
-            <table style={{ 
-              width: '100%', 
-              borderCollapse: 'collapse', 
+            <table style={{
+              width: '100%',
+              borderCollapse: 'collapse',
               marginBottom: '40px',
               tableLayout: 'fixed'
             }}>
               <thead>
                 <tr style={{ backgroundColor: '#f3f4f6' }}>
-                  <th style={{ 
-                    textAlign: 'left', 
-                    padding: '14px 12px', 
-                    fontSize: '13px', 
-                    fontWeight: '700', 
-                    color: '#111827', 
+                  <th style={{
+                    textAlign: 'left',
+                    padding: '14px 12px',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    color: '#111827',
                     borderBottom: '2px solid #e5e7eb',
                     width: '50%',
                     verticalAlign: 'middle'
                   }}>
                     Description
                   </th>
-                  <th style={{ 
-                    textAlign: 'center', 
-                    padding: '14px 12px', 
-                    fontSize: '13px', 
-                    fontWeight: '700', 
-                    color: '#111827', 
+                  <th style={{
+                    textAlign: 'center',
+                    padding: '14px 12px',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    color: '#111827',
                     borderBottom: '2px solid #e5e7eb',
                     width: '25%',
                     verticalAlign: 'middle'
                   }}>
                     Date
                   </th>
-                  <th style={{ 
-                    textAlign: 'center', 
-                    padding: '14px 12px', 
-                    fontSize: '13px', 
-                    fontWeight: '700', 
-                    color: '#111827', 
+                  <th style={{
+                    textAlign: 'center',
+                    padding: '14px 12px',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    color: '#111827',
                     borderBottom: '2px solid #e5e7eb',
                     width: '25%',
                     verticalAlign: 'middle'

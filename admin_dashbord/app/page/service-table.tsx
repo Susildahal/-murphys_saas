@@ -32,7 +32,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { MoreHorizontal, Edit, Trash2, ChevronLeft, ChevronRight, Eye, ArrowUpDown } from 'lucide-react';
+import { MoreHorizontal, Edit, Trash2, ChevronLeft, ChevronRight, Eye, ArrowUpDown, CheckCircle2, Info } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -55,6 +55,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import DateRangePicker from '@/components/ui/date-range-picker';
 import SpinnerComponent from './common/Spinner';
+import { Separator } from '@/components/ui/separator';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface ServiceTableProps {
   onEdit: (service: Service) => void;
@@ -296,63 +299,63 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
       <div className="">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Index</TableHead>
-              <TableHead>       Image</TableHead>
+            <TableRow className="bg-muted/50 hover:bg-muted/50">
+              <TableHead className="w-[60px] text-center">#</TableHead>
+              <TableHead className="w-[80px]">Image</TableHead>
               <TableHead
-                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                className="cursor-pointer hover:text-primary transition-colors min-w-[150px]"
                 onClick={() => handleSort('name')}
               >
                 <div className="flex items-center gap-2">
                   Service Name
-                  <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                  <ArrowUpDown className="h-3 w-3 opacity-50" />
                 </div>
               </TableHead>
-              <TableHead>Description</TableHead>
+              <TableHead className="min-w-[200px]">Description</TableHead>
               <TableHead
-                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                className="cursor-pointer hover:text-primary transition-colors"
                 onClick={() => handleSort('categoryName')}
               >
                 <div className="flex items-center gap-2">
                   Category
-                  <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                  <ArrowUpDown className="h-3 w-3 opacity-50" />
                 </div>
               </TableHead>
               <TableHead
-                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                className="cursor-pointer hover:text-primary transition-colors"
                 onClick={() => handleSort('price')}
               >
                 <div className="flex items-center gap-2">
                   Price
-                  <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                  <ArrowUpDown className="h-3 w-3 opacity-50" />
                 </div>
               </TableHead>
               <TableHead
-                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                className="cursor-pointer hover:text-primary transition-colors"
                 onClick={() => handleSort('billingType')}
               >
                 <div className="flex items-center gap-2">
-                  Billing Type
-                  <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                  Billing
+                  <ArrowUpDown className="h-3 w-3 opacity-50" />
                 </div>
               </TableHead>
               <TableHead
-                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                className="cursor-pointer hover:text-primary transition-colors"
                 onClick={() => handleSort('status')}
               >
                 <div className="flex items-center gap-2">
                   Status
-                  <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                  <ArrowUpDown className="h-3 w-3 opacity-50" />
                 </div>
               </TableHead>
-              <TableHead>Assign to Client</TableHead>
+              <TableHead>Assign</TableHead>
               <TableHead
-                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                className="cursor-pointer hover:text-primary transition-colors"
                 onClick={() => handleSort('createdAt')}
               >
                 <div className="flex items-center gap-2">
                   Date
-                  <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                  <ArrowUpDown className="h-3 w-3 opacity-50" />
                 </div>
               </TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -361,7 +364,9 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
           <TableBody>
             {sortedServices.map((service, index) => (
               <TableRow key={(service as any)._id || (service as any).id}>
-                <TableCell>{startIndex + index + 1}</TableCell>
+                <TableCell className="text-center font-mono text-muted-foreground text-xs">
+                  {startIndex + index + 1}
+                </TableCell>
                 <TableCell
                   onClick={() => {
                     const imgSrc = (service as any).image || (service as any).imageUrl || '';
@@ -375,60 +380,103 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
                     (() => {
                       const src = (service as any).image || (service as any).imageUrl || '';
                       return (
-                        <Image
-                          src={src}
-                          alt={service.name}
-                          width={40}
-                          height={40}
-                          className="w-10 h-10 rounded-md object-cover"
-                        />
+                        <div className="relative group w-10 h-10">
+                          <Image
+                            src={src}
+                            alt={service.name}
+                            width={40}
+                            height={40}
+                            className="w-10 h-10 rounded-lg object-cover border border-border shadow-sm group-hover:shadow-md transition-shadow"
+                          />
+                          <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent rounded-lg transition-colors" />
+                        </div>
                       );
                     })()
                   ) : (
-                    <div className="w-10 h-10 rounded-md bg-muted flex items-center justify-center text-sm text-muted-foreground">
-                      N/A
+                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center text-[10px] text-muted-foreground border border-dashed border-border">
+                      No Img
                     </div>
                   )}
                 </TableCell>
 
                 <TableCell className="font-medium">
-                  <div>
-                    <div className="font-semibold">{service.name}</div>
-
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-foreground">{service.name}</span>
+                    <Badge variant="outline" className="w-fit text-[10px] mt-1 px-1 py-0 h-4 font-normal opacity-70">
+                      ID: {((service as any)._id || (service as any).id).slice(-6)}
+                    </Badge>
                   </div>
                 </TableCell>
-                <TableCell className="font-medium">
+                <TableCell className="max-w-[200px]">
                   <Tooltip>
-                    <TooltipTrigger>
-                      <span className="truncate max-w-xs block">{service.description.slice(0, 40)} {service.description.length > 40 ? "..." : ""}</span>
+                    <TooltipTrigger asChild>
+                      <span className="truncate block text-sm text-muted-foreground">
+                        {service.description}
+                      </span>
                     </TooltipTrigger>
-                    <TooltipContent>
+                    <TooltipContent className="max-w-xs">
                       {service.description}
                     </TooltipContent>
                   </Tooltip>
                 </TableCell>
                 <TableCell>
-                  <Badge variant="secondary">{service.categoryName || 'Unknown'}</Badge>
+                  <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 border-none">
+                    {service.categoryName || 'Unknown'}
+                  </Badge>
                 </TableCell>
-                <TableCell className="font-semibold">
-                  {formatPrice(service.price, service.billingType, service.currency)}
-                </TableCell>
-                <TableCell>  <div>{formatBillingType(service.billingType)}</div></TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col">
+                    {service.hasDiscount && service.discountValue ? (
+                      <>
+                        <span className="text-xs text-muted-foreground line-through decoration-destructive/50">
+                          {formatPrice(service.price, service.billingType, service.currency)}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-emerald-600">
+                            {(() => {
+                              const disc = service.discountType === 'percentage'
+                                ? service.price - (service.price * (service.discountValue || 0) / 100)
+                                : service.price - (service.discountValue || 0);
+                              return formatPrice(disc, service.billingType, service.currency);
+                            })()}
+                          </span>
+                          <Badge className="bg-emerald-500 hover:bg-emerald-600 text-[10px] h-4 px-1 px-y-0 border-none">
+                            Sale
+                          </Badge>
+                        </div>
+                      </>
+                    ) : (
+                      <span className="font-semibold">
+                        {formatPrice(service.price, service.billingType, service.currency)}
+                      </span>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {formatBillingType(service.billingType)}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-3">
                     <Switch
                       checked={service.status === 'active'}
                       onCheckedChange={() => handleToggleStatus((service as any)._id || (service as any).id, service.status)}
                       disabled={loading}
+                      className="data-[state=checked]:bg-emerald-500"
                     />
                     <Badge
-                      variant={service.status === 'active' ? 'secondary' : 'default'}
-                      className="capitalize"
+                      variant="outline"
+                      className={cn(
+                        "capitalize border-none",
+                        service.status === 'active'
+                          ? "bg-emerald-500/10 text-emerald-600"
+                          : "bg-muted text-muted-foreground"
+                      )}
                     >
                       {service.status}
                     </Badge>
                   </div>
-
                 </TableCell>
                 <TableCell>
                   <Button
@@ -525,134 +573,126 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
       )}
 
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent className="max-w-4xl  max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Service Details</DialogTitle>
-            <DialogDescription>View complete service information</DialogDescription>
+            <DialogTitle className="text-xl font-bold">Service Details</DialogTitle>
+            <DialogDescription>Full summary for {selectedViewService?.name}</DialogDescription>
           </DialogHeader>
+
           {selectedViewService && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Service Name</label>
-                  <p className="text-lg font-semibold">{selectedViewService.name}</p>
+            <div className="space-y-6 py-4">
+              <div className="flex gap-6 items-start">
+                <div className="relative group shrink-0">
+                  {((selectedViewService as any).image || (selectedViewService as any).imageUrl) ? (
+                    <img
+                      src={(selectedViewService as any).image || (selectedViewService as any).imageUrl}
+                      alt=""
+                      className="w-32 h-32 rounded-xl object-cover border-4 border-muted shadow-sm"
+                    />
+                  ) : (
+                    <div className="w-32 h-32 rounded-xl bg-muted flex items-center justify-center text-muted-foreground border-4 border-muted">
+                      No Image
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Category</label>
-                  <p className="text-lg">
-                    <Badge variant="outline">{selectedViewService.categoryName || 'Unknown'}</Badge>
-                  </p>
+                <div className="flex-1 space-y-2">
+                  <Badge variant="outline" className="text-blue-600 bg-blue-50 border-blue-200 uppercase tracking-wider text-[10px]">
+                    {selectedViewService.categoryName}
+                  </Badge>
+                  <h3 className="text-2xl font-bold tracking-tight">{selectedViewService.name}</h3>
+                  <div className="flex items-center gap-3">
+                    {selectedViewService.hasDiscount && selectedViewService.discountValue ? (
+                      <>
+                        <span className="text-3xl font-extrabold text-emerald-600">
+                          {(() => {
+                            const disc = selectedViewService.discountType === 'percentage'
+                              ? selectedViewService.price - (selectedViewService.price * (selectedViewService.discountValue || 0) / 100)
+                              : selectedViewService.price - (selectedViewService.discountValue || 0);
+                            return formatPrice(disc, selectedViewService.billingType, selectedViewService.currency);
+                          })()}
+                        </span>
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-muted-foreground line-through decoration-destructive/40">
+                            {formatPrice(selectedViewService.price, selectedViewService.billingType, selectedViewService.currency)}
+                          </span>
+                          <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none text-[11px] h-5">
+                            {selectedViewService.discountType === 'percentage'
+                              ? `${selectedViewService.discountValue}% OFF`
+                              : `Save ${formatPrice(selectedViewService.discountValue || 0, 'one_time', selectedViewService.currency)}`}
+                          </Badge>
+                        </div>
+                      </>
+                    ) : (
+                      <span className="text-3xl font-extrabold">
+                        {formatPrice(selectedViewService.price, selectedViewService.billingType, selectedViewService.currency)}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground">Description</label>
-                <p className="text-base mt-1">{selectedViewService.description}</p>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Price</label>
-                  <p className="text-2xl font-bold text-primary">
-                    {formatPrice(selectedViewService.price, selectedViewService.billingType, selectedViewService.currency)}
-                  </p>
+
+              <Separator />
+
+              <div className="grid grid-cols-2 gap-8">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold uppercase text-muted-foreground tracking-widest">Billing Cycle</label>
+                  <p className="text-sm font-medium capitalize">{formatBillingType(selectedViewService.billingType)}</p>
                 </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Billing Type</label>
-                  <p className="text-lg">{formatBillingType(selectedViewService.billingType)}</p>
-                </div>
-              </div>
-              {/* Additional details */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Status</label>
-                  <p>
-                    <Badge variant={selectedViewService.status === 'active' ? 'default' : 'secondary'}>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold uppercase text-muted-foreground tracking-widest">Status</label>
+                  <div>
+                    <Badge className={cn(
+                      "capitalize border-none",
+                      selectedViewService.status === 'active' ? "bg-emerald-500 hover:bg-emerald-600" : "bg-muted text-muted-foreground"
+                    )}>
                       {selectedViewService.status}
                     </Badge>
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Currency</label>
-                  <p className="text-lg">{selectedViewService.currency || 'AUD'}</p>
+                  </div>
                 </div>
               </div>
 
-              {selectedViewService.hasDiscount && (
-                <div className="border rounded p-3">
-                  <h4 className="font-semibold">Discount</h4>
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    <div>
-                      <label className="text-sm text-muted-foreground">Type</label>
-                      <p>{selectedViewService.discountType || 'percentage'}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground">Value</label>
-                      <p>{selectedViewService.discountValue ?? selectedViewService.discountPercentage ?? 0}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground">Start Date</label>
-                      <p>{selectedViewService.discountStartDate || '—'}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm text-muted-foreground">End Date</label>
-                      <p>{selectedViewService.discountEndDate || '—'}</p>
-                    </div>
-                  </div>
+              <div className="space-y-2">
+                <label className="text-[11px] font-bold uppercase text-muted-foreground tracking-widest">Description</label>
+                <div className="text-sm leading-relaxed text-muted-foreground bg-muted/30 p-4 rounded-lg border border-border/50">
+                  {selectedViewService.description}
                 </div>
-              )}
-
-              {selectedViewService.tags && selectedViewService.tags.length > 0 && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Tags</label>
-                  <div className="flex gap-2 mt-2">
-                    {selectedViewService.tags.map((t) => (
-                      <Badge key={t} variant="secondary">{t}</Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
+              </div>
 
               {selectedViewService.features && selectedViewService.features.length > 0 && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Features</label>
-                  <ul className="list-disc pl-5 mt-2">
+                <div className="space-y-3">
+                  <label className="text-[11px] font-bold uppercase text-muted-foreground tracking-widest">Included Features</label>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                     {selectedViewService.features.map((f, i) => (
-                      <li key={i} className="text-sm">{f}</li>
+                      <div key={i} className="flex items-center gap-2 text-sm text-foreground/80">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                        <span className="truncate">{f}</span>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Featured</label>
-                  <p>{selectedViewService.isFeatured ? 'Yes' : 'No'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Duration (days)</label>
-                  <p>{selectedViewService.durationInDays ?? '—'}</p>
-                </div>
-              </div>
-
-              {selectedViewService.notes && (
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Internal Notes</label>
-                  <p className="mt-1">{selectedViewService.notes}</p>
+              {selectedViewService.hasDiscount && (
+                <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-4">
+                  <h4 className="text-xs font-bold text-amber-700 uppercase tracking-widest flex items-center gap-2 mb-3">
+                    <Info className="w-3 h-3" /> Promotion Details
+                  </h4>
+                  <div className="grid grid-cols-2 gap-y-3 text-xs">
+                    <div className="flex flex-col">
+                      <span className="text-muted-foreground">Promo Period</span>
+                      <span className="font-semibold text-amber-900">
+                        {selectedViewService.discountStartDate ? format(new Date(selectedViewService.discountStartDate), 'MMM dd, yyyy') : 'No start'}
+                        {' → '}
+                        {selectedViewService.discountEndDate ? format(new Date(selectedViewService.discountEndDate), 'MMM dd, yyyy') : 'No end'}
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-muted-foreground">Reason</span>
+                      <span className="font-semibold text-amber-900">{selectedViewService.discountReason || 'Seasonal Offer'}</span>
+                    </div>
+                  </div>
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Status</label>
-                  <p>
-                    <Badge variant={selectedViewService.status === 'active' ? 'default' : 'secondary'}>
-                      {selectedViewService.status}
-                    </Badge>
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">Currency</label>
-                  <p className="text-lg">{selectedViewService.currency || 'AUD'}</p>
-                </div>
-              </div>
             </div>
           )}
         </DialogContent>

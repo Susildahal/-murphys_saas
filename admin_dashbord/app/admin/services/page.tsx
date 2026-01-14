@@ -74,9 +74,11 @@ export default function Page() {
         <div className="">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className=' flex gap-2 justify-center items-center '>
-<ArrowLeft className="h-6 w-6 text-gray-500 inline-block mr-2 cursor-pointer" onClick={() => router.push('/admin/dashboard')} />
+              <Button variant="ghost" className=" cursor-pointer hover:bg-transparent">
+<ArrowLeft className="h-6 w-6 inline-block mr-2  text-blue-600 cursor-pointer" onClick={() => router.push('/admin/dashboard')} />
+  </Button>
   <div className=' flex flex-col'>             
-     <CardTitle className="text-xl ">Service Management {  total === 0 ? "" : "Total:"+ `_${total}` }</CardTitle>
+     <CardTitle className="text- ">Service Management {  total === 0 ? "" : "Total:"+ `_${total}` }</CardTitle>
               <CardDescription className="text-base "> 
                 Manage your services, pricing, and categories
               </CardDescription>
@@ -112,7 +114,7 @@ export default function Page() {
           </div>
         </div>
 
-        <div className="">
+        <div className="pt-4">
           <ServiceTable onEdit={handleEdit} categoryFilter={categoryFilter} />
         </div>
       </div>

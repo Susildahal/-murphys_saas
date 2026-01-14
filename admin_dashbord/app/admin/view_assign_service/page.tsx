@@ -262,7 +262,7 @@ const page = () => {
 
                                         return (
                                             <TableRow key={service._id ?? service.id}>
-                                                <TableCell>{pageNumber + index }</TableCell>
+                                                <TableCell>{pageNumber + index}</TableCell>
                                                 <TableCell>{service.client_name || (service.userProfile ? `${service.userProfile.firstName || ''} ${service.userProfile.lastName || ''}`.trim() : (service.userName || service.clientName || service.email || '-'))}</TableCell>
                                                 <TableCell>{service.service_name || service.serviceName || service.service_catalog_id || '-'}</TableCell>
                                                 <TableCell>
