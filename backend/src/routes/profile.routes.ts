@@ -25,17 +25,17 @@ profilerouter.post("/profiles", upload.single('profile_image'), cloudinaryUpload
 
 // Protected routes (authentication required)
 profilerouter.get("/profiles",  getProfiles);
-profilerouter.get("/profiles/types", isAdmin, getAdminProfiles);
-profilerouter.get("/profiles/:id", isOwnerOrAdmin, getProfileById);
-profilerouter.get("/profiles/email/:email", isOwnerOrAdmin, getProfileByEmail);
-profilerouter.put("/profiles/:id", isOwnerOrAdmin, upload.single('profile_image'), cloudinaryUpload, updateProfile);
+profilerouter.get("/profiles/types",  getAdminProfiles);
+profilerouter.get("/profiles/:id",  getProfileById);
+profilerouter.get("/profiles/email/:email",  getProfileByEmail);
+profilerouter.put("/profiles/:id",  upload.single('profile_image'), cloudinaryUpload, updateProfile);
 profilerouter.delete("/profiles/:id", deleteProfile);
 
 // Email route (admin only)
-profilerouter.post("/send-email", isAdmin, sentemail);
-profilerouter.post("/profiles/permissions/toggle", isAdmin, toggleUserPermission);
-profilerouter.post("/profiles/permissions/role", isAdmin, updateUserRole);
-profilerouter.post("/profiles/permissions/status", isAdmin, updateUserStatus);
-profilerouter.get("/profiles/permissions/:userId", isAdmin, getUserPermissions);
+profilerouter.post("/send-email", sentemail);
+profilerouter.post("/profiles/permissions/toggle", toggleUserPermission);
+profilerouter.post("/profiles/permissions/role", updateUserRole);
+profilerouter.post("/profiles/permissions/status", updateUserStatus);
+profilerouter.get("/profiles/permissions/:userId", getUserPermissions);
 
 export default profilerouter;   

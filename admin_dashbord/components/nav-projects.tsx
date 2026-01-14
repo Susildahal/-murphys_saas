@@ -47,10 +47,10 @@ export function NavProjects({
                 asChild
                 tooltip={item.name}
                 isActive={isActive as any}
-                className="h-9 hover:bg-accent hover:text-accent-foreground transition-all duration-200 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-md rounded-lg"
+                className=" hover:bg-accent hover:text-accent-foreground transition-all duration-200 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-md rounded-lg"
               >
                 <Link href={item.url}>
-                  <item.icon className="h-4 w-4" />
+                  <item.icon className="" />
                   <span className="font-medium">{item.name}</span>
                 </Link>
               </SidebarMenuButton>
