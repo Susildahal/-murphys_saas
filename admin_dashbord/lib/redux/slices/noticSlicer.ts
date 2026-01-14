@@ -120,7 +120,7 @@ export const deleteNotice = createAsyncThunk<
 export const toggleNoticeStatus = createAsyncThunk<
   { data: Notice; unreadCount: number },
   { noticeId: string; status: boolean },
-    { rejectValue: string }
+  { rejectValue: string }
 >("notices/toggleNoticeStatus", async ({ noticeId, status }, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.post(`/notices/toggleStatus`, { noticeId, status });
@@ -159,6 +159,40 @@ export const toggleNoticeStatus = createAsyncThunk<
 //   }
 // );
 
+/** Delete multiple notices */
+export const deleteManyNotices = createAsyncThunk<
+  string[],
+  string[],
+  { rejectValue: string }
+>("notices/deleteManyNotices", async (ids, { rejectWithValue }) => {
+  try {
+    await axiosInstance.post("/notices/delete-many", { ids });
+    return ids;
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || error.message
+    );
+  }
+});
+
+/** Mark all notices as read */
+export const markAllNoticesRead = createAsyncThunk<
+  { unreadCount: number },
+  void,
+  { rejectValue: string }
+>("notices/markAllNoticesRead", async (_, { rejectWithValue }) => {
+  try {
+    const response = await axiosInstance.post("/notices/mark-all-read");
+    return {
+      unreadCount: typeof response.data.unreadCount === 'number' ? response.data.unreadCount : 0
+    };
+  } catch (error: any) {
+    return rejectWithValue(
+      error.response?.data?.message || error.message
+    );
+  }
+});
+
 
 /* ================= SLICE ================= */
 
@@ -174,28 +208,28 @@ const noticeSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchNotices.fulfilled, (state, action) => {
-          state.loading = false;
-          // normalize status to boolean in all notices (backend may return string or boolean)
-          state.notices = action.payload.data.map(n => {
-            const rawStatus = (n as any).status;
-            const statusBool = rawStatus === true || rawStatus === 'true' || rawStatus === 1 || rawStatus === '1';
-            return { ...n, status: !!statusBool };
-          });
+        state.loading = false;
+        // normalize status to boolean in all notices (backend may return string or boolean)
+        state.notices = action.payload.data.map(n => {
+          const rawStatus = (n as any).status;
+          const statusBool = rawStatus === true || rawStatus === 'true' || rawStatus === 1 || rawStatus === '1';
+          return { ...n, status: !!statusBool };
+        });
         state.total = action.payload.pagination.total;
         state.page = action.payload.pagination.page;
         state.limit = action.payload.pagination.limit;
         state.totalPages = action.payload.pagination.totalPages;
-          // unreadCount should come from backend when available; don't derive from paginated page
-          state.unreadCount = typeof action.payload.unreadCount === 'number'
-            ? action.payload.unreadCount
-            : state.unreadCount;
+        // unreadCount should come from backend when available; don't derive from paginated page
+        state.unreadCount = typeof action.payload.unreadCount === 'number'
+          ? action.payload.unreadCount
+          : state.unreadCount;
       })
       .addCase(fetchNotices.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload ?? "Failed to fetch notices";
       })
 
-     
+
 
       /* CREATE */
       .addCase(createNotice.pending, (state) => {
@@ -228,31 +262,67 @@ const noticeSlice = createSlice({
         state.loading = false;
         state.error = action.payload ?? "Failed to delete notice";
       })
-        /* TOGGLE STATUS */
-        .addCase(toggleNoticeStatus.pending, (state) => {
-            state.loading = true;
-            state.error = null;
-        })
-        .addCase(toggleNoticeStatus.fulfilled, (state, action) => {
-          state.loading = false;
-          state.error = null;
-          const updated = action.payload.data;
-          const index = state.notices.findIndex(notice => notice._id === updated._id);
-          const rawStatus = (updated as any).status;
-          const statusBool = rawStatus === true || rawStatus === 'true' || rawStatus === 1 || rawStatus === '1';
-          const normalized = { ...updated, status: !!statusBool };
-          if (index !== -1) {
-            state.notices[index] = normalized;
-          } else {
-            state.notices.unshift(normalized);
-          }
-          // use unreadCount from backend when provided
-          state.unreadCount = typeof action.payload.unreadCount === 'number' ? action.payload.unreadCount : state.unreadCount;
-        })
-        .addCase(toggleNoticeStatus.rejected, (state, action) => {
-            state.loading = false;
-            state.error = action.payload ?? "Failed to toggle notice status";
-        });
+      /* TOGGLE STATUS */
+      .addCase(toggleNoticeStatus.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(toggleNoticeStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = null;
+        const updated = action.payload.data;
+        const index = state.notices.findIndex(notice => notice._id === updated._id);
+        const rawStatus = (updated as any).status;
+        const statusBool = rawStatus === true || rawStatus === 'true' || rawStatus === 1 || rawStatus === '1';
+        const normalized = { ...updated, status: !!statusBool };
+        if (index !== -1) {
+          state.notices[index] = normalized;
+        } else {
+          state.notices.unshift(normalized);
+        }
+        // use unreadCount from backend when provided
+        state.unreadCount = typeof action.payload.unreadCount === 'number' ? action.payload.unreadCount : state.unreadCount;
+      })
+      .addCase(toggleNoticeStatus.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload ?? "Failed to toggle notice status";
+      })
+
+      /* DELETE MANY */
+      .addCase(deleteManyNotices.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteManyNotices.fulfilled, (state, action) => {
+        state.loading = false;
+        // Filter out deleted notices
+        state.notices = state.notices.filter(
+          (notice) => !action.payload.includes(notice._id)
+        );
+        // Decrease total by number of deleted items
+        state.total -= action.payload.length;
+      })
+      .addCase(deleteManyNotices.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload ?? "Failed to delete notices";
+      })
+
+      /* MARK ALL READ */
+      .addCase(markAllNoticesRead.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(markAllNoticesRead.fulfilled, (state, action) => {
+        state.loading = false;
+        // Set all to read locally
+        state.notices = state.notices.map(notice => ({ ...notice, status: true }));
+        state.unreadCount = action.payload.unreadCount;
+      })
+      .addCase(markAllNoticesRead.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload ?? "Failed to mark all as read";
+      });
+
 
   },
 });

@@ -19,7 +19,7 @@ export default function AdminLayout({
     <NextThemeProvider>
       <ReduxProvider>
         <Sidebar>
-          <div className="sm:w-full w-[100vw] p-1">
+          <div className="w-full  bg-muted/5 min-h-screen">
             <Page />
             {children}
           </div>

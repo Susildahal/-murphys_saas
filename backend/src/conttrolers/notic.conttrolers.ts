@@ -4,68 +4,68 @@ import { Request, Response } from "express";
 
 // Create a new notice
 export const createNotice = async (req: Request, res: Response) => {
-    try {
-        const { firstName, lastName, title, message, email, phone ,status } = req.body;
-        const newNotice = new Notice({
-            firstName,
-            lastName,
-            title,
-            message,
-            email,
-            phone,
-            status
-        });
-        const savedNotice = await newNotice.save();
-        res.status(201).json(savedNotice);
-    }
-    catch (error) {
-        res.status(500).json({ error: 'Failed to create notice', message: error instanceof Error ? error.message : 'Unknown error' });
-    }
+  try {
+    const { firstName, lastName, title, message, email, phone, status } = req.body;
+    const newNotice = new Notice({
+      firstName,
+      lastName,
+      title,
+      message,
+      email,
+      phone,
+      status
+    });
+    const savedNotice = await newNotice.save();
+    res.status(201).json(savedNotice);
+  }
+  catch (error) {
+    res.status(500).json({ error: 'Failed to create notice', message: error instanceof Error ? error.message : 'Unknown error' });
+  }
 };
 // Get all notices with pagination
 export const getNotices = async (req: Request, res: Response) => {
-    try {
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 10;
-        const skip = (page - 1) * limit;
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
 
-        const [total ,unread ,notices] = await Promise.all([
-            Notice.countDocuments(),
-             Notice.countDocuments({ status: false }),
-            Notice.find().skip(skip).limit(limit).sort({ createdAt: -1 }),
-        ]);
-        
-        
-        res.status(200).json({
-            data :notices,
-            unreadCount: unread,
-            
-            pagination: {
-                Page: page,
-                totalPages: Math.ceil(total / limit),
-                limit: limit,
-                total: total
-            },
-           
-        });
-    }
-    catch (error) {
-        res.status(500).json({ error: 'Failed to fetch notices', message: error instanceof Error ? error.message : 'Unknown error' });
-    }       
+    const [total, unread, notices] = await Promise.all([
+      Notice.countDocuments(),
+      Notice.countDocuments({ status: false }),
+      Notice.find().skip(skip).limit(limit).sort({ createdAt: -1 }),
+    ]);
+
+
+    res.status(200).json({
+      data: notices,
+      unreadCount: unread,
+
+      pagination: {
+        Page: page,
+        totalPages: Math.ceil(total / limit),
+        limit: limit,
+        total: total
+      },
+
+    });
+  }
+  catch (error) {
+    res.status(500).json({ error: 'Failed to fetch notices', message: error instanceof Error ? error.message : 'Unknown error' });
+  }
 };
 // Delete a notice by ID
 export const deleteNotice = async (req: Request, res: Response) => {
-    try {
-        const noticeId = req.params.id;
-        const deletedNotice = await Notice.findByIdAndDelete(noticeId);
-        if (!deletedNotice) {
-            return res.status(404).json({ error: 'Notice not found' });
-        }
-        res.status(200).json({ message: 'Notice deleted successfully' });
+  try {
+    const noticeId = req.params.id;
+    const deletedNotice = await Notice.findByIdAndDelete(noticeId);
+    if (!deletedNotice) {
+      return res.status(404).json({ error: 'Notice not found' });
     }
-    catch (error) {
-        res.status(500).json({ error: 'Failed to delete notice', message: error instanceof Error ? error.message : 'Unknown error' });
-    }
+    res.status(200).json({ message: 'Notice deleted successfully' });
+  }
+  catch (error) {
+    res.status(500).json({ error: 'Failed to delete notice', message: error instanceof Error ? error.message : 'Unknown error' });
+  }
 };
 
 
@@ -110,3 +110,37 @@ export const toggleNoticeStatus = async (req: Request, res: Response) => {
   }
 }
 
+// Delete multiple notices by IDs
+export const deleteManyNotices = async (req: Request, res: Response) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: "Invalid input", message: "ids must be a non-empty array" });
+    }
+
+    await Notice.deleteMany({
+      _id: { $in: ids }
+    });
+
+    res.status(200).json({ message: 'Notices deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete notices', message: error instanceof Error ? error.message : 'Unknown error' });
+  }
+};
+
+// Mark all notices as read
+export const markAllAsRead = async (req: Request, res: Response) => {
+  try {
+    await Notice.updateMany({}, { status: true });
+
+    // Count unread notices (should be 0)
+    const unreadCount = await Notice.countDocuments({ status: false });
+
+    res.status(200).json({
+      message: 'All notices marked as read',
+      unreadCount
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to mark notices as read', message: error instanceof Error ? error.message : 'Unknown error' });
+  }
+};

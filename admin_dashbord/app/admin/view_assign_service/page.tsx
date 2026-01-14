@@ -1,5 +1,5 @@
 'use client'
-import React, { use, useEffect } from 'react'
+import React, {  useEffect } from 'react'
 import Header from '@/app/page/common/header'
 import {
     Table,
@@ -9,10 +9,18 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table"
-import { MoreVertical, RefreshCcw, Calendar as CalendarIcon, Plus, Edit2, Trash2, Delete, ChevronDownIcon, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+} from "@/components/ui/card"
+import { MoreVertical, RefreshCcw, Calendar as CalendarIcon, Plus, Edit2, Trash2, Delete, ChevronDownIcon, Loader2, User, Briefcase, DollarSign, Clock, FileText, Search } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { getAssignedServices, getAssignDetails } from '@/lib/redux/slices/assignSlice';
 import SpinnerComponent from '@/app/page/common/Spinner'
@@ -145,173 +153,181 @@ const page = () => {
 
 
 
-        // removed redundant search helper - main effect handles fetching on debouncedSearch changes
+    // removed redundant search helper - main effect handles fetching on debouncedSearch changes
 
-  
+
 
     return (
-        <>
+        <div className="space-y-6">
             {loading && <SpinnerComponent />}
             <Header
                 title="Assigned Services"
                 description="Manage and view assigned services"
 
                 total={total}
-                extraInfo={<div>
-                    <Input
-                        type='text'
-                        placeholder='Search by service or client name'
-                        className='max-w-sm'
-                        value={searchTerm}
-                        onChange={(e) => {
-                            setSearchTerm(e.target.value);
-                            setPageNumber(1);
-                        }}
-                    />
-                </div>}
+                extraInfo={
+                    <div className="relative">
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            type='text'
+                            placeholder='Search by service or client...'
+                            className='pl-9 max-w-sm'
+                            value={searchTerm}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value);
+                                setPageNumber(1);
+                            }}
+                        />
+                    </div>
+                }
             />
 
-            <div className="overflow-x-auto">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Client Name</TableHead>
-                            <TableHead>Service Name</TableHead>
-                            <TableHead>Assigned Date</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Price</TableHead>
-                            <TableHead>End Date</TableHead>
-                            <TableHead>Renewal Dates</TableHead>
-                            <TableHead>Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {rows && rows.length > 0 ? (
-                            rows.map((service: any) => {
-                                const assignedDate = service.start_date || service.assignedDate || service.createdAt;
-                                const daysAgo = getDaysAgo(assignedDate);
-                                const totalRenewalPrice = (service.renewal_dates || []).reduce((sum: number, r: any) => sum + (r.price || 0), 0);
-                                const remainingPrice = Number(service.price || 0) - totalRenewalPrice;
+            <div className="border-none bg-none overflow-hidden">
+             
+                <div className="p-0">
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Client Name</TableHead>
+                                    <TableHead>Service Name</TableHead>
+                                    <TableHead>Assigned Date</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>Price</TableHead>
+                                    <TableHead>End Date</TableHead>
+                                    <TableHead>Renewal Dates</TableHead>
+                                    <TableHead>Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {rows && rows.length > 0 ? (
+                                    rows.map((service: any) => {
+                                        const assignedDate = service.start_date || service.assignedDate || service.createdAt;
+                                        const daysAgo = getDaysAgo(assignedDate);
+                                        const totalRenewalPrice = (service.renewal_dates || []).reduce((sum: number, r: any) => sum + (r.price || 0), 0);
+                                        const remainingPrice = Number(service.price || 0) - totalRenewalPrice;
 
-                                return (
-                                    <TableRow key={service._id ?? service.id}>
-                                        <TableCell>{service.client_name || (service.userProfile ? `${service.userProfile.firstName || ''} ${service.userProfile.lastName || ''}`.trim() : (service.userName || service.clientName || service.email || '-'))}</TableCell>
-                                        <TableCell>{service.service_name || service.serviceName || service.service_catalog_id || '-'}</TableCell>
-                                        <TableCell>
-                                            <div className="flex flex-col gap-1">
-                                                <span>{assignedDate ? new Date(String(assignedDate)).toLocaleDateString() : '-'}</span>
-                                                {daysAgo && <Badge variant="secondary" className="w-fit text-xs">{daysAgo}</Badge>}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Badge variant={service.isaccepted === 'accepted' ? 'default' : service.isaccepted === 'pending' ? 'outline' : 'destructive'}>
-                                                {service.isaccepted ?? service.status ?? '-'}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex flex-col gap-1">
-                                                <span className="font-semibold">${service.price ?? '-'}</span>
-                                                {totalRenewalPrice > 0 && (
+                                        return (
+                                            <TableRow key={service._id ?? service.id}>
+                                                <TableCell>{service.client_name || (service.userProfile ? `${service.userProfile.firstName || ''} ${service.userProfile.lastName || ''}`.trim() : (service.userName || service.clientName || service.email || '-'))}</TableCell>
+                                                <TableCell>{service.service_name || service.serviceName || service.service_catalog_id || '-'}</TableCell>
+                                                <TableCell>
                                                     <div className="flex flex-col gap-1">
-                                                        <Badge variant="secondary" className="w-fit text-xs">
-                                                            Allocated: ${totalRenewalPrice}
-                                                        </Badge>
-                                                        <Badge variant={remainingPrice > 0 ? "outline" : "default"} className="w-fit text-xs">
-                                                            Remaining: ${remainingPrice}
-                                                        </Badge>
+                                                        <span>{assignedDate ? new Date(String(assignedDate)).toLocaleDateString() : '-'}</span>
+                                                        {daysAgo && <Badge variant="secondary" className="w-fit text-xs">{daysAgo}</Badge>}
                                                     </div>
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex flex-col gap-1">
-                                                <span>
-                                                    {service.end_date ? new Date(String(service.end_date)).toLocaleDateString() : '-'}
-                                                </span>
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex items-center gap-2">
-                                                {service.renewal_dates && service.renewal_dates.length > 0 ? (
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => {
-                                                            setRenewalDialogData(service);
-                                                            resetRenewalForm();
-                                                            setRenewalDialogOpen(true);
-                                                        }}
-                                                    >
-                                                        <CalendarIcon className="h-4 w-4 mr-2" />
-                                                        View {service.renewal_dates.length} Renewal{service.renewal_dates.length > 1 ? 's' : ''}
-                                                    </Button>
-                                                ) : (
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => {
-                                                            setRenewalDialogData(service);
-                                                            resetRenewalForm();
-                                                            setRenewalDialogOpen(true);
-                                                        }}
-                                                    >
-                                                        <Plus className="h-4 w-4 mr-2" />
-                                                        Add Renewal
-                                                    </Button>
-                                                )}
-                                            </div>
-                                        </TableCell>
-                                        <TableCell>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" className="h-8 w-8 cursor-pointer p-0">
-                                                        <MoreVertical className="h-4 w-4 rotate-90" />
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem onClick={() => {
-                                                        setEditData(service);
-                                                        setEditOpen(true);
-                                                    }}>Edit Service</DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => {
-                                                        dispatch(getAssignDetails({ client_id: service.client_id, service_catalog_id: service.service_catalog_id }))
-                                                            .then((res: any) => {
-                                                                if (res.payload) {
-                                                                    setDetailsData(res.payload);
-                                                                    setDetailsOpen(true);
-                                                                }
-                                                            })
-                                                            .catch(() => {
-                                                                toast({
-                                                                    title: 'Error',
-                                                                    description: 'Failed to fetch assigned service details.',
-                                                                    variant: 'destructive',
-                                                                });
-                                                            })
-                                                    }}>
-                                                        View Details
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => {
-                                                        setInvoiceData(service);
-                                                        setInvoiceOpen(true);
-                                                    }}>View Invoice</DropdownMenuItem>
-                                                    <DropdownMenuItem onClick={() => { setDeleteOpen(true); setDeleteid(service._id); }}>Delete</DropdownMenuItem>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge variant={service.isaccepted === 'accepted' ? 'default' : service.isaccepted === 'pending' ? 'outline' : 'destructive'}>
+                                                        {service.isaccepted ?? service.status ?? '-'}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="font-semibold">${service.price ?? '-'}</span>
+                                                        {totalRenewalPrice > 0 && (
+                                                            <div className="flex flex-col gap-1">
+                                                                <Badge variant="secondary" className="w-fit text-xs">
+                                                                    Allocated: ${totalRenewalPrice}
+                                                                </Badge>
+                                                                <Badge variant={remainingPrice > 0 ? "outline" : "default"} className="w-fit text-xs">
+                                                                    Remaining: ${remainingPrice}
+                                                                </Badge>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex flex-col gap-1">
+                                                        <span>
+                                                            {service.end_date ? new Date(String(service.end_date)).toLocaleDateString() : '-'}
+                                                        </span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2">
+                                                        {service.renewal_dates && service.renewal_dates.length > 0 ? (
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    setRenewalDialogData(service);
+                                                                    resetRenewalForm();
+                                                                    setRenewalDialogOpen(true);
+                                                                }}
+                                                            >
+                                                                <CalendarIcon className="h-4 w-4 mr-2" />
+                                                                View {service.renewal_dates.length} Renewal{service.renewal_dates.length > 1 ? 's' : ''}
+                                                            </Button>
+                                                        ) : (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    setRenewalDialogData(service);
+                                                                    resetRenewalForm();
+                                                                    setRenewalDialogOpen(true);
+                                                                }}
+                                                            >
+                                                                <Plus className="h-4 w-4 mr-2" />
+                                                                Add Renewal
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" className="h-8 w-8 cursor-pointer p-0">
+                                                                <MoreVertical className="h-4 w-4 rotate-90" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuItem onClick={() => {
+                                                                setEditData(service);
+                                                                setEditOpen(true);
+                                                            }}>Edit Service</DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => {
+                                                                dispatch(getAssignDetails({ client_id: service.client_id, service_catalog_id: service.service_catalog_id }))
+                                                                    .then((res: any) => {
+                                                                        if (res.payload) {
+                                                                            setDetailsData(res.payload);
+                                                                            setDetailsOpen(true);
+                                                                        }
+                                                                    })
+                                                                    .catch(() => {
+                                                                        toast({
+                                                                            title: 'Error',
+                                                                            description: 'Failed to fetch assigned service details.',
+                                                                            variant: 'destructive',
+                                                                        });
+                                                                    })
+                                                            }}>
+                                                                View Details
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => {
+                                                                setInvoiceData(service);
+                                                                setInvoiceOpen(true);
+                                                            }}>View Invoice</DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => { setDeleteOpen(true); setDeleteid(service._id); }}>Delete</DropdownMenuItem>
 
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={8} className="text-center">
+                                            No assigned services found {searchTerm === '' ? '' : <span className='font-bold '>{`for "${searchTerm}"   `} <RefreshCcw className="inline-block ml-2 cursor-pointer hover:animate-spin" onClick={handelreset} /></span>}.
                                         </TableCell>
                                     </TableRow>
-                                );
-                            })
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={8} className="text-center">
-                                    No assigned services found {searchTerm === '' ? '' : <span className='font-bold '>{`for "${searchTerm}"   `} <RefreshCcw className="inline-block ml-2 cursor-pointer hover:animate-spin" onClick={handelreset} /></span>}.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </div>
             </div>
 
             {/* Edit Service Dialog */}
@@ -779,7 +795,7 @@ const page = () => {
                     }}
                 />
             )}
-        </>
+        </div>
     )
 }
 

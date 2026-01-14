@@ -1,5 +1,5 @@
-import  express from "express";
-import { createNotice, getNotices, deleteNotice ,toggleNoticeStatus } from "../conttrolers/notic.conttrolers";
+import express from "express";
+import { createNotice, getNotices, deleteNotice, toggleNoticeStatus, deleteManyNotices, markAllAsRead } from "../conttrolers/notic.conttrolers";
 const noticeRouter = express.Router();
 
 // Public route to create a new notice
@@ -10,6 +10,11 @@ noticeRouter.get('/notices', getNotices);
 noticeRouter.delete('/notices/:id', deleteNotice);
 // Public route to toggle notice status
 noticeRouter.post('/notices/toggleStatus', toggleNoticeStatus);
+// Route to delete multiple notices
+noticeRouter.post('/notices/delete-many', deleteManyNotices);
+// Route to mark all notices as read
+noticeRouter.post('/notices/mark-all-read', markAllAsRead);
+
 export default noticeRouter;
 
 
