@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 // Small client redirector so both query-style links ( ?mode=...&oobCode=... ) and
@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 // links use query params; your app had a dynamic route expecting the mode as a path
 // segment which caused 404s when visitors opened links containing only query params.
 
-export default function ResetPasswordRedirect() {
+function ResetPasswordRedirectContent() {
   const router = useRouter();
   const search = useSearchParams();
 
@@ -43,5 +43,19 @@ export default function ResetPasswordRedirect() {
         <p className="text-sm text-muted-foreground">Redirecting to reset page...</p>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordRedirect() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="text-center">
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    }>
+      <ResetPasswordRedirectContent />
+    </Suspense>
   );
 }
