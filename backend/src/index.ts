@@ -21,8 +21,7 @@ import noticeRouter from "./routes/notic.routes";
 const app = express();
 
 // CORS: use ALLOWED_ORIGINS env var (comma-separated). If not set, allow localhost and the known Vercel preview domain.
-const allowedOriginsEnv =  
-'http://localhost:3001,https://murphys-saas-m62b.vercel.app,https://murphys-saas.vercel.app,http://192.168.10.79:3000,http://localhost:3000';
+const allowedOriginsEnv = 'http://localhost:3001,https://murphys-saas.vercel.app,http://192.168.10.79:3000,http://localhost:3000';
 const allowedOrigins = allowedOriginsEnv.split(',')
   .map(s => s.trim())   // remove spaces
   .filter(Boolean); // remove empty strings
