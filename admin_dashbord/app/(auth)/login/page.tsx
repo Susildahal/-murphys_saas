@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, EyeOff, Mail, Lock, ArrowRight, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, Mail, } from "lucide-react";
 import {
   getAuth,
   signInWithEmailAndPassword,
@@ -19,7 +19,6 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { EmailModal } from "@/app/page/email-model";
 import Image from "next/image";
-import { useAppDispatch } from "@/lib/redux/hooks";
 import axiosInstance from "@/lib/axios";
 
 

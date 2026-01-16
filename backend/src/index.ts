@@ -14,6 +14,7 @@ import assignClientRouter from "./routes/assignClient.routes";
 import rolerouter from "./routes/role.routes";
 import siteSettingRouter from "./routes/siteSetting.route";
 import noticeRouter from "./routes/notic.routes";
+import dashboardrouter from "./routes/dashboard";
 
 // Use profile routes
 
@@ -62,6 +63,9 @@ app.use("/api", assignClientRouter);
 app.use("/api", rolerouter);
 app.use("/api/settings", siteSettingRouter);
 app.use("/api", noticeRouter);
+app.use("/api", dashboardrouter);
+
+
 
 // Protected route example
 // app.get("/api/mee", verifyFirebaseToken, (req: AuthenticatedRequest, res) => {
