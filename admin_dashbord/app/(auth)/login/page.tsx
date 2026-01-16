@@ -49,8 +49,7 @@ export default function AdminLoginPage() {
     email: Yup.string().email("Invalid email").required("Required"),
     password: Yup.string()
       .min(6, "Password too short")
-      .matches(/[A-Z]/, 'Password must contain at least one uppercase letter')
-      .matches(/[a-z]/, 'Password must contain at least one lowercase letter')
+     
       .required("Required"),
   });
 
@@ -127,7 +126,7 @@ export default function AdminLoginPage() {
         </div>
         {/* Top Left Lines */}
         <div className="absolute top-0 left-0 w-1/4 h-1/4">
-          {[...Array(4)].map((_, i) => (
+          {[...Array(5)].map((_, i) => (
             <div
               key={`tl-${i}`}
               className="absolute border-l border-t border-blue-500"
@@ -158,13 +157,13 @@ export default function AdminLoginPage() {
           ))}
         </div>
          <div className="absolute bottom-0 right-0 w-1/4 h-1/4">
-          {[...Array(3)].map((_, i) => (
+          {[...Array(5)].map((_, i) => (
             <div
               key={`bl-${i}`}
               className="absolute border-l border-b border-blue-500"
               style={{
-                width: `${80 + i * 25}px`,
-                height: `${80 + i * 25}px`,
+                width: `${100 + i * 25}px`,
+                height: `${100 + i * 25}px`,
                 left: `${i * 18}px`,
                 bottom: `${i * 18}px`,
                 transform: 'rotate(45deg)',
@@ -206,7 +205,7 @@ export default function AdminLoginPage() {
           onSubmit={handleLogin}
         >
           {({ isSubmitting, status, touched, errors }) => (
-            <Form className="space-y-5">
+            <Form className="space-y-3">
               {/* Email Field */}
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium text-neutral-700">
@@ -256,7 +255,7 @@ export default function AdminLoginPage() {
 
               {/* Remember Me & Forgot Password */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1">
                   <Checkbox
                     id="remember"
                     checked={rememberMe}
@@ -273,7 +272,7 @@ export default function AdminLoginPage() {
                 <button
                   type="button"
                   onClick={() => router.push("/forgot-password")}
-                  className="text-sm text-neutral-700 hover:text-purple-600 transition"
+                  className="text-sm text-neutral-700 cursor-pointer hover:text-purple-600 transition"
                 >
                   Forgot Password?
                 </button>
@@ -312,7 +311,7 @@ export default function AdminLoginPage() {
 
                 <Button
         variant="link"
-        className="absolute bottom-6 cursor-pointer text-neutral-500 hover:text-purple-600 transition text-sm"
+        className="absolute bottom-3   cursor-pointer text-neutral-500 hover:text-purple-600 transition text-sm"
         onClick={() => setModalOpen(true)}
       >
         <Mail className="w-4 h-4 mr-2 inline-block" />

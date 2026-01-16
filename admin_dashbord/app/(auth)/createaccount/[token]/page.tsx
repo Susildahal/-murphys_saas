@@ -212,7 +212,7 @@ const varifyEmailFromToken = async (token: string) => {
               You've been invited to join our platform.
             </AlertDialogDescription>
             <div className="text-center space-y-4 mt-3">
-              <div className="bg-muted rounded-lg p-3 inline-block text-left">
+              <div className=" rounded-lg p-3 inline-block text-left">
                 <p className="text-xs text-muted-foreground mb-1"> { user && `Hii ${user?.firstName} ${user?.lastName}`}</p> 
                 { user && (
                 <>
