@@ -21,7 +21,10 @@ export default function ForgotPasswordPage() {
     try {
       const auth = getAuth(app);
       // send password reset email via Firebase - direct user to custom reset page in this app
-      const continueUrl = `${window.location.origin}/reset-password`;
+      // Prefer an explicit public site URL (set NEXT_PUBLIC_SITE_URL) in production so email links
+      // point to the deployed app instead of localhost. Fallback to current origin for dev.
+      const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL as string) || window.location.origin;
+      const continueUrl = `${siteUrl}/reset-password`;
       await sendPasswordResetEmail(auth, email, {
         // The URL the user will be redirected to after clicking the email link
         url: continueUrl,
