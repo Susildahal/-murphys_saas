@@ -34,7 +34,7 @@ export function NavProjects({
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider px-2 mb-2">
+      <SidebarGroupLabel className="text-xs font-semibold text-slate-800 dark:text-white/70 uppercase tracking-wider px-2 mb-2">
         Quick Access
       </SidebarGroupLabel>
       <SidebarMenu>
@@ -47,7 +47,7 @@ export function NavProjects({
                 asChild
                 tooltip={item.name}
                 isActive={isActive as any}
-                className=" hover:bg-accent hover:text-accent-foreground transition-all duration-200 data-[active=true]:bg-primary data-[active=true]:text-primary-foreground data-[active=true]:shadow-md rounded-lg"
+                className="text-slate-900 dark:text-white hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-all duration-200 data-[active=true]:bg-white/20 data-[active=true]:text-slate-900 dark:data-[active=true]:text-white data-[active=true]:shadow-md rounded-lg"
               >
                 <Link href={item.url}>
                   <item.icon className="" />

@@ -40,7 +40,7 @@ export function NavMain({
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider px-2 mb-2">
+      <SidebarGroupLabel className="text-xs font-semibold text-slate-800 dark:text-white/70 uppercase tracking-wider px-2 mb-2">
         Management
       </SidebarGroupLabel>
       <SidebarMenu className="space-y-1">
@@ -65,15 +65,15 @@ export function NavMain({
                   <SidebarMenuButton
                     tooltip={item.title}
                     isActive={itemIsActive}
-                    className="h-9 hover:bg-accent hover:text-accent-foreground transition-all duration-200 rounded-lg data-[active=true]:bg-accent data-[active=true]:text-accent-foreground data-[state=open]:text-accent-foreground font-medium"
+                    className="h-9 text-slate-900 dark:text-white hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-all duration-200 rounded-lg data-[active=true]:bg-white/20 data-[active=true]:text-slate-900 dark:data-[active=true]:text-white data-[state=open]:text-slate-900 dark:data-[state=open]:text-white font-medium"
                   >
                     {item.icon && <item.icon className="h-4 w-4" />}
                     <span className="flex-1">{item.title}</span>
-                    <ChevronRight className="ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 text-muted-foreground/50 group-hover/collapsible:text-accent-foreground" />
+                    <ChevronRight className="ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 text-slate-700 dark:text-white/50 group-hover/collapsible:text-slate-900 dark:group-hover/collapsible:text-white" />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <SidebarMenuSub className="mr-0 border-l border-border/50 ml-3.5 pl-3 mt-1 space-y-0.5 transition-all">
+                  <SidebarMenuSub className="mr-0 border-l border-slate-700 dark:border-white/20 ml-3.5 pl-3 mt-1 space-y-0.5 transition-all">
                     {item.items?.map((subItem) => {
                       const subUrl = normalize(subItem.url)
                       const subIsActive = !!subItem.url && (pathnameNormalized === subUrl || pathnameNormalized.startsWith(subUrl + '/'))
@@ -82,7 +82,7 @@ export function NavMain({
                           <SidebarMenuSubButton
                             asChild
                             isActive={subIsActive}
-                            className="h-8 hover:bg-accent hover:text-accent-foreground transition-all duration-200 rounded-md data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-medium text-muted-foreground"
+                            className="h-8 text-slate-800 dark:text-white/80 hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-all duration-200 rounded-md data-[active=true]:bg-white/20 data-[active=true]:text-slate-900 dark:data-[active=true]:text-white data-[active=true]:font-medium"
                           >
                             <Link href={subItem.url}>
                               <span className="text-sm">{subItem.title}</span>

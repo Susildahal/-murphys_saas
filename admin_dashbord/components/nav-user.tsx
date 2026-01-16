@@ -106,19 +106,19 @@ export function NavUser() {
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size="lg"
-                className="h-12 hover:bg-accent transition-colors rounded-lg data-[state=open]:bg-accent"
+                className="h-12 text-slate-900 dark:text-white hover:bg-white/10 transition-colors rounded-lg data-[state=open]:bg-white/10"
               >
-                <Avatar className="h-9 w-9 rounded-full border-2 border-border">
+                <Avatar className="h-9 w-9 rounded-full border-2 border-slate-700 dark:border-white/30">
                   <AvatarImage src={userAvatar} alt={userName} />
-                  <AvatarFallback className="rounded-full bg-gradient-to-br from-primary/20 to-primary/5 text-primary font-semibold">
+                  <AvatarFallback className="rounded-full bg-white/20 text-slate-900 dark:text-white font-semibold">
                     {getInitials(userName)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{userName}</span>
-                  <span className="truncate text-xs text-muted-foreground">{userEmail}</span>
+                  <span className="truncate font-medium text-slate-900 dark:text-white">{userName}</span>
+                  <span className="truncate text-xs text-slate-700 dark:text-white/70">{userEmail}</span>
                 </div>
-                <ChevronsUpDown className="ml-auto h-4 w-4 text-muted-foreground" />
+                <ChevronsUpDown className="ml-auto h-4 w-4 text-slate-700 dark:text-white/70" />
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
