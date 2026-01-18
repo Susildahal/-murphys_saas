@@ -52,30 +52,7 @@ const data = {
     },
   ],
   navMain: [
-    {
-      title: "Users",
-      url: "#",
-      icon: SquareTerminal,
-      items: [
-        {
-          title: "Invite Users",
-          url: "/admin/invte_users",
-        },
 
-        {
-          title: "All users",
-          url: "/admin/get_all_users",
-        },
-        {
-          title: "Admin Users",
-          url: "/admin/admin_users",
-        },
-        {
-          title: "Clients Users",
-          url: "/admin/clients_users",
-        },
-      ],
-    },
    
     {
       title: "Settings",
@@ -119,12 +96,7 @@ const data = {
       icon: ShoppingCart,
     },
     {
-      name: "Payment",
-      url: "/admin/payment",
-      icon: CreditCard,
-    },
-    {
-      name: "Assigned Services",
+      name: "My Services",
       url: "/admin/view_assign_service",
       icon: AudioWaveform,
     },
@@ -133,6 +105,11 @@ const data = {
       url: "/admin/contracts",
       icon: Map,
     },
+    {
+    name :" Invite Users",
+    url:"/admin/invte_users",
+    icon: Bot,
+    }
   ],
 }
 
