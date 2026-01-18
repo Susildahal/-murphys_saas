@@ -2,9 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   turbopack: {
+    // ensures Turbopack uses this folder as the workspace root (silences "inferred workspace root" warning)
     root: '.',
   },
   images: {
+    // `images.domains` is deprecated — prefer `remotePatterns` for more control
     remotePatterns: [
       {
         protocol: 'https',
