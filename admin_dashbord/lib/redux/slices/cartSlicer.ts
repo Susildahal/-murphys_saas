@@ -19,16 +19,26 @@ export interface CartItem {
 
 interface CartState {
   cart: CartItem | null;
+  carts: CartItem[];
   loading: boolean;
   error: string | null;
   total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  totalCarts: number;
 }
 
 const initialState: CartState = {
   cart: null,
+  carts: [],
   loading: false,
   error: null,
   total: 0,
+  page: 1,
+  limit: 10,
+  totalPages: 0,
+  totalCarts: 0,
 };
 
 // Compute cart total from services, applying discounts if present
@@ -86,13 +96,30 @@ export const updateCartStatus = createAsyncThunk(
 
 export const getAllCarts = createAsyncThunk(
   'cart/getAllCarts',
-  async (_, { rejectWithValue }) => {
+  async (params: { page?: number; limit?: number } = {}, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.get('/cart/all');
-      return response.data.carts;
+      const { page = 1, limit = 10 } = params;
+      const response = await axiosInstance.get('/cart/all', { params: { page, limit } });
+      return {
+        carts: response.data.carts || [],
+        pagination: response.data.pagination || {}
+      };
     }
     catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Failed to fetch carts');
+    }
+  }
+);
+
+export const assignServiceToClient = createAsyncThunk(
+  'cart/assignServiceToClient',
+  async (payload: { client_id: string; service_catalog_id: string }, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post('/assign-service', payload);
+      return response.data;
+    }
+    catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to assign service');
     }
   }
 );
@@ -141,6 +168,37 @@ const cartSlice = createSlice({
     builder.addCase(updateCartStatus.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+    });
+    
+    // Get all carts
+    builder.addCase(getAllCarts.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(getAllCarts.fulfilled, (state, action) => {
+      state.loading = false;
+      state.carts = action.payload.carts;
+      state.page = action.payload.pagination.currentPage || 1;
+      state.limit = action.payload.pagination.limit || 10;
+      state.totalPages = action.payload.pagination.totalPages || 0;
+      state.totalCarts = action.payload.pagination.total || 0;
+    });
+    builder.addCase(getAllCarts.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+    
+    // Assign service to client
+    builder.addCase(assignServiceToClient.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(assignServiceToClient.fulfilled, (state) => {
+      state.loading = false;
+    });
+    builder.addCase(assignServiceToClient.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
     });
   },
 });

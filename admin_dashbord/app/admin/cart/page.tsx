@@ -31,7 +31,7 @@ function page() {
     const dispatch = useAppDispatch();
     const { cart, loading, error, total } = useAppSelector((state) => state.cart);
     useEffect(() => {
-        dispatch(getAllCarts());
+        dispatch(getAllCarts({ page: 1, limit: 10 }));
     }, [dispatch]);
 
   return (
