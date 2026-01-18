@@ -10,6 +10,8 @@ import permissionReducer from './slices/permissionSlice';
 import siteSettingReducer from './slices/siteSettingSlice';
 import  noticeSlice from './slices/noticSlicer';
 import dashboardSlice from './slices/dashboardSlicer';
+import cartReducer from './slices/cartSlicer';
+
 
 export const store = configureStore({
   reducer: {
@@ -19,6 +21,7 @@ export const store = configureStore({
     mee: meeReducer,
     invite: inviteSlice.reducer,
     assign: assignSlice,
+    cart: cartReducer,
     role: roleReducer,
     permission: permissionReducer,
     siteSettings: siteSettingReducer,

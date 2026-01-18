@@ -17,6 +17,7 @@ import {
   Grid3x3,
   CreditCard,
   Search,
+  ShoppingBasketIcon,
 } from "lucide-react"
 import { motion, AnimatePresence } from "motion/react"
 
@@ -122,13 +123,18 @@ const data = {
     },
     {
       name: "Assigned Services",
-      url: "/admin/assign_service",
+      url: "/admin/view_assign_service",
       icon: AudioWaveform,
     },
     {
       name: "Role and Permission",
       url: "/admin/roles",
       icon: Map,
+    },
+      {
+      name: "Cart",
+      url: "/admin/cart",
+      icon: ShoppingBasketIcon,
     },
   ],
 }

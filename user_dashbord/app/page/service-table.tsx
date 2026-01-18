@@ -1,30 +1,20 @@
 'use client';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { deleteService, toggleServiceStatus, setSelectedService, fetchServices } from '@/lib/redux/slices/serviceSlice';
+import {  fetchServices } from '@/lib/redux/slices/serviceSlice';
 import { addToCart, getCart } from '@/lib/redux/slices/cartSlice';
 import { Service } from '@/types/service';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { MoreHorizontal, Edit, Trash2, ChevronLeft, ChevronRight, Eye, ArrowUpDown, CheckCircle2, Info, ShoppingCart } from 'lucide-react';
+
+import { MoreHorizontal, ChevronLeft, ChevronRight, Eye, CheckCircle2, Info, ShoppingCart } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -38,28 +28,24 @@ import Image from 'next/image';
 import SpinnerComponent from './common/Spinner';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
 
 interface ServiceTableProps {
-  onEdit: (service: Service) => void;
   categoryFilter?: string;
 }
 
 const ITEMS_PER_PAGE = 10;
 
-export default function ServiceTable({ onEdit, categoryFilter = 'all' }: ServiceTableProps) {
+export default function ServiceTable({ categoryFilter = 'all' }: ServiceTableProps) {
   const dispatch = useAppDispatch();
   const { toast } = useToast();
   const { services, loading, page: storePage, limit: storeLimit, total, totalPages } = useAppSelector((state) => state.services);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
+  const {loading: cartLoading} = useAppSelector((state) => state.cart);
+
   const [currentPage, setCurrentPage] = useState(storePage || 1);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [selectedViewService, setSelectedViewService] = useState<Service | null>(null);
   const [clickImage, setClickImage] = useState<string>('');
-  const router = useRouter();
   const meeState = useAppSelector((s) => s.mee);
-  const cartState = useAppSelector((s) => s.cart);
   const userid = meeState.data?.uid || '';
 
   // Sorting state
@@ -135,28 +121,7 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
     return formatted;
   };
 
-  const handleToggleStatus = async (_id: string, currentStatus: 'active' | 'inactive') => {
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-    try {
-      await dispatch(toggleServiceStatus({ _id, status: newStatus })).unwrap();
-      toast({
-        title: 'Success',
-        description: `Service ${newStatus === 'active' ? 'enabled' : 'disabled'} successfully`,
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to toggle service status',
-        variant: 'destructive',
-      });
-      console.error('Failed to toggle status:', error);
-    }
-  };
 
-  const handleDeleteClick = (_id: string) => {
-    setServiceToDelete(_id);
-    setDeleteDialogOpen(true);
-  };
 
   const handleAddToCart = async (service: Service) => {
     if (!userid) {
@@ -185,35 +150,9 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
     }
   };
 
-  const handleDeleteConfirm = async () => {
-    if (serviceToDelete) {
-      try {
-        await dispatch(deleteService(serviceToDelete)).unwrap();
-        toast({
-          title: 'Success',
-          description: 'Service deleted successfully',
-        });
-        setDeleteDialogOpen(false);
-        setServiceToDelete(null);
-      } catch (error) {
-        toast({
-          title: 'Error',
-          description: 'Failed to delete service',
-          variant: 'destructive',
-        });
-        console.error('Failed to delete service:', error);
-      }
-    }
-  };
 
-  if (loading && services.length === 0) {
-    return (
-      <>
-        <SpinnerComponent />
-      </>
 
-    );
-  }
+ 
 
   const handleViewClick = (service: Service) => {
     setSelectedViewService(service);
@@ -239,6 +178,15 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
 
   return (
     <>
+
+    {
+      loading && <SpinnerComponent />
+    }
+
+{
+  cartLoading && <SpinnerComponent />
+  
+}
       {
         clickImage && (
           <Dialog open={Boolean(clickImage)} onOpenChange={() => setClickImage('')}>
@@ -284,21 +232,7 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
                       className="cursor-pointer"
                     >
                       <Eye className="mr-2 h-4 w-4" />
-                      View
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => onEdit(service)}
-                      className="cursor-pointer"
-                    >
-                      <Edit className="mr-2 h-4 w-4" />
-                      Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => handleDeleteClick((service as any)._id || (service as any).id)}
-                      className="cursor-pointer text-destructive"
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete
+                      View Details
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -366,31 +300,7 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
 
               <Separator />
 
-              {/* Status & Date */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Switch
-                    checked={service.status === 'active'}
-                    onCheckedChange={() => handleToggleStatus((service as any)._id || (service as any).id, service.status)}
-                    disabled={loading}
-                    className="data-[state=checked]:bg-emerald-500"
-                  />
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "capitalize border-none text-xs",
-                      service.status === 'active'
-                        ? "bg-emerald-500/10 text-emerald-600"
-                        : "bg-muted text-muted-foreground"
-                    )}
-                  >
-                    {service.status}
-                  </Badge>
-                </div>
-                <span className="text-xs text-muted-foreground">
-                  {new Date(service.createdAt).toLocaleDateString()}
-                </span>
-              </div>
+            
 
               {/* Actions */}
               <Button
@@ -566,26 +476,7 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the service
-              from the system.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+
     </>
   );
 }

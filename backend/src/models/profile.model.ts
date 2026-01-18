@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 const profileSchema = new mongoose.Schema({ 
+userId:{ type: String, required: true, unique: true },  // come from firebase auth uid
 bio :{type: String },
 city: { type: String },
 country: { type: String },
@@ -21,7 +22,6 @@ role: { type: mongoose.Schema.Types.ObjectId, ref: 'Role' }, // Reference to cus
 status: { type: String, enum: ['active', 'inactive', 'suspended'], default: 'active' },
 role_type: { type: String , enum: ['client user', 'admin user'] }, // Type: admin or client
 permissions: [{ type: String }], // Custom permissions array for granular access control
-
 }, { timestamps: true });
 
 const Profile = mongoose.model("Profile", profileSchema);

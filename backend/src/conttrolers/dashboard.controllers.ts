@@ -4,6 +4,7 @@ import Service from "../models/service.model";
 import AssignedService from "../models/assignService.routes";
 import Notice from "../models/notic.models";
 import Category from "../models/category.model";
+import Cart from "../models/cart.model";
 
 // Helper function to get date range based on filter
 const getDateRange = (filter: string) => {

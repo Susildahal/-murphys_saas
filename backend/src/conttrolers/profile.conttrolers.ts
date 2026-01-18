@@ -1,5 +1,6 @@
 import Profile from "../models/profile.model";
 import { Request, Response } from "express";
+import { AuthenticatedRequest } from "../middleware/auth";
 import transporter from "../config/nodemiller";
 import AssignService from '../models/assignService.routes';
 import admin from "../config/firebaseAdmin";
@@ -7,7 +8,9 @@ import Jwt from "jsonwebtoken";
 
 
 
-export const createProfile = async (req: Request, res: Response) => {
+export const createProfile = async (req: AuthenticatedRequest, res: Response) => {
+  const user = req.user;
+
   try {
     const body = req.body as any;
     const email = body?.email;
@@ -41,6 +44,7 @@ export const createProfile = async (req: Request, res: Response) => {
       website: body.website,
       profile_image: body.profile_image || body.imageUrl || undefined,
       public_id: body.public_id || undefined,
+      userId: user?.uid
     };
 
     const profile = new Profile(profileData);
@@ -51,13 +55,14 @@ export const createProfile = async (req: Request, res: Response) => {
   }
 };
 
-export const getProfiles = async (req: Request, res: Response) => {
+export const getProfiles = async (req: AuthenticatedRequest, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 10;
   const skip = (page - 1) * limit;
   const search = req.query.search as string | undefined;
   const inviteStatus = req.query.inviteStatus as string | undefined;
   const email = req.query.email as string | undefined;
+
 
   try {
     if (email) {
@@ -99,7 +104,7 @@ export const getProfiles = async (req: Request, res: Response) => {
 };
 
 
-export const getProfileById = async (req: Request, res: Response) => {
+export const getProfileById = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const profile = await Profile.findById(req.params.id);
     if (!profile) {
@@ -112,10 +117,14 @@ export const getProfileById = async (req: Request, res: Response) => {
 };
 
 
-export const updateProfile = async (req: Request, res: Response) => {
+export const updateProfile = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const body = req.body as any;
 
+    const user= req.user;
+
+   
+  
     // Build update data object
     const updateData: any = {
       firstName: body.firstName,
@@ -134,7 +143,8 @@ export const updateProfile = async (req: Request, res: Response) => {
       website: body.website,
       role: body.role,
       status: body.status,
-      usertypes: body.usertypes
+      usertypes: body.usertypes,
+      userId: user?.uid
     };
 
     // Only update image fields if a new image was uploaded
@@ -517,7 +527,3 @@ export const getUserPermissions = async (req: Request, res: Response) => {
     res.status(400).json({ message: (error as Error).message });
   }
 };
-
-
-
-

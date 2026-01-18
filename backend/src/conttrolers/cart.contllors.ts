@@ -39,14 +39,28 @@ export const addToCart = async (req: Request, res: Response) => {
 };
 // Get cart by user ID
 export const getCartByUserId = async (req: Request, res: Response) => {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) ||20;
+    const skip = (page - 1) * limit;
     try {
         let { userid } = req.params;
         userid = typeof userid === 'string' ? userid.replace(/^"+|"+$/g, '') : userid;
-        const cart = await Cart.findOne({ userid }).populate('Services.serviceId');
+        const [total, cart] = await Promise.all([
+            Cart.countDocuments({ userid }),
+            Cart.findOne({ userid }).populate('Services.serviceId')
+        ]);
         if (!cart) {
             return res.status(404).json({ message: 'Cart not found' });
         }
-        res.status(200).json(cart);
+        res.status(200).json({
+            cart,
+            pagination: {
+                totalPages: 1,
+                currentPage: 1,
+                total: total,
+                limit: limit
+            },
+        });
     }
     catch (error) {
         if ((error as any).name === 'CastError') {
@@ -67,7 +81,7 @@ export const removeFromCart = async (req: Request, res: Response) => {
         }
         cart.Services = cart.Services.filter(
             (service: any) => service.serviceId.toString() !== serviceId
-        );
+        ) as any;
         await cart.save();
         res.status(200).json(cart);
     }
@@ -87,7 +101,7 @@ export const clearCart = async (req: Request, res: Response) => {
         if (!cart) {
             return res.status(404).json({ message: 'Cart not found' });
         }
-        cart.Services = [];
+        cart.Services = [] as any;
         await cart.save();
         res.status(200).json(cart);
     }
@@ -103,12 +117,44 @@ export const getAllCarts = async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
-
-    try {  
-        const [total, carts] = await Promise.all([
+    try {
+        // fetch carts and services, use lean() to get plain JS objects
+        const [total, cartsRaw] = await Promise.all([
             Cart.countDocuments(),
-            Cart.find().populate('Services.serviceId').populate('userid').skip(skip).limit(limit).sort({ createdAt: -1 })
+            Cart.find()
+                .skip(skip)
+                .populate({ path: 'Services.serviceId', select: 'name image' })
+                .limit(limit)
+                .sort({ createdAt: -1 })
+                .lean()
         ]);
+
+        // Attach profile info to each cart when possible
+        const carts = await Promise.all(cartsRaw.map(async (c: any) => {
+            try {
+                let profile = null;
+                if (c.userid) {
+                    if (typeof c.userid === 'string' && /^[0-9a-fA-F]{24}$/.test(c.userid)) {
+                        profile = await Profile.findById(c.userid).select('userId firstName lastName email').lean();
+                    }
+                    if (!profile && typeof c.userid === 'string' && c.userid.includes('@')) {
+                        profile = await Profile.findOne({ email: c.userid }).select('_id firstName lastName email').lean();
+                    }
+                    if (!profile) {
+                        profile = await Profile.findOne({ userId: c.userid }).select('_id firstName lastName email').lean();
+                    }
+                }
+
+                const user = profile
+                    ? { user_id: profile.userId || profile._id, firstName: profile.firstName || '', lastName: profile.lastName || '', email: profile.email || '' }
+                    : { user_id: c.userid, firstName: '', lastName: '', email: '' };
+
+                return { ...c, user };
+            } catch (e) {
+                return { ...c, user: { user_id: c.userid, firstName: '', lastName: '', email: '' } };
+            }
+        }));
+
         res.status(200).json({
            carts,
             pagination: {
@@ -117,16 +163,14 @@ export const getAllCarts = async (req: Request, res: Response) => {
                 total: total,
                 limit: limit
             },
-
         });
-    }  
+    }
     catch (error) {
         res.status(500).json({ message: 'Server Error', error });
     }
 };
-
-
-export const updateCartStatus = async (req: Request, res: Response) => {
+// Update cart service status
+    export const updateCartStatus = async (req: Request, res: Response) => {
     try {
         let { userid, serviceId, status } = req.body;
         userid = typeof userid === 'string' ? userid.replace(/^"+|"+$/g, '') : userid;
