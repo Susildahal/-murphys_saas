@@ -16,7 +16,7 @@ interface JwtPayload {
 
 export const assignServiceToClient = async (req: Request, res: Response) => {
   try {
-    const { client_id, service_catalog_id, status, note, price, cycle, auto_invoice, start_date, end_date } = req.body;
+    const { client_id, service_catalog_id, status, note, price, cycle, auto_invoice, start_date, end_date ,assign_by } = req.body;
     if (!client_id || !service_catalog_id || !price || !cycle) {
       return res.status(400).json({ message: 'client_id, service_catalog_id, price, and cycle are required' });
     }
@@ -46,6 +46,7 @@ export const assignServiceToClient = async (req: Request, res: Response) => {
       email,
       client_name: fullname,
       service_name: useExistingService.name,
+      assign_by
     });
     const token = jwt.sign({ email: email }, process.env.JWT_SECRET as string, { expiresIn: '7d' }); // Token valid for 7 days
 

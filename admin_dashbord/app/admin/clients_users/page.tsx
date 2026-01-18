@@ -27,12 +27,14 @@ import Header from '@/app/page/common/header'
 import SpinnerComponent from '@/app/page/common/Spinner'
 import { Input } from '@/components/ui/input'
 import axiosInstance from '@/lib/axios'
+import { useRouter } from 'next/navigation'
 function ClientsUsersPage() {
   const dispatch = useAppDispatch()
   const [searchTerm, setSearchTerm] = React.useState('')
   const { profile, loading, error, page, totalPages } = useAppSelector((state) => state.profile as any)
   const { roles } = useAppSelector((state: any) => state.role)
   const { user: currentUser } = useAuth()
+  const router = useRouter();
 
   const profiles = Array.isArray(profile) ? profile : profile ? [profile] : []
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
@@ -158,7 +160,7 @@ function ClientsUsersPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => { setSelectedUserDetails(admin); setShowDetailsDialog(true); }}>View</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => { window.location.href = `/admin/assign_service/${admin._id || admin.id}`; }}>Assign Service</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => router.push(`/admin/assign_service/${admin._id || admin.id}`)}>Assign Service</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>   
                     </TableCell>

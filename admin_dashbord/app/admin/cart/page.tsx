@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+import React, { useState } from 'react'
 import {
   Table,
   TableBody,
@@ -9,82 +9,424 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-
-import { MoreHorizontal } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
+import { CheckCircle, ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react"
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
+import DateRangePicker from '@/components/ui/date-range-picker'
+import { assignServiceToClient as assignServiceAction } from '@/lib/redux/slices/serviceSlice'
 import Header from '@/app/page/common/header'
-import { getAllCarts } from "@/lib/redux/slices/cartSlicer"
+import { getAllCarts, assignServiceToClient } from "@/lib/redux/slices/cartSlicer"
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks"
 import { useEffect } from 'react'
-import Link from 'next/link'
+import { useToast } from '@/hooks/use-toast'
+import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
-
-function page() {
+function Page() {
     const dispatch = useAppDispatch();
-    const { cart, loading, error, total } = useAppSelector((state) => state.cart);
+    const router = useRouter();
+    const { toast } = useToast();
+    const { carts, loading, error, page, limit, totalPages, totalCarts } = useAppSelector((state) => state.cart);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [assignModalOpen, setAssignModalOpen] = useState(false);
+    const [assignFormData, setAssignFormData] = useState<any>({
+        userId: '',
+        serviceId: '',
+        serviceName: '',
+        userName: '',
+        status: 'active',
+        cycle: 'monthly',
+        startDate: '',
+        endDate: null,
+        price: undefined,
+        autoInvoice: false,
+        notes: ''
+    });
+
     useEffect(() => {
-        dispatch(getAllCarts({ page: 1, limit: 10 }));
-    }, [dispatch]);
+        dispatch(getAllCarts({ page: currentPage, limit }));
+    }, [dispatch, currentPage, limit]);
+
+    const handleAcceptService = (userId: string, serviceId: string, serviceName: string, userName: string, servicePrice?: number) => {
+        setAssignFormData({
+            userId,
+            serviceId,
+            serviceName,
+            userName,
+            status: 'active',
+            cycle: 'monthly',
+            startDate: new Date().toISOString().split('T')[0],
+            endDate: null,
+            price: servicePrice || undefined,
+            autoInvoice: false,
+            notes: ''
+        });
+        setAssignModalOpen(true);
+    };
+
+    const handleAssignSubmit = async () => {
+        if (!assignFormData.price) {
+            toast({
+                title: 'Error',
+                description: 'Price is required',
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        try {
+            const payload = {
+                id: typeof crypto !== 'undefined' && (crypto as any).randomUUID ? (crypto as any).randomUUID() : `${Date.now()}-${Math.random()}`,
+                client_id: assignFormData.userId,
+                service_catalog_id: assignFormData.serviceId,
+                status: assignFormData.status,
+                cycle: assignFormData.cycle,
+                start_date: assignFormData.startDate,
+                end_date: assignFormData.endDate,
+                price: assignFormData.price,
+                auto_invoice: assignFormData.autoInvoice,
+                notes: assignFormData.notes,
+                assign_by: 'admin',
+            };
+
+            await dispatch(assignServiceAction(payload)).unwrap();
+            
+            toast({
+                title: 'Success',
+                description: `${assignFormData.serviceName} assigned to ${assignFormData.userName} successfully!`,
+            });
+            
+            setAssignModalOpen(false);
+            dispatch(getAllCarts({ page: currentPage, limit }));
+            router.push('/admin/view_assign_service');
+        } catch (err: any) {
+            toast({
+                title: 'Error',
+                description: err || 'Failed to assign service',
+                variant: 'destructive',
+            });
+        }
+    };
+
+    const computeCartTotal = (services: any[]) => {
+        let sum = 0;
+        services.forEach(item => {
+            const svc = item.serviceId;
+            if (!svc || typeof svc.price !== 'number') return;
+            let price = Number(svc.price) || 0;
+            if (svc.hasDiscount && svc.discountValue) {
+                if (svc.discountType === 'percentage') {
+                    price = price - (price * (svc.discountValue || 0) / 100);
+                } else {
+                    price = price - (svc.discountValue || 0);
+                }
+            }
+            if (price < 0) price = 0;
+            sum += price;
+        });
+        return sum;
+    };
+
+    if (loading && carts.length === 0) {
+        return (
+            <div>
+                <Header title="Cart Management" description="Manage user carts and their services" />
+                <div className="p-4 flex justify-center items-center h-64">
+                    <div className="text-muted-foreground">Loading carts...</div>
+                </div>
+            </div>
+        );
+    }
 
   return (
     <div>
       <Header title="Cart Management" description="Manage user carts and their services" />
-      <div className="p-4">
-        <Table>
-            <TableCaption>List of user carts</TableCaption>
-            <TableHeader>
+      <div className="p-4 space-y-6">
+        {carts.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <ShoppingCart className="h-16 w-16 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No carts found</h3>
+              <p className="text-sm text-muted-foreground">No users have items in their cart yet.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <Table>
+              <TableCaption>List of user carts ({totalCarts} total)</TableCaption>
+              <TableHeader>
                 <TableRow>
-                    <TableHead>User ID</TableHead>
-                    <TableHead>Number of Services</TableHead>
-                    <TableHead>Total Price</TableHead>
-                    <TableHead>Actions</TableHead>
+                  <TableHead>User Info</TableHead>
+                  <TableHead>Services</TableHead>
+                  <TableHead>Total</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-            </TableHeader>
-            <TableBody>
-                {cart ? (
-                    <TableRow key={cart._id}>
-                        <TableCell>{cart.userid}</TableCell>
-                        <TableCell>{cart.Services.length}</TableCell>
-                        <TableCell>${total.toFixed(2)}</TableCell>
-                        <TableCell>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                        <span className="sr-only">Open menu</span>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem>
-                                        <Link href={`/admin/cart/${cart.userid}`}>View Details</Link>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </TableCell>
-                    </TableRow>
-                ) : (
-                    <TableRow>
-                        <TableCell colSpan={4} className="text-center">
-                            No carts found.
-                        </TableCell>
-                    </TableRow>
-                )}
-            </TableBody>
-        </Table>
+              </TableHeader>
+              <TableBody>
+                {carts.map((cart: any) => (
+                  <TableRow key={cart._id}>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="font-medium">
+                          {cart.user?.firstName} {cart.user?.lastName}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {cart.user?.email}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          ID: {cart.user?.user_id?.slice(-8)}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-2 max-w-md">
+                        {cart.Services?.map((service: any) => (
+                          <div key={service._id} className="flex items-center gap-3 p-2 border rounded-lg">
+                            {service.serviceId?.image && (
+                              <Image
+                                src={service.serviceId.image}
+                                alt={service.serviceId.name}
+                                width={40}
+                                height={40}
+                                className="rounded object-cover"
+                              />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm truncate">
+                                {service.serviceId?.name}
+                              </div>
+                              <Badge 
+                                variant={service.status === 'confirmed' ? 'default' : 'secondary'}
+                                className="text-xs mt-1"
+                              >
+                                {service.status}
+                              </Badge>
+                            </div>
+                            {service.status === 'confirmed' && (
+                              <Button
+                                size="sm"
+                                onClick={() => handleAcceptService(
+                                  cart.user?.user_id,
+                                  service.serviceId?._id,
+                                  service.serviceId?.name,
+                                  `${cart.user?.firstName} ${cart.user?.lastName}`,
+                                  service.serviceId?.price
+                                )}
+                                className="bg-green-600 hover:bg-green-700"
+                              >
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                Accept
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="font-semibold text-lg">
+                        ${computeCartTotal(cart.Services).toFixed(2)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        {cart.Services?.length} item(s)
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {cart.status || 'active'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-xs text-muted-foreground">
+                        Created: {new Date(cart.createdAt).toLocaleDateString()}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-2 py-4">
+                <div className="text-sm text-muted-foreground">
+                  Showing page {page} of {totalPages} ({totalCarts} total carts)
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Previous
+                  </Button>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                      <Button
+                        key={pageNum}
+                        variant={currentPage === pageNum ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setCurrentPage(pageNum)}
+                        className="w-8 h-8 p-0"
+                      >
+                        {pageNum}
+                      </Button>
+                    ))}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
+
+      {/* Assign Service Modal */}
+      <Dialog open={assignModalOpen} onOpenChange={setAssignModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Assign Service to Client</DialogTitle>
+            <DialogDescription>
+              Fill in the details to assign {assignFormData.serviceName} to {assignFormData.userName}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div>
+              <Label>Client</Label>
+              <div className="p-2 bg-muted rounded mt-1">
+                {assignFormData.userName}
+              </div>
+            </div>
+
+            <div>
+              <Label>Service</Label>
+              <div className="p-2 bg-muted rounded mt-1">
+                {assignFormData.serviceName}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Status</Label>
+                <Select 
+                  value={assignFormData.status} 
+                  onValueChange={(v) => setAssignFormData({...assignFormData, status: v})}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="paused">Paused</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>Cycle</Label>
+                <Select 
+                  value={assignFormData.cycle} 
+                  onValueChange={(v) => setAssignFormData({...assignFormData, cycle: v})}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                    <SelectItem value="annual">Annual</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <Label>Start / End Date</Label>
+              <DateRangePicker
+                value={{ 
+                  from: assignFormData.startDate || null, 
+                  to: assignFormData.endDate || null 
+                }}
+                onChange={(v) => setAssignFormData({
+                  ...assignFormData, 
+                  startDate: v.from || '', 
+                  endDate: v.to || null
+                })}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Price (override)</Label>
+                <Input 
+                  type="number" 
+                  className="mt-1"
+                  value={assignFormData.price ?? ''} 
+                  onChange={(e) => setAssignFormData({
+                    ...assignFormData, 
+                    price: e.target.value ? Number(e.target.value) : undefined
+                  })} 
+                />
+              </div>
+              <div className="flex flex-col">
+                <Label>Auto Invoice</Label>
+                <div className="mt-3">
+                  <Switch 
+                    checked={assignFormData.autoInvoice} 
+                    onCheckedChange={(v) => setAssignFormData({
+                      ...assignFormData, 
+                      autoInvoice: Boolean(v)
+                    })} 
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <Label>Notes (internal)</Label>
+              <Textarea 
+                className="mt-1"
+                value={assignFormData.notes} 
+                onChange={(e) => setAssignFormData({
+                  ...assignFormData, 
+                  notes: e.target.value
+                })} 
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => setAssignModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleAssignSubmit}>
+                Assign Service
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
 
   )
 }
 
-export default page
+export default Page

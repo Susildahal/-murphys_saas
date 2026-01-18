@@ -130,6 +130,7 @@ function page() {
         price: assignPrice,
         auto_invoice: assignAutoInvoice,
         notes: assignNotes,
+        assign_by: 'admin',
       } as any;
 
       const response = await dispatch(assignServiceToClient(payload)).unwrap();

@@ -121,7 +121,7 @@ export const getAllCarts = async (req: Request, res: Response) => {
         // fetch carts and services, use lean() to get plain JS objects
         const [total, cartsRaw] = await Promise.all([
             Cart.countDocuments(),
-            Cart.find()
+            Cart.find({status: 'confirmed'})
                 .skip(skip)
                 .populate({ path: 'Services.serviceId', select: 'name image' })
                 .limit(limit)
