@@ -111,9 +111,9 @@ export const clearCart = createAsyncThunk(
 
 export const updateCartStatus = createAsyncThunk(
   'cart/updateCartStatus',
-  async ({ userid, serviceId, status }: { userid: string; serviceId: string; status: string }, { rejectWithValue }) => {
+  async ({ serviceItemId, status }: { serviceItemId: string; status: string }, { rejectWithValue }) => {
     try {
-        const response = await axiosInstance.patch('/cart/update-status', { userid, serviceId, status });
+        const response = await axiosInstance.patch('/cart/update-status', { serviceItemId, status });
         return response.data;
     }
     catch (error: any) {

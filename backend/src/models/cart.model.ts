@@ -6,7 +6,7 @@ const ChartSchema = new mongoose.Schema({
     userid: { type: mongoose.Schema.Types.Mixed, required: true },
     Services: [{ 
         serviceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Service', required: true },
-        status: { type: String, enum: ['pending', 'confirmed'], default: 'pending' },
+        status: { type: String, enum: ['pending', 'confirmed' ,'done'], default: 'pending' },
         confirmedAt: { type: Date }
     }],
 }, { timestamps: true });

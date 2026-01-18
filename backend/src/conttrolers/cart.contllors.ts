@@ -112,6 +112,24 @@ export const clearCart = async (req: Request, res: Response) => {
         res.status(500).json({ message: 'Server Error', error });
     }
 };
+// Delete entire cart
+export const deleteCart = async (req: Request, res: Response) => {
+    try {
+        let { userid } = req.body;
+        userid = typeof userid === 'string' ? userid.replace(/^"]+|"]+$/g, '') : userid;
+        const cart = await Cart.findOneAndDelete({ userid });
+        if (!cart) {
+            return res.status(404).json({ message: 'Cart not found' });
+        }
+        res.status(200).json({ message: 'Cart deleted successfully', cart });
+    }
+    catch (error) {
+        if ((error as any).name === 'CastError') {
+            return res.status(400).json({ message: 'Invalid id format', error: (error as any).message });
+        }
+        res.status(500).json({ message: 'Server Error', error });
+    }
+};
 // Get all carts (for admin purposes)
 export const getAllCarts = async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1;
@@ -121,9 +139,9 @@ export const getAllCarts = async (req: Request, res: Response) => {
         // fetch carts and services, use lean() to get plain JS objects
         const [total, cartsRaw] = await Promise.all([
             Cart.countDocuments(),
-            Cart.find({status: 'confirmed'})
+            Cart.find({ "Services.status": { $ne: "pending" } })
                 .skip(skip)
-                .populate({ path: 'Services.serviceId', select: 'name image' })
+                .populate({ path: 'Services.serviceId', select: 'name image price' })
                 .limit(limit)
                 .sort({ createdAt: -1 })
                 .lean()
@@ -172,16 +190,19 @@ export const getAllCarts = async (req: Request, res: Response) => {
 // Update cart service status
     export const updateCartStatus = async (req: Request, res: Response) => {
     try {
-        let { userid, serviceId, status } = req.body;
-        userid = typeof userid === 'string' ? userid.replace(/^"+|"+$/g, '') : userid;
-        serviceId = typeof serviceId === 'string' ? serviceId.replace(/^"+|"+$/g, '') : serviceId;
+        let { serviceItemId, status } = req.body;
+        console.log('UpdateCartStatus called with:', { serviceItemId, status });
+        serviceItemId = typeof serviceItemId === 'string' ? serviceItemId.replace(/^"+|"+$/g, '') : serviceItemId;
         
-        const cart = await Cart.findOne({ userid });
+        // Find cart that contains the service item with this _id
+        const cart = await Cart.findOne({ 'Services._id': serviceItemId });
         if (!cart) {
-            return res.status(404).json({ message: 'Cart not found' });
+            return res.status(404).json({ message: 'Cart or service item not found' });
         }
         
-        const service = cart.Services.find((s: any) => s.serviceId.toString() === serviceId);
+        // Find the specific service item by its _id
+        const service = cart.Services.find((s: any) => s._id.toString() === serviceItemId);
+        
         if (!service) {
             return res.status(404).json({ message: 'Service not found in cart' });
         }
@@ -194,7 +215,7 @@ export const getAllCarts = async (req: Request, res: Response) => {
         await cart.save();
         
         // Populate and return updated cart
-        const updatedCart = await Cart.findOne({ userid }).populate('Services.serviceId');
+        const updatedCart = await Cart.findOne({ _id: cart._id }).populate('Services.serviceId');
         res.status(200).json(updatedCart);
     }
     catch (error) {

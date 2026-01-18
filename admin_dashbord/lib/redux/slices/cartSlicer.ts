@@ -83,15 +83,41 @@ export const getCart = createAsyncThunk(
 
 export const updateCartStatus = createAsyncThunk(
   'cart/updateCartStatus',
-  async ({ userid, serviceId, status }: { userid: string; serviceId: string; status: string }, { rejectWithValue }) => {
+  async ({ serviceItemId, status }: { serviceItemId: string; status: string }, { rejectWithValue }) => {
     try {
-        const response = await axiosInstance.patch('/cart/update-status', { userid, serviceId, status });
+        const response = await axiosInstance.patch('/cart/update-status', { serviceItemId, status });
         return response.data;
     }
     catch (error: any) {
         return rejectWithValue(error.response?.data?.message || 'Failed to update cart status');
     }
     }
+);
+
+// Remove service from cart
+export const removeFromCart = createAsyncThunk(
+  'cart/removeFromCart',
+  async ({ userid, serviceId }: { userid: string; serviceId: string }, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.post('/cart/remove', { userid, serviceId });
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to remove service from cart');
+    }
+  }
+);
+
+// Delete entire cart
+export const deleteCart = createAsyncThunk(
+  'cart/deleteCart',
+  async (userid: string, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.delete('/cart/delete', { data: { userid } });
+      return { userid, data: response.data };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to delete cart');
+    }
+  }
 );
 
 export const getAllCarts = createAsyncThunk(
@@ -197,6 +223,37 @@ const cartSlice = createSlice({
       state.loading = false;
     });
     builder.addCase(assignServiceToClient.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+
+    // Remove from cart
+    builder.addCase(removeFromCart.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(removeFromCart.fulfilled, (state, action) => {
+      state.loading = false;
+      state.cart = action.payload;
+      state.total = computeCartTotal(state.cart);
+    });
+    builder.addCase(removeFromCart.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload as string;
+    });
+
+    // Delete cart
+    builder.addCase(deleteCart.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(deleteCart.fulfilled, (state, action) => {
+      state.loading = false;
+      // Remove the deleted cart from the carts array
+      state.carts = state.carts.filter(cart => cart.userid !== action.payload.userid);
+      state.totalCarts = Math.max(0, state.totalCarts - 1);
+    });
+    builder.addCase(deleteCart.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload as string;
     });

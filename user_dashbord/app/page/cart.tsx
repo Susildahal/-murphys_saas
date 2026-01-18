@@ -77,9 +77,9 @@ export default function CartPage() {
     }
   };
 
-  const handleConfirmCart = async (serviceId: string) => {
+  const handleConfirmCart = async (serviceItemId: string) => {
     try {
-      await dispatch(updateCartStatus({ userid, serviceId, status: 'confirmed' })).unwrap();
+      await dispatch(updateCartStatus({ serviceItemId, status: 'confirmed' })).unwrap();
       await dispatch(getCart(userid)).unwrap();
       toast({
         title: 'Service Confirmed!',
@@ -256,7 +256,7 @@ export default function CartPage() {
                             {cartService.status === 'pending' && (
                               <Button
                                 size="sm"
-                                onClick={() => handleConfirmCart((service as any)._id || (service as any).id)}
+                                onClick={() => handleConfirmCart(cartService._id)}
                                 className="bg-blue-600 hover:bg-blue-700"
                               >
                                 <CheckCircle className="h-4 w-4 mr-1" />

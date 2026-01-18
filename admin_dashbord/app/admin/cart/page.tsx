@@ -11,9 +11,11 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { CheckCircle, ChevronLeft, ChevronRight, ShoppingCart } from "lucide-react"
+import { CheckCircle, ChevronLeft, ChevronRight, ShoppingCart, Trash2, MoreVertical } from "lucide-react"
 import { Button } from '@/components/ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -22,12 +24,13 @@ import { Switch } from "@/components/ui/switch"
 import DateRangePicker from '@/components/ui/date-range-picker'
 import { assignServiceToClient as assignServiceAction } from '@/lib/redux/slices/serviceSlice'
 import Header from '@/app/page/common/header'
-import { getAllCarts, assignServiceToClient } from "@/lib/redux/slices/cartSlicer"
+import { getAllCarts, assignServiceToClient, updateCartStatus, removeFromCart, deleteCart } from "@/lib/redux/slices/cartSlicer"
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks"
 import { useEffect } from 'react'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import axiosInstance from '@/lib/axios'
 
 function Page() {
     const dispatch = useAppDispatch();
@@ -35,10 +38,15 @@ function Page() {
     const { toast } = useToast();
     const { carts, loading, error, page, limit, totalPages, totalCarts } = useAppSelector((state) => state.cart);
     const [currentPage, setCurrentPage] = useState(1);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [deleteServiceData, setDeleteServiceData] = useState<{ userid: string; serviceId: string; serviceName: string } | null>(null);
+    const [deleteCartDialogOpen, setDeleteCartDialogOpen] = useState(false);
+    const [deleteCartData, setDeleteCartData] = useState<{ userid: string; userName: string } | null>(null);
     const [assignModalOpen, setAssignModalOpen] = useState(false);
     const [assignFormData, setAssignFormData] = useState<any>({
         userId: '',
         serviceId: '',
+        serviceItemId: '',
         serviceName: '',
         userName: '',
         status: 'active',
@@ -54,10 +62,11 @@ function Page() {
         dispatch(getAllCarts({ page: currentPage, limit }));
     }, [dispatch, currentPage, limit]);
 
-    const handleAcceptService = (userId: string, serviceId: string, serviceName: string, userName: string, servicePrice?: number) => {
+    const handleAcceptService = (userId: string, serviceId: string, serviceItemId: string, serviceName: string, userName: string, servicePrice?: number) => {
         setAssignFormData({
             userId,
             serviceId,
+            serviceItemId,
             serviceName,
             userName,
             status: 'active',
@@ -69,6 +78,65 @@ function Page() {
             notes: ''
         });
         setAssignModalOpen(true);
+    };
+
+    const handleDeleteService = (userid: string, serviceId: string, serviceName: string) => {
+        setDeleteServiceData({ userid, serviceId, serviceName });
+        setDeleteDialogOpen(true);
+    };
+
+    const confirmDeleteService = async () => {
+        if (!deleteServiceData) return;
+
+        try {
+            await dispatch(removeFromCart({
+                userid: deleteServiceData.userid,
+                serviceId: deleteServiceData.serviceId
+            })).unwrap();
+
+            toast({
+                title: 'Success',
+                description: `${deleteServiceData.serviceName} removed from cart`,
+            });
+
+            setDeleteDialogOpen(false);
+            setDeleteServiceData(null);
+            dispatch(getAllCarts({ page: currentPage, limit }));
+        } catch (err: any) {
+            toast({
+                title: 'Error',
+                description: err || 'Failed to delete service',
+                variant: 'destructive',
+            });
+        }
+    };
+
+    const handleDeleteCart = (userid: string, userName: string) => {
+        setDeleteCartData({ userid, userName });
+        setDeleteCartDialogOpen(true);
+    };
+
+    const confirmDeleteCart = async () => {
+        if (!deleteCartData) return;
+
+        try {
+            await dispatch(deleteCart(deleteCartData.userid)).unwrap();
+
+            toast({
+                title: 'Success',
+                description: `Cart for ${deleteCartData.userName} deleted successfully`,
+            });
+
+            setDeleteCartDialogOpen(false);
+            setDeleteCartData(null);
+            dispatch(getAllCarts({ page: currentPage, limit }));
+        } catch (err: any) {
+            toast({
+                title: 'Error',
+                description: err || 'Failed to delete cart',
+                variant: 'destructive',
+            });
+        }
     };
 
     const handleAssignSubmit = async () => {
@@ -97,6 +165,12 @@ function Page() {
             };
 
             await dispatch(assignServiceAction(payload)).unwrap();
+            
+            // Update cart service status to done
+            await dispatch(updateCartStatus({
+                serviceItemId: assignFormData.serviceItemId,
+                status: 'done'
+            })).unwrap();
             
             toast({
                 title: 'Success',
@@ -204,35 +278,49 @@ function Page() {
                                 {service.serviceId?.name}
                               </div>
                               <Badge 
-                                variant={service.status === 'confirmed' ? 'default' : 'secondary'}
+                                variant={service.status === 'done' ? 'default' : service.status === 'confirmed' ? 'secondary' : 'outline'}
                                 className="text-xs mt-1"
                               >
                                 {service.status}
                               </Badge>
                             </div>
-                            {service.status === 'confirmed' && (
+                            <div className="flex gap-2">
+                              {service.status === 'confirmed' && (
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleAcceptService(
+                                    cart.user?.user_id,
+                                    service.serviceId?._id,
+                                    service._id,
+                                    service.serviceId?.name,
+                                    `${cart.user?.firstName} ${cart.user?.lastName}`,
+                                    service.serviceId?.price
+                                  )}
+                                  className="bg-green-600 hover:bg-green-700"
+                                >
+                                  <CheckCircle className="h-4 w-4 mr-1" />
+                                  Accept
+                                </Button>
+                              )}
                               <Button
                                 size="sm"
-                                onClick={() => handleAcceptService(
-                                  cart.user?.user_id,
+                                variant="destructive"
+                                onClick={() => handleDeleteService(
+                                  cart.userid,
                                   service.serviceId?._id,
-                                  service.serviceId?.name,
-                                  `${cart.user?.firstName} ${cart.user?.lastName}`,
-                                  service.serviceId?.price
+                                  service.serviceId?.name
                                 )}
-                                className="bg-green-600 hover:bg-green-700"
                               >
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Accept
+                                <Trash2 className="h-4 w-4" />
                               </Button>
-                            )}
+                            </div>
                           </div>
                         ))}
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="font-semibold text-lg">
-                        ${computeCartTotal(cart.Services).toFixed(2)}
+                        ${computeCartTotal(cart.Services).toFixed(2)}   
                       </div>
                       <div className="text-xs text-muted-foreground">
                         {cart.Services?.length} item(s)
@@ -244,7 +332,26 @@ function Page() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="text-xs text-muted-foreground">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreVertical className="h-4 w-4 rotate-90" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem 
+                            className="text-destructive focus:text-destructive"
+                            onClick={() => handleDeleteCart(
+                              cart.userid,
+                              `${cart.user?.firstName} ${cart.user?.lastName}`
+                            )}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete Cart
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      <div className="text-xs text-muted-foreground mt-2">
                         Created: {new Date(cart.createdAt).toLocaleDateString()}
                       </div>
                     </TableCell>
@@ -330,7 +437,7 @@ function Page() {
                   value={assignFormData.status} 
                   onValueChange={(v) => setAssignFormData({...assignFormData, status: v})}
                 >
-                  <SelectTrigger className="mt-1">
+                  <SelectTrigger className="mt-1 w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -347,7 +454,7 @@ function Page() {
                   value={assignFormData.cycle} 
                   onValueChange={(v) => setAssignFormData({...assignFormData, cycle: v})}
                 >
-                  <SelectTrigger className="mt-1">
+                  <SelectTrigger className="mt-1 w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -424,6 +531,48 @@ function Page() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove {deleteServiceData?.serviceName} from the cart. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteService}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Cart Confirmation Dialog */}
+      <AlertDialog open={deleteCartDialogOpen} onOpenChange={setDeleteCartDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Entire Cart?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the entire cart for {deleteCartData?.userName}. All services in this cart will be removed. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteCart}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Cart
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
 
   )
