@@ -50,6 +50,8 @@ export default function CartPage() {
   const handleRemoveFromCart = async (serviceId: string) => {
     try {
       await dispatch(removeFromCart({ userid, serviceId })).unwrap();
+      // Refetch cart to ensure we have the latest data
+      await dispatch(getCart(userid)).unwrap();
       toast({
         title: 'Success',
         description: 'Service removed from cart',

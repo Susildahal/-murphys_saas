@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -56,6 +56,8 @@ import jsPDF from 'jspdf';
 
 interface BillingHistoryItem {
   _id: string;
+  user_email: string;
+  user_id: string;
   invoice_id: string;
   service_name: string;
   amount: number;
@@ -75,6 +77,22 @@ interface BillingStats {
   totalAmount: number;
 }
 
+interface UserProfile {
+  _id: string;
+  firstName?: string;
+  lastName?: string;
+  name?: string;
+  email: string;
+  phone?: string;
+  country?: string;
+  address?: string;
+  position?: string;
+  role_type?: string;
+  status?: string;
+  userId?: string;
+  createdAt?: string;
+}
+
 function BillingHistoryPage() {
   const dispatch = useAppDispatch();
   const { profile } = useAppSelector((state) => state.profile);
@@ -92,12 +110,15 @@ function BillingHistoryPage() {
   const [selectedItemForDelete, setSelectedItemForDelete] = useState<string | null>(null);
   const [calendarStartDate, setCalendarStartDate] = useState<Date | undefined>();
   const [calendarEndDate, setCalendarEndDate] = useState<Date | undefined>();
+  const [userDetailsOpen, setUserDetailsOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+  const [loadingUserDetails, setLoadingUserDetails] = useState(false);
   const { toast } = useToast();
 
   // Get clients from profile state (assuming profile data contains array of profiles/clients)
   const clients = Array.isArray(profile) ? profile : (profile ? [profile] : []);
 
-  const fetchBillingHistory = async () => {
+  const fetchBillingHistory = useCallback(async () => {
     setLoading(true);
     try {
       const axiosInstance = (await import('@/lib/axios')).default;
@@ -111,7 +132,7 @@ function BillingHistoryPage() {
         params.append('status', filter);
       }
       if (clientFilter !== 'all') {
-        params.append('clientId', clientFilter);
+        params.append('clientEmail', clientFilter);
       }
       if (startDate) {
         params.append('startDate', startDate);
@@ -144,7 +165,7 @@ function BillingHistoryPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter, clientFilter, page, startDate, endDate, toast]);
 
   useEffect(() => {
     // Fetch all profiles/clients for the filter dropdown
@@ -153,7 +174,7 @@ function BillingHistoryPage() {
 
   useEffect(() => {
     fetchBillingHistory();
-  }, [filter, clientFilter, page, startDate, endDate]);
+  }, [fetchBillingHistory]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -419,6 +440,37 @@ function BillingHistoryPage() {
     setDeleteDialogOpen(true);
   };
 
+  const fetchUserDetails = async (userId: string, userEmail: string) => {
+    setLoadingUserDetails(true);
+    setUserDetailsOpen(true);
+    try {
+      const axiosInstance = (await import('@/lib/axios')).default;
+      
+      // Try to find user in the loaded profiles first
+      const existingUser = clients.find((client: any) => 
+        client._id === userId || client.email === userEmail
+      );
+      
+      if (existingUser) {
+        setSelectedUser(existingUser);
+      } else {
+        // Fetch from API if not in profiles using email
+        const response = await axiosInstance.get(`/profiles?email=${encodeURIComponent(userEmail)}`);
+        const userData = response.data?.data || response.data;
+        setSelectedUser(userData);
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.response?.data?.message || 'Failed to fetch user details',
+        variant: 'destructive',
+      });
+      setUserDetailsOpen(false);
+    } finally {
+      setLoadingUserDetails(false);
+    }
+  };
+
   return (
     <>
       {loading && <SpinnerComponent />}
@@ -676,6 +728,9 @@ function BillingHistoryPage() {
                         <p className="text-sm text-muted-foreground">
                           Invoice: {item.invoice_id}
                         </p>
+                        <p className="text-sm text-blue-600 hover:underline cursor-pointer" onClick={() => fetchUserDetails(item.user_id, item.user_email)}>
+                          User: {item.user_email}
+                        </p>
                         <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
                           <span className="flex items-center gap-1">
                             <CalendarIcon className="h-3 w-3" />
@@ -696,29 +751,39 @@ function BillingHistoryPage() {
                       </div>
                     </div>
 
-                    <div className="text-right">
-                      <p className="text-lg font-bold">
-                        ${item.amount}
-                      </p>
-                      <p className="text-xs text-muted-foreground uppercase">
-                        {item.currency}
-                      </p>
-                      {item.stripe_payment_intent_id && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {item.stripe_payment_intent_id.substring(0, 20)}...
+                    <div className="text-right flex flex-col items-end gap-2">
+                      <div>
+                        <p className="text-lg font-bold">
+                          ${item.amount}
                         </p>
-                      )}
-                      {item.payment_status === 'failed' && (
+                        <p className="text-xs text-muted-foreground uppercase">
+                          {item.currency}
+                        </p>
+                        {item.stripe_payment_intent_id && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {item.stripe_payment_intent_id.substring(0, 20)}...
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
                         <Button
-                          variant="destructive"
+                          variant="outline"
                           size="sm"
-                          className="mt-2"
-                          onClick={() => openDeleteDialog(item._id)}
+                          onClick={() => fetchUserDetails(item.user_id, item.user_email)}
                         >
-                          <Trash2 className="h-3 w-3 mr-1" />
-                          Delete
+                          View User
                         </Button>
-                      )}
+                        {item.payment_status === 'failed' && (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => openDeleteDialog(item._id)}
+                          >
+                            <Trash2 className="h-3 w-3 mr-1" />
+                            Delete
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))
@@ -757,6 +822,76 @@ function BillingHistoryPage() {
             >
               Delete
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* User Details Dialog */}
+      <AlertDialog open={userDetailsOpen} onOpenChange={setUserDetailsOpen}>
+        <AlertDialogContent className="max-w-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>User Details</AlertDialogTitle>
+            <AlertDialogDescription>
+              Complete information about the user
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          
+          {loadingUserDetails ? (
+            <div className="py-8 text-center">
+              <p className="text-muted-foreground">Loading user details...</p>
+            </div>
+          ) : selectedUser ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Name</label>
+                  <p className="text-base font-medium mt-1">{(selectedUser.firstName  + ' ' + selectedUser.lastName).trim() || 'N/A'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Email</label>
+                  <p className="text-base font-medium mt-1">{selectedUser.email}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Phone</label>
+                  <p className="text-base font-medium mt-1">{selectedUser.phone || 'N/A'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Country</label>
+                  <p className="text-base font-medium mt-1">{selectedUser.country || 'N/A'}</p>
+                </div>
+                <div className="col-span-2">
+                  <label className="text-sm font-medium text-muted-foreground">Address</label>
+                  <p className="text-base font-medium mt-1">{selectedUser.address || 'N/A'}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Role</label>
+                  <p className="text-base font-medium mt-1">
+                    <Badge variant="outline">{selectedUser.role_type || 'User'}</Badge>
+                  </p>
+                </div>
+                {selectedUser.createdAt && (
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Member Since</label>
+                    <p className="text-base font-medium mt-1">
+                      {format(new Date(selectedUser.createdAt), 'MMM dd, yyyy')}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="py-8 text-center">
+              <p className="text-muted-foreground">No user details available</p>
+            </div>
+          )}
+          
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setUserDetailsOpen(false);
+              setSelectedUser(null);
+            }}>
+              Close
+            </AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

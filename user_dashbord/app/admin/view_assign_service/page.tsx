@@ -1,9 +1,9 @@
 'use client'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import Header from '@/app/page/common/header'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { RefreshCcw, User, Briefcase, Search, Calendar, DollarSign, Clock, CheckCircle2 } from 'lucide-react'
+import { RefreshCcw, User, Briefcase, Search, Calendar, DollarSign, Clock, CheckCircle2, Eye } from 'lucide-react'
 
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { getAssignedServices, getAssignDetails } from '@/lib/redux/slices/assignSlice';
@@ -44,6 +44,8 @@ const page = () => {
     const [limitNumber, setLimitNumber] = React.useState(10);
     const [detailsOpen, setDetailsOpen] = React.useState(false);
     const [detailsData, setDetailsData] = React.useState<any>(null);
+    const [renewalsModalOpen, setRenewalsModalOpen] = useState(false);
+    const [selectedRenewals, setSelectedRenewals] = useState<any[]>([]);
     const { toast } = useToast();
 
     // Filters state
@@ -146,7 +148,19 @@ const page = () => {
                                 const renewalDates = service.renewal_dates || [];
 
                                 return (
-                                    <Card key={service._id ?? service.id} className="hover:shadow-lg transition-all duration-300 border-border/60">
+                                    <Card key={service._id ?? service.id} className="hover:shadow-lg transition-all duration-300 border-border/60 overflow-hidden">
+                                        {/* Service Image */}
+                                        {service.service_image && (
+                                            <div className="relative w-full h-48 overflow-hidden">
+                                                <Image 
+                                                    src={service.service_image} 
+                                                    alt={service.service_name || 'Service'} 
+                                                    fill
+                                                    className="object-cover"
+                                                />
+                                            </div>
+                                        )}
+                                        
                                         <CardHeader className="pb-3">
                                             <div className="flex items-start justify-between">
                                                 <div className="flex-1">
@@ -176,7 +190,7 @@ const page = () => {
                                             {/* Price & Cycle */}
                                             <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-lg">
                                                 <DollarSign className="h-5 w-5 text-primary" />
-                                                <div>
+                                                <div className="flex-1">
                                                     <div className="text-2xl font-bold text-primary">
                                                         ${service.price ?? '-'}
                                                     </div>
@@ -222,9 +236,12 @@ const page = () => {
                                                         <div className="flex items-center gap-2 text-sm font-semibold">
                                                             <CheckCircle2 className="h-4 w-4 text-emerald-500" />
                                                             Renewal Schedule
+                                                            <Badge variant="secondary" className="ml-auto">
+                                                                {renewalDates.length} Total
+                                                            </Badge>
                                                         </div>
                                                         <div className="space-y-2 pl-6">
-                                                            {renewalDates.map((renewal: any, idx: number) => (
+                                                            {renewalDates.slice(0, 3).map((renewal: any, idx: number) => (
                                                                 <div 
                                                                     key={renewal._id || idx} 
                                                                     className="flex items-center justify-between text-xs p-2 bg-muted/50 rounded"
@@ -250,6 +267,20 @@ const page = () => {
                                                                     </div>
                                                                 </div>
                                                             ))}
+                                                            {renewalDates.length > 3 && (
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="w-full text-xs mt-1"
+                                                                    onClick={() => {
+                                                                        setSelectedRenewals(renewalDates);
+                                                                        setRenewalsModalOpen(true);
+                                                                    }}
+                                                                >
+                                                                    <Eye className="h-3 w-3 mr-1" />
+                                                                    View All {renewalDates.length} Renewals
+                                                                </Button>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </>
@@ -410,6 +441,64 @@ const page = () => {
                             )
                         })() : (
                             <div>No details available.</div>
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* All Renewals Modal */}
+            <Dialog open={renewalsModalOpen} onOpenChange={setRenewalsModalOpen}>
+                <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>All Renewal Dates</DialogTitle>
+                        <DialogDescription>
+                            Complete list of all renewal schedules ({selectedRenewals.length} total)
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="mt-4 space-y-3">
+                        {selectedRenewals.map((renewal: any, idx: number) => (
+                            <Card key={renewal._id || idx}>
+                                <CardContent className="p-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex items-center gap-2">
+                                                <Badge variant="outline" className="text-xs">
+                                                    #{idx + 1}
+                                                </Badge>
+                                                <span className="font-semibold capitalize">
+                                                    {renewal.label || `Renewal ${idx + 1}`}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                <Calendar className="h-3 w-3" />
+                                                {renewal.date ? new Date(renewal.date).toLocaleDateString('en-US', {
+                                                    weekday: 'short',
+                                                    year: 'numeric',
+                                                    month: 'short',
+                                                    day: 'numeric'
+                                                }) : 'N/A'}
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col items-end gap-1">
+                                            <div className="text-2xl font-bold text-primary">
+                                                ${renewal.price || 0}
+                                            </div>
+                                            <Badge 
+                                                variant={renewal.haspaid ? 'default' : 'destructive'}
+                                                className="text-xs"
+                                            >
+                                                {renewal.haspaid ? '✓ Paid' : '✗ Unpaid'}
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                        
+                        {selectedRenewals.length === 0 && (
+                            <div className="text-center py-8 text-muted-foreground">
+                                No renewal dates available
+                            </div>
                         )}
                     </div>
                 </DialogContent>

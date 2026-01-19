@@ -121,10 +121,13 @@ export default function ServiceTable({ categoryFilter = 'all' }: ServiceTablePro
                 title: 'Success',
                 description: `${service.name} added to cart!`,
             });
-        } catch (err) {
+            // Navigate to cart page
+            window.location.href = '/admin/cart';
+        } catch (err: any) {
+            const errorMessage = err || 'Failed to add to cart';
             toast({
-                title: 'Error',
-                description: 'Failed to add to cart',
+                title: errorMessage.includes('already in your cart') ? 'Already in Cart' : 'Error',
+                description: errorMessage,
                 variant: 'destructive'
             });
             console.error('add to cart error', err);

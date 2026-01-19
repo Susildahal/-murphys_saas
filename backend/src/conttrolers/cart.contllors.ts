@@ -19,15 +19,18 @@ export const addToCart = async (req: Request, res: Response) => {
         let cart = await Cart.findOne({ userid });
         if (!cart) {
             cart = new Cart({ userid, Services: [{ serviceId, status: 'pending' }] });
+            await cart.save();
+            return res.status(200).json({ cart, message: 'Service added to cart successfully' });
         } else {
             // Check if service already exists
             const existingService = cart.Services.find((s: any) => s.serviceId.toString() === serviceId);
-            if (!existingService) {
-                cart.Services.push({ serviceId, status: 'pending' });
+            if (existingService) {
+                return res.status(400).json({ message: 'This service is already in your cart' });
             }
+            cart.Services.push({ serviceId, status: 'pending' });
         }
         await cart.save();
-        res.status(200).json(cart);
+        res.status(200).json({ cart, message: 'Service added to cart successfully' });
     }
     catch (error) {
         // Handle common cast errors for invalid ObjectId
@@ -83,6 +86,8 @@ export const removeFromCart = async (req: Request, res: Response) => {
             (service: any) => service.serviceId.toString() !== serviceId
         ) as any;
         await cart.save();
+        // Populate the services before returning
+        await cart.populate('Services.serviceId');
         res.status(200).json(cart);
     }
     catch (error) {
