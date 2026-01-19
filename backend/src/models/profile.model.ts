@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 const profileSchema = new mongoose.Schema({ 
-userId:{ type: String, required: true, unique: true },  // come from firebase auth uid
+userId:{ type: String, unique: true },  // come from firebase auth uid
 bio :{type: String },
 city: { type: String },
 country: { type: String },

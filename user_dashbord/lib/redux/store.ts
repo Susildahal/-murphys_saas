@@ -11,6 +11,7 @@ import siteSettingReducer from './slices/siteSettingSlice';
 import  noticeSlice from './slices/noticSlicer';
 import dashboardSlice from './slices/dashboardSlicer';
 import cartReducer from './slices/cartSlice';
+import  billingReducer from './slices/billingSlicer'; 
 
 export const store = configureStore({
   reducer: {
@@ -26,6 +27,7 @@ export const store = configureStore({
     notices: noticeSlice,
     dashboard: dashboardSlice,
     cart: cartReducer,
+    billing: billingReducer,
   },
 });
 

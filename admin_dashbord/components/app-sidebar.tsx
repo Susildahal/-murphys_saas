@@ -136,6 +136,11 @@ const data = {
       url: "/admin/cart",
       icon: ShoppingBasketIcon,
     },
+    {
+      name: "Payment History",
+      url: "/admin/paymenthistory",
+      icon: CreditCard,
+    },
   ],
 }
 

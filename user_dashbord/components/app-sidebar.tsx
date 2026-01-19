@@ -109,6 +109,16 @@ const data = {
     name :" Invite Users",
     url:"/admin/invte_users",
     icon: Bot,
+    },
+     {
+    name :" Billing",
+    url:"/admin/billing",
+    icon: CreditCard,
+    },
+    {
+    name :" Payment History",
+    url:"/admin/billing-history",
+    icon: CreditCard,
     }
   ],
 }

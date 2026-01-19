@@ -16,6 +16,7 @@ import siteSettingRouter from "./routes/siteSetting.route";
 import noticeRouter from "./routes/notic.routes";
 import dashboardrouter from "./routes/dashboard";
 import cartRouter from "./routes/cart.routes";
+import billingrouter from "./routes/billing.routes";
 
 // Use profile routes
 
@@ -51,7 +52,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Root route
 app.get("/", (_req, res) => {
-  res.send("API is runningeeeeeeee 🚀");
+  res.send("API is running 🚀");
 });
 
 // Mount API routes
@@ -66,6 +67,7 @@ app.use("/api/settings", siteSettingRouter);
 app.use("/api", noticeRouter);
 app.use("/api", dashboardrouter);
 app.use("/api/cart", cartRouter);
+app.use("/api/billing", billingrouter);
 
 
 
