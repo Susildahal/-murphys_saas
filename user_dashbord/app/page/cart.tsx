@@ -1,4 +1,4 @@
-'use client';
+"use client";
 import React, { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { getCart, removeFromCart, clearCart  ,updateCartStatus} from '@/lib/redux/slices/cartSlice';
@@ -13,6 +13,7 @@ import { ShoppingCart, Trash2, X, CreditCard, Info, CheckCircle, Clock } from 'l
 import Image from 'next/image';
 import SpinnerComponent from './common/Spinner';
 import Header from './common/header';
+import { useRouter } from 'next/navigation';
 
 export default function CartPage() {
   const dispatch = useAppDispatch();
@@ -20,6 +21,7 @@ export default function CartPage() {
   const { cart, loading } = useAppSelector((state) => state.cart);
   const meeState = useAppSelector((s) => s.mee);
   const userid = meeState.data?.uid || '';
+  const router = useRouter();
 
   useEffect(() => {
     if (userid) {
@@ -205,18 +207,26 @@ export default function CartPage() {
                             <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 border-none">
                               {service.categoryName || 'Unknown'}
                             </Badge>
-                            <Badge 
-                              variant="outline" 
+                            <Badge
+                              variant="outline"
                               className={`capitalize text-[10px] ${
-                                cartService.status === 'confirmed' 
-                                  ? 'bg-emerald-500/10 text-emerald-600 border-emerald-200' 
-                                  : 'bg-amber-500/10 text-amber-600 border-amber-200'
+                                cartService.status === 'pending'
+                                  ? 'bg-amber-500/10 text-amber-600 border-amber-200'
+                                  : cartService.status === 'confirmed'
+                                  ? 'bg-emerald-500/10 text-emerald-600 border-emerald-200'
+                                  : cartService.status === 'done'
+                                  ? 'bg-blue-500/10 text-blue-600 border-blue-200'
+                                  : 'bg-neutral-100 text-neutral-800'
                               }`}
                             >
-                              {cartService.status === 'confirmed' ? (
-                                <><CheckCircle className="h-3 w-3 mr-1" /> Confirmed</>
-                              ) : (
+                              {cartService.status === 'pending' && (
                                 <><Clock className="h-3 w-3 mr-1" /> Pending</>
+                              )}
+                              {cartService.status === 'confirmed' && (
+                                <><CheckCircle className="h-3 w-3 mr-1" /> Confirmed</>
+                              )}
+                              {cartService.status === 'done' && (
+                                <><CheckCircle className="h-3 w-3 mr-1" /> Completed</>
                               )}
                             </Badge>
                           </div>
@@ -271,14 +281,32 @@ export default function CartPage() {
                                 </AlertDescription>
                               </Alert>
                             )}
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleRemoveFromCart((service as any)._id || (service as any).id)}
-                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                            >
-                              <Trash2 className="h-5 w-5" />
-                            </Button>
+                            {cartService.status === 'done' && (
+                              <Alert className="bg-blue-50 border-blue-200 p-2 text-xs">
+                                <AlertDescription className="text-blue-800 flex items-center gap-1">
+                                  <CheckCircle className="h-3 w-3" />
+                                  Service accepted by admin
+                                </AlertDescription>
+                              </Alert>
+                            )}
+                            {cartService.status !== 'done' ? (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleRemoveFromCart((service as any)._id || (service as any).id)}
+                                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              >
+                                <Trash2 className="h-5 w-5" />
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                onClick={() => router.push(`/services/${(service as any)._id}`)}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                              >
+                                View Service
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </div>

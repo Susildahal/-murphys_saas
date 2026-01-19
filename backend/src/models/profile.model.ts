@@ -22,6 +22,7 @@ role: { type: mongoose.Schema.Types.ObjectId, ref: 'Role' }, // Reference to cus
 status: { type: String, enum: ['active', 'inactive', 'suspended'], default: 'active' },
 role_type: { type: String , enum: ['client user', 'admin user'] }, // Type: admin or client
 permissions: [{ type: String }], // Custom permissions array for granular access control
+referralSource: { type: String }, // How did the user hear about us
 }, { timestamps: true });
 
 const Profile = mongoose.model("Profile", profileSchema);

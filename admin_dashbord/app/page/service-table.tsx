@@ -135,8 +135,8 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
 
   // Fetch services when page or category changes (server-driven pagination)
   useEffect(() => {
-    dispatch(fetchServices({ page: currentPage, limit: storeLimit, category: categoryFilter === 'all' ? undefined : categoryFilter } as any));
-  }, [dispatch, currentPage, storeLimit, categoryFilter]);
+    dispatch(fetchServices({ page: currentPage, limit: ITEMS_PER_PAGE, category: categoryFilter === 'all' ? undefined : categoryFilter } as any));
+  }, [dispatch, currentPage, categoryFilter]);
 
   // ensure user list is available
   useEffect(() => {

@@ -131,12 +131,16 @@ export const getAllAssignedServices = async (req: Request, res: Response) => {
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 10;
   const skip = (page - 1) * limit;
-  const searchQuery = req.query.search as string || '';
-  const clientId = req.query.client_id as string || '';
-  const serviceCatalogId = req.query.service_catalog_id as string || '';
+
+  const searchQuery = (req.query.search as string) || '';
+  const clientId = (req.query.client_id as string) || '';
+  const serviceCatalogId = (req.query.service_catalog_id as string) || '';
+  const email = (req.query.email as string) || '';
 
   try {
-    let query: any = {};
+    const query: any = {};
+
+    // 🔍 Search filter
     if (searchQuery) {
       query.$or = [
         { client_name: { $regex: searchQuery, $options: 'i' } },
@@ -144,64 +148,81 @@ export const getAllAssignedServices = async (req: Request, res: Response) => {
         { email: { $regex: searchQuery, $options: 'i' } },
       ];
     }
+
+    // 🎯 Email filter (separate & professional)
+    if (email) {
+      query.email = { $regex: email, $options: 'i' };
+    }
+
     if (clientId) {
       query.client_id = new mongoose.Types.ObjectId(clientId);
     }
+
     if (serviceCatalogId) {
       query.service_catalog_id = new mongoose.Types.ObjectId(serviceCatalogId);
     }
 
-    // count documents matching same query
     const totalCount = await AssignService.countDocuments(query);
 
-    // aggregation pipeline to lookup client and service collections and overwrite names
     const pipeline: any[] = [
       { $match: query },
       { $sort: { createdAt: -1 } },
+
       {
         $lookup: {
-          from: 'profiles', // collection name for Profile model
+          from: 'profiles',
           localField: 'client_id',
           foreignField: '_id',
-          as: 'client'
-        }
+          as: 'client',
+        },
       },
       { $unwind: { path: '$client', preserveNullAndEmptyArrays: true } },
+
       {
         $lookup: {
-          from: 'services', // collection name for Service model
+          from: 'services',
           localField: 'service_catalog_id',
           foreignField: '_id',
-          as: 'service'
-        }
+          as: 'service',
+        },
       },
       { $unwind: { path: '$service', preserveNullAndEmptyArrays: true } },
-      // Prefer looked-up values; fall back to stored values if lookup missing
+
       {
         $addFields: {
           client_name: {
             $cond: [
-              { $and: [{ $ifNull: ['$client.firstName', false] }, { $ifNull: ['$client.lastName', false] }] },
+              { $and: ['$client.firstName', '$client.lastName'] },
               { $concat: ['$client.firstName', ' ', '$client.lastName'] },
-              '$client_name'
-            ]
+              '$client_name',
+            ],
           },
-          service_name: { $ifNull: ['$service.name', '$service_name'] }
-        }
+          service_name: { $ifNull: ['$service.name', '$service_name'] },
+        },
       },
+
       { $project: { client: 0, service: 0 } },
       { $skip: skip },
-      { $limit: limit }
+      { $limit: limit },
     ];
 
-    const assignedServices = await (AssignService as any).aggregate(pipeline);
+    const assignedServices = await AssignService.aggregate(pipeline as any);
 
-    res.status(200).json({ data: assignedServices, pagination: { totalCount, page, limit, totalPages: Math.ceil(totalCount / limit) }, message: 'Assigned services retrieved successfully' });
-  }
-  catch (error) {
+    res.status(200).json({
+      data: assignedServices,
+      pagination: {
+        totalCount,
+        page,
+        limit,
+        totalPages: Math.ceil(totalCount / limit),
+      },
+      message: 'Assigned services retrieved successfully',
+    });
+  } catch (error) {
     res.status(400).json({ message: (error as Error).message });
   }
 };
+
 
 export const getAssignDetails = async (req: Request, res: Response) => {
   try {

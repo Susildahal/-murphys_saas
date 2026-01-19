@@ -47,7 +47,14 @@ const profileSchema = z.object({
   middleName: z.string().optional(),
   lastName: z.string().min(2, { message: 'Last name must be at least 2 characters' }),
   email: z.string().nullable(),
-  phone: z.string().regex(/^\+?[\d\s-]+$/, { message: 'Please enter a valid phone number' }).optional().or(z.literal('')),
+  phone: z.string().optional().refine((v) => {
+    if (!v) return true;
+    const digits = v.replace(/\D/g, '');
+    // convert leading country code to local 0 prefix if provided (e.g. 61412... -> 0412...)
+    const normalized = digits.startsWith('61') ? '0' + digits.slice(2) : digits;
+    // Australian mobiles should start with 04 and have 10 digits total (e.g. 0412345678)
+    return /^0?4\d{8}$/.test(normalized);
+  }, { message: 'Please enter a valid Australian mobile number (e.g. 0412 345 678 or +61 412 345 678)' }),
   gender: z.string().optional(),
   dob: z.string().optional().refine((v) => {
     if (!v) return true;
@@ -59,13 +66,12 @@ const profileSchema = z.object({
     if (m < 0 || (m === 0 && now.getDate() < d.getDate())) { age--; }
     return age >= 17;
   }, { message: 'You must be at least 17 years old' }),
-  doj: z.string().optional(),
+  referralSource: z.string().optional(),
   bio: z.string().max(500, { message: 'Bio must be less than 500 characters' }).optional(),
   website: z.string().url({ message: 'Please enter a valid URL' }).or(z.literal('')).optional(),
   country: z.string().optional(),
   state: z.string().optional(),
   city: z.string().optional(),
-  position: z.string().min(2, { message: 'Position must be at least 2 characters' }),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -82,9 +88,9 @@ export default function ProfileUpdateForm() {
   const [imagePreview, setImagePreview] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [dobOpen, setDobOpen] = useState(false);
-  const [dojOpen, setDojOpen] = useState(false);
   const [date, setDate] = useState<Date | undefined>(undefined);
-  const [dojDate, setDojDate] = useState<Date | undefined>(undefined);
+
+  
 
   useEffect(() => {
     if (meeData?.email) dispatch(fetchProfileByEmail(meeData.email));
@@ -104,13 +110,12 @@ export default function ProfileUpdateForm() {
       phone: '',
       gender: '',
       dob: '',
-      doj: '',
+      referralSource: '',
       bio: '',
       website: '',
       country: '',
       state: '',
       city: '',
-      position: '',
     },
   });
 
@@ -124,17 +129,15 @@ export default function ProfileUpdateForm() {
         phone: pd.phone || '',
         gender: pd.gender || '',
         dob: pd.dob || '',
-        doj: pd.doj || '',
+        referralSource: pd.referralSource || '',
         bio: pd.bio || '',
         website: pd.website || '',
         country: pd.country || '',
         state: pd.state || '',
         city: pd.city || '',
-        position: pd.position || '',
       });
       if (data.profile_image) setImagePreview(data.profile_image);
       if (pd.dob) setDate(new Date(pd.dob));
-      if (pd.doj) setDojDate(new Date(pd.doj));
     }
   }, [data, meeData, form]);
 
@@ -183,6 +186,32 @@ export default function ProfileUpdateForm() {
     visible: { opacity: 1, x: 0 }
   };
 
+  const formatAusMobile = (value: string) => {
+  // Keep only numbers
+  let digits = value.replace(/\D/g, "")
+
+  // Convert international prefix +61 or 61 to leading 0
+  if (digits.startsWith('61')) digits = '0' + digits.slice(2)
+
+  // If user typed without leading 0 (e.g. 412345678), add it
+  if (digits.length === 9 && digits.startsWith('4')) digits = '0' + digits
+
+  // Limit to 10 digits (04XXXXXXXX)
+  if (digits.length > 10) digits = digits.slice(0, 10)
+
+  // Auto space: 0412 345 678
+  if (digits.length > 4 && digits.length <= 7) {
+    return `${digits.slice(0, 4)} ${digits.slice(4)}`
+  }
+
+  if (digits.length > 7) {
+    return `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7, 10)}`
+  }
+
+  return digits
+}
+
+
   return (
     <div className="w-full max-w-5xl mx-auto pb-20">
       <motion.div
@@ -214,7 +243,7 @@ export default function ProfileUpdateForm() {
                   <h2 className="text-xl font-bold text-foreground">
                     {form.watch('firstName')} {form.watch('lastName')}
                   </h2>
-                  <p className="text-sm text-muted-foreground font-medium">{form.watch('position') || 'Role not set'}</p>
+                  <p className="text-sm text-muted-foreground font-medium">User Profile</p>
                 </div>
 
                 <Separator className="my-6" />
@@ -224,14 +253,16 @@ export default function ProfileUpdateForm() {
                     <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                       <Mail className="w-4 h-4" />
                     </div>
-                    <span>{meeData?.email || 'No email set'}</span>
+                    <span className="truncate">{meeData?.email || 'No email set'}</span>
                   </div>
-                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                      <Briefcase className="w-4 h-4" />
+                  {form.watch('referralSource') && (
+                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                        <Info className="w-4 h-4" />
+                      </div>
+                      <span className="truncate">Found via: {form.watch('referralSource')}</span>
                     </div>
-                    <span>{form.watch('position') || 'Position pending'}</span>
-                  </div>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -362,73 +393,56 @@ export default function ProfileUpdateForm() {
 
                   <Separator />
 
-                  {/* Professional Information */}
+                  {/* How did you find us */}
                   <motion.div variants={sectionVariants} className="space-y-6">
                     <div className="flex items-center gap-2 mb-4">
                       <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-500">
-                        <Briefcase className="w-5 h-5" />
+                        <Info className="w-5 h-5" />
                       </div>
-                      <h3 className="text-lg font-bold">Professional Info</h3>
+                      <h3 className="text-lg font-bold">About You</h3>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={form.control}
-                        name="position"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Job Title <span className="text-destructive">*</span></FormLabel>
-                            <FormControl>
-                              <Input placeholder="e.g. Creative Director" {...field} className="bg-muted/50 border-none" />
+                    <FormField
+                      control={form.control}
+                      name="referralSource"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>How did you find our service?</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl className="w-full">
+                              <SelectTrigger className="bg-muted/50 border-none">
+                                <SelectValue placeholder="Select an option" />
+                              </SelectTrigger>
                             </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="doj"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                            <FormLabel>Join Date</FormLabel>
-                            <Popover open={dojOpen} onOpenChange={setDojOpen}>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button variant="outline" className={cn("justify-between font-normal bg-muted/50 border-none", !dojDate && "text-muted-foreground")}>
-                                    {dojDate ? format(dojDate, "PPP") : "Select date"}
-                                    <CalendarIcon className="w-4 h-4 ml-2 opacity-50" />
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                  mode="single"
-                                  selected={dojDate}
-                                  onSelect={(d) => {
-                                    setDojDate(d);
-                                    if (d) field.onChange(d.toISOString().split('T')[0]);
-                                    setDojOpen(false);
-                                  }}
-                                  disabled={(d) => d > new Date()}
-                                  initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                            <SelectContent>
+                              <SelectItem value="search-engine">Search Engine (Google, Bing, etc.)</SelectItem>
+                              <SelectItem value="social-media">Social Media</SelectItem>
+                              <SelectItem value="friend-referral">Friend or Colleague Referral</SelectItem>
+                              <SelectItem value="advertisement">Online Advertisement</SelectItem>
+                              <SelectItem value="blog-article">Blog or Article</SelectItem>
+                              <SelectItem value="youtube">YouTube</SelectItem>
+                              <SelectItem value="email">Email Newsletter</SelectItem>
+                              <SelectItem value="event">Event or Conference</SelectItem>
+                              <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            Help us understand how you discovered us
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
                     <FormField
                       control={form.control}
                       name="bio"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Professional Bio</FormLabel>
+                          <FormLabel>About You</FormLabel>
                           <FormControl>
                             <Textarea
-                              placeholder="Tell us about your professional journey..."
+                              placeholder="Tell us a bit about yourself..."
                               className="bg-muted/50 border-none resize-none min-h-[120px]"
                               {...field}
                             />
@@ -454,19 +468,35 @@ export default function ProfileUpdateForm() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={form.control}
-                        name="phone"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Mobile Number</FormLabel>
-                            <FormControl>
-                              <Input placeholder="+1 234 567 890" {...field} className="bg-muted/50 border-none" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+
+<FormField
+  control={form.control}
+  name="phone"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Mobile Number</FormLabel>
+
+      <FormControl>
+        <Input
+          {...field}
+          type="tel"
+          placeholder="0412 345 678"
+          inputMode="numeric"
+          className="bg-muted/50 border-none"
+          onChange={(e) => {
+            const formatted = formatAusMobile(e.target.value)
+            field.onChange(formatted)
+          }}
+        />
+      </FormControl>
+
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+
+
+
                       <FormField
                         control={form.control}
                         name="website"

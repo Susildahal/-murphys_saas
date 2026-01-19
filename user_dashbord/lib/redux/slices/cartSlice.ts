@@ -8,7 +8,7 @@ export interface CartItem {
   userid: string;
   Services: Array<{
     serviceId: Service;
-    status: 'pending' | 'confirmed';
+    status: 'pending' | 'confirmed' | 'done';
     confirmedAt?: string;
     _id: string;
   }>;

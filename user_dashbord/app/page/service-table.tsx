@@ -1,482 +1,479 @@
 'use client';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import {  fetchServices } from '@/lib/redux/slices/serviceSlice';
+import { fetchServices } from '@/lib/redux/slices/serviceSlice';
 import { addToCart, getCart } from '@/lib/redux/slices/cartSlice';
 import { Service } from '@/types/service';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import { MoreHorizontal, ChevronLeft, ChevronRight, Eye, CheckCircle2, Info, ShoppingCart } from 'lucide-react';
+import { MoreVertical, ChevronLeft, ChevronRight, Eye, CheckCircle2, Info, ShoppingCart, Sparkles } from 'lucide-react';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
 } from '@/components/ui/dialog';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useRouter } from 'next/navigation';
+import { Card, CardContent } from '@/components/ui/card'; // We only need base Card and Content for custom layout
 import Image from 'next/image';
 import SpinnerComponent from './common/Spinner';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
+import { cn } from '@/lib/utils'; // Assuming you have a cn utility, if not use string templates
 
 interface ServiceTableProps {
-  categoryFilter?: string;
+    categoryFilter?: string;
 }
 
 const ITEMS_PER_PAGE = 10;
 
 export default function ServiceTable({ categoryFilter = 'all' }: ServiceTableProps) {
-  const dispatch = useAppDispatch();
-  const { toast } = useToast();
-  const { services, loading, page: storePage, limit: storeLimit, total, totalPages } = useAppSelector((state) => state.services);
-  const {loading: cartLoading} = useAppSelector((state) => state.cart);
+    const dispatch = useAppDispatch();
+    const { toast } = useToast();
+    const { services, loading, page: storePage, limit: storeLimit, total, totalPages } = useAppSelector((state) => state.services);
+    const { loading: cartLoading } = useAppSelector((state) => state.cart);
 
-  const [currentPage, setCurrentPage] = useState(storePage || 1);
-  const [viewDialogOpen, setViewDialogOpen] = useState(false);
-  const [selectedViewService, setSelectedViewService] = useState<Service | null>(null);
-  const [clickImage, setClickImage] = useState<string>('');
-  const meeState = useAppSelector((s) => s.mee);
-  const userid = meeState.data?.uid || '';
+    const [currentPage, setCurrentPage] = useState(storePage || 1);
+    const [viewDialogOpen, setViewDialogOpen] = useState(false);
+    const [selectedViewService, setSelectedViewService] = useState<Service | null>(null);
+    const [clickImage, setClickImage] = useState<string>('');
+    const meeState = useAppSelector((s) => s.mee);
+    const userid = meeState.data?.uid || '';
 
-  // Sorting state
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+    // Sorting state
+    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
 
-  const handleSort = (key: string) => {
-    let direction: 'asc' | 'desc' = 'asc';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
-    }
-    setSortConfig({ key, direction });
-  };
-
-  const sortedServices = useMemo(() => {
-    let items = [...services];
-    if (sortConfig !== null) {
-      items.sort((a: any, b: any) => {
-        let aValue = a[sortConfig.key];
-        let bValue = b[sortConfig.key];
-
-        // Handle specific fields
-        if (sortConfig.key === 'price') {
-          // numeric sort
-          aValue = Number(a.price);
-          bValue = Number(b.price);
-        } else if (sortConfig.key === 'createdAt') {
-          aValue = new Date(a.createdAt).getTime();
-          bValue = new Date(b.createdAt).getTime();
-        } else if (typeof aValue === 'string') {
-          aValue = aValue.toLowerCase();
-          bValue = (bValue || '').toLowerCase();
+    // ... (Keep existing sorting logic)
+    const sortedServices = useMemo(() => {
+        let items = [...services];
+        if (sortConfig !== null) {
+            items.sort((a: any, b: any) => {
+                let aValue = a[sortConfig.key];
+                let bValue = b[sortConfig.key];
+                if (sortConfig.key === 'price') {
+                    aValue = Number(a.price);
+                    bValue = Number(b.price);
+                } else if (sortConfig.key === 'createdAt') {
+                    aValue = new Date(a.createdAt).getTime();
+                    bValue = new Date(b.createdAt).getTime();
+                } else if (typeof aValue === 'string') {
+                    aValue = aValue.toLowerCase();
+                    bValue = (bValue || '').toLowerCase();
+                }
+                if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+                if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
         }
+        return items;
+    }, [services, sortConfig]);
 
-        if (aValue < bValue) {
-          return sortConfig.direction === 'asc' ? -1 : 1;
+    useEffect(() => {
+        dispatch(fetchServices({ page: currentPage, limit: ITEMS_PER_PAGE, category: categoryFilter === 'all' ? undefined : categoryFilter } as any));
+    }, [dispatch, currentPage, categoryFilter]);
+
+    useEffect(() => {
+        if (userid) {
+            dispatch(getCart(userid));
         }
-        if (aValue > bValue) {
-          return sortConfig.direction === 'asc' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-    return items;
-  }, [services, sortConfig]);
+    }, [dispatch, userid]);
 
-  // Fetch services when page or category changes (server-driven pagination)
-  useEffect(() => {
-    dispatch(fetchServices({ page: currentPage, limit: storeLimit, category: categoryFilter === 'all' ? undefined : categoryFilter } as any));
-  }, [dispatch, currentPage, storeLimit, categoryFilter]);
-
-  // Fetch cart on component mount
-  useEffect(() => {
-    if (userid) {
-      dispatch(getCart(userid));
-    }
-  }, [dispatch, userid]);
-
-  const formatBillingType = (type: string) => {
-    const formats: Record<string, string> = {
-      one_time: 'One Time',
-      monthly: 'Monthly',
-      yearly: 'Yearly',
-      pay_as_you_go: 'Pay as you go',
+    const formatBillingType = (type: string) => {
+        const formats: Record<string, string> = {
+            one_time: 'One Time',
+            monthly: 'Monthly',
+            yearly: 'Yearly',
+            pay_as_you_go: 'PAYG',
+        };
+        return formats[type] || type;
     };
-    return formats[type] || type;
-  };
 
-  const formatPrice = (price: number, billingType: string, currency?: string) => {
-    const cur = currency || 'USD';
-    const formatted = new Intl.NumberFormat(undefined, { style: 'currency', currency: cur }).format(price);
-    if (billingType === 'monthly') return `${formatted}/mo`;
-    if (billingType === 'yearly') return `${formatted}/yr`;
-    return formatted;
-  };
+    const formatPrice = (price: number, billingType: string, currency?: string) => {
+        const cur = currency || 'USD';
+        const formatted = new Intl.NumberFormat(undefined, { style: 'currency', currency: cur }).format(price);
+        if (billingType === 'monthly') return `${formatted}/mo`;
+        if (billingType === 'yearly') return `${formatted}/yr`;
+        return formatted;
+    };
 
+    const handleAddToCart = async (service: Service) => {
+        if (!userid) {
+            toast({
+                title: 'Error',
+                description: 'Please log in to add items to cart',
+                variant: 'destructive'
+            });
+            return;
+        }
 
+        const serviceId = (service as any)._id || (service as any).id;
+        try {
+            await dispatch(addToCart({ userid, serviceId })).unwrap();
+            toast({
+                title: 'Success',
+                description: `${service.name} added to cart!`,
+            });
+        } catch (err) {
+            toast({
+                title: 'Error',
+                description: 'Failed to add to cart',
+                variant: 'destructive'
+            });
+            console.error('add to cart error', err);
+        }
+    };
 
-  const handleAddToCart = async (service: Service) => {
-    if (!userid) {
-      toast({ 
-        title: 'Error', 
-        description: 'Please log in to add items to cart', 
-        variant: 'destructive' 
-      });
-      return;
+    const handleViewClick = (service: Service) => {
+        setSelectedViewService(service);
+        setViewDialogOpen(true);
+    };
+
+    if (services.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center py-12">
+                <div className="bg-muted/50 p-6 rounded-full mb-4">
+                    <Sparkles className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">No services found</h3>
+                <p className="text-sm text-muted-foreground text-center max-w-sm">
+                    {categoryFilter === 'all' ? 'Create your first service to get started' : 'No services available in this category at the moment.'}
+                </p>
+            </div>
+        );
     }
-    
-    const serviceId = (service as any)._id || (service as any).id;
-    try {
-      await dispatch(addToCart({ userid, serviceId })).unwrap();
-      toast({ 
-        title: 'Success', 
-        description: `${service.name} added to cart!`,
-      });
-    } catch (err) {
-      toast({ 
-        title: 'Error', 
-        description: 'Failed to add to cart', 
-        variant: 'destructive' 
-      });
-      console.error('add to cart error', err);
-    }
-  };
 
+    const effectiveTotalPages = totalPages || Math.ceil((total || 0) / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
 
-
- 
-
-  const handleViewClick = (service: Service) => {
-    setSelectedViewService(service);
-    setViewDialogOpen(true);
-  };
-
-
-  if (services.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center ">
-        <h3 className="text-lg font-semibold mb-2">No services found</h3>
-        <p className="text-sm text-muted-foreground">
-          {categoryFilter === 'all' ? 'Create your first service to get started' : 'No services in this category'}
-        </p>
-      </div>
-    );
-  }
-  // Pagination indices (server-driven)
-  const effectiveTotalPages = totalPages || Math.ceil((total || 0) / (storeLimit || ITEMS_PER_PAGE));
-  const startIndex = (currentPage - 1) * (storeLimit || ITEMS_PER_PAGE);
-  const endIndex = startIndex + (storeLimit || ITEMS_PER_PAGE);
-  const paginatedServices = services;
+        <>
+            {(loading || cartLoading) && <SpinnerComponent />}
 
-  return (
-    <>
-
-    {
-      loading && <SpinnerComponent />
-    }
-
-{
-  cartLoading && <SpinnerComponent />
-  
-}
-      {
-        clickImage && (
-          <Dialog open={Boolean(clickImage)} onOpenChange={() => setClickImage('')}>
-            <DialogContent className="overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="text-xl">Service Image</DialogTitle>
-                <DialogDescription>Full size view of the service image</DialogDescription>
-              </DialogHeader>
-              <div className="flex justify-center items-center ">
-                <img src={clickImage} alt="Service Full Size" className="max-w-full object-contain" />
-              </div>
-            </DialogContent>
-          </Dialog>
-        )
-
-      }
-      
-      {/* Card Grid Layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {sortedServices.map((service, index) => (
-          <Card key={(service as any)._id || (service as any).id} className="group hover:shadow-lg transition-all duration-200 overflow-hidden">
-            <CardHeader className="space-y-0 pb-3">
-              <div className="flex items-start justify-between gap-2 mb-3">
-                <div className="flex-1">
-                  <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 border-none mb-2">
-                    {service.categoryName || 'Unknown'}
-                  </Badge>
-                  <CardTitle className="text-lg line-clamp-1">{service.name}</CardTitle>
-                  <Badge variant="outline" className="w-fit text-[10px] mt-1 px-1 py-0 h-4 font-normal opacity-70">
-                    ID: {((service as any)._id || (service as any).id).slice(-6)}
-                  </Badge>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                      <span className="sr-only">Open menu</span>
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={() => handleViewClick(service)}
-                      className="cursor-pointer"
-                    >
-                      <Eye className="mr-2 h-4 w-4" />
-                      View Details
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
-              {/* Service Image */}
-              <div 
-                onClick={() => {
-                  const imgSrc = (service as any).image || (service as any).imageUrl || '';
-                  if (imgSrc) setClickImage(imgSrc);
-                }}
-                className="cursor-pointer w-full aspect-video rounded-lg overflow-hidden bg-muted mb-3"
-              >
-                {((service as any).image || (service as any).imageUrl) ? (
-                  <Image
-                    src={(service as any).image || (service as any).imageUrl}
-                    alt={service.name}
-                    width={400}
-                    height={225}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                    No Image
-                  </div>
-                )}
-              </div>
-
-              <CardDescription className="line-clamp-2 text-sm">
-                {service.description}
-              </CardDescription>
-            </CardHeader>
-
-            <CardContent className="space-y-3">
-              {/* Price */}
-              <div className="flex flex-col">
-                {service.hasDiscount && service.discountValue ? (
-                  <>
-                    <span className="text-xs text-muted-foreground line-through decoration-destructive/50">
-                      {formatPrice(service.price, service.billingType, service.currency)}
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-2xl font-bold text-emerald-600">
-                        {(() => {
-                          const disc = service.discountType === 'percentage'
-                            ? service.price - (service.price * (service.discountValue || 0) / 100)
-                            : service.price - (service.discountValue || 0);
-                          return formatPrice(disc, service.billingType, service.currency);
-                        })()}
-                      </span>
-                      <Badge className="bg-emerald-500 hover:bg-emerald-600 text-[10px] h-4 px-1 border-none">
-                        Sale
-                      </Badge>
-                    </div>
-                  </>
-                ) : (
-                  <span className="text-2xl font-bold">
-                    {formatPrice(service.price, service.billingType, service.currency)}
-                  </span>
-                )}
-                <span className="text-xs font-medium text-muted-foreground mt-1">
-                  {formatBillingType(service.billingType)}
-                </span>
-              </div>
-
-              <Separator />
-
-            
-
-              {/* Actions */}
-              <Button
-                size="sm"
-                onClick={() => handleAddToCart(service)}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white"
-              >
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                Add to Cart
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Pagination Controls */}
-      {effectiveTotalPages > 1 && (
-        <div className="flex items-center justify-between px-2 py-6 mt-6">
-          <div className="text-sm text-muted-foreground">
-            Showing {startIndex + 1} to {Math.min(endIndex, total || 0)} of {total || 0} services
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Previous
-            </Button>
-            <div className="flex items-center gap-1">
-              {Array.from({ length: effectiveTotalPages }, (_, i) => i + 1).map((page) => (
-                <Button
-                  key={page}
-                  variant={currentPage === page ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setCurrentPage(page)}
-                  className="w-8 h-8 p-0"
-                >
-                  {page}
-                </Button>
-              ))}
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, effectiveTotalPages))}
-              disabled={currentPage === effectiveTotalPages}
-            >
-              Next
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Button>
-          </div>
-        </div>
-      )}
-
-      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Service Details</DialogTitle>
-            <DialogDescription>Full summary for {selectedViewService?.name}</DialogDescription>
-          </DialogHeader>
-
-          {selectedViewService && (
-            <div className="space-y-6 py-4">
-              <div className="flex gap-6 items-start">
-                <div className="relative group shrink-0">
-                  {((selectedViewService as any).image || (selectedViewService as any).imageUrl) ? (
-                    <img
-                      src={(selectedViewService as any).image || (selectedViewService as any).imageUrl}
-                      alt=""
-                      className="w-32 h-32 rounded-xl object-cover border-4 border-muted shadow-sm"
-                    />
-                  ) : (
-                    <div className="w-32 h-32 rounded-xl bg-muted flex items-center justify-center text-muted-foreground border-4 border-muted">
-                      No Image
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 space-y-2">
-                  <Badge variant="outline" className="text-blue-600 bg-blue-50 border-blue-200 uppercase tracking-wider text-[10px]">
-                    {selectedViewService.categoryName}
-                  </Badge>
-                  <h3 className="text-2xl font-bold tracking-tight">{selectedViewService.name}</h3>
-                  <div className="flex items-center gap-3">
-                    {selectedViewService.hasDiscount && selectedViewService.discountValue ? (
-                      <>
-                        <span className="text-3xl font-extrabold text-emerald-600">
-                          {(() => {
-                            const disc = selectedViewService.discountType === 'percentage'
-                              ? selectedViewService.price - (selectedViewService.price * (selectedViewService.discountValue || 0) / 100)
-                              : selectedViewService.price - (selectedViewService.discountValue || 0);
-                            return formatPrice(disc, selectedViewService.billingType, selectedViewService.currency);
-                          })()}
-                        </span>
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium text-muted-foreground line-through decoration-destructive/40">
-                            {formatPrice(selectedViewService.price, selectedViewService.billingType, selectedViewService.currency)}
-                          </span>
-                          <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-none text-[11px] h-5">
-                            {selectedViewService.discountType === 'percentage'
-                              ? `${selectedViewService.discountValue}% OFF`
-                              : `Save ${formatPrice(selectedViewService.discountValue || 0, 'one_time', selectedViewService.currency)}`}
-                          </Badge>
+            {clickImage && (
+                <Dialog open={Boolean(clickImage)} onOpenChange={() => setClickImage('')}>
+                    <DialogContent className="max-w-4xl p-0 overflow-hidden bg-transparent border-none shadow-none">
+                        <div className="relative w-full h-full flex justify-center items-center">
+                            <img 
+                                src={clickImage} 
+                                alt="Service Full Size" 
+                                className="max-h-[85vh] max-w-full object-contain rounded-lg shadow-2xl" 
+                            />
                         </div>
-                      </>
-                    ) : (
-                      <span className="text-3xl font-extrabold">
-                        {formatPrice(selectedViewService.price, selectedViewService.billingType, selectedViewService.currency)}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
+                    </DialogContent>
+                </Dialog>
+            )}
 
-              <Separator />
+            {/* NEW GRID LAYOUT */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-8">
+                {sortedServices.map((service) => {
+                    const hasDiscount = service.hasDiscount && service.discountValue;
+                    const finalPrice = hasDiscount
+                        ? (service.discountType === 'percentage'
+                            ? service.price - (service.price * (service.discountValue || 0) / 100)
+                            : service.price - (service.discountValue || 0))
+                        : service.price;
 
-              <div className="grid grid-cols-2 gap-8">
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold uppercase text-muted-foreground tracking-widest">Billing Cycle</label>
-                  <p className="text-sm font-medium capitalize">{formatBillingType(selectedViewService.billingType)}</p>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[11px] font-bold uppercase text-muted-foreground tracking-widest">Status</label>
-                </div>
-              </div>
+                    return (
+                        <Card 
+                            key={(service as any)._id || (service as any).id} 
+                            className="group relative flex flex-col h-full overflow-hidden border-border/60 bg-card hover:shadow-xl hover:border-border/80 transition-all duration-300 rounded-xl"
+                        >
+                            {/* 1. Full Bleed Image Header */}
+                            <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+                                {((service as any).image || (service as any).imageUrl) ? (
+                                    <Image
+                                        src={(service as any).image || (service as any).imageUrl}
+                                        alt={service.name}
+                                        fill
+                                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground bg-secondary/30">
+                                        <Sparkles className="w-8 h-8 mb-2 opacity-20" />
+                                        <span className="text-xs font-medium">No Preview</span>
+                                    </div>
+                                )}
+                                
+                                {/* Floating Badges */}
+                                <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
+                                    <Badge variant="secondary" className="bg-background/95 backdrop-blur-sm text-foreground/80 shadow-sm border font-medium">
+                                        {service.categoryName || 'General'}
+                                    </Badge>
+                                </div>
 
-              <div className="space-y-2">
-                <label className="text-[11px] font-bold uppercase text-muted-foreground tracking-widest">Description</label>
-                <div className="text-sm leading-relaxed text-muted-foreground bg-muted/30 p-4 rounded-lg border border-border/50">
-                  {selectedViewService.description}
-                </div>
-              </div>
+                                {hasDiscount && (
+                                     <div className="absolute top-3 right-3 z-10">
+                                        <Badge className="bg-rose-500 hover:bg-rose-600 text-white border-none shadow-sm px-2">
+                                            {service.discountType === 'percentage' ? `-${service.discountValue}%` : 'SALE'}
+                                        </Badge>
+                                    </div>
+                                )}
 
-              {selectedViewService.features && selectedViewService.features.length > 0 && (
-                <div className="space-y-3">
-                  <label className="text-[11px] font-bold uppercase text-muted-foreground tracking-widest">Included Features</label>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                    {selectedViewService.features.map((f, i) => (
-                      <div key={i} className="flex items-center gap-2 text-sm text-foreground/80">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                        <span className="truncate">{f}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                                {/* Hover Overlay Actions */}
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3 backdrop-blur-[1px]">
+                                    <Button 
+                                        variant="secondary" 
+                                        size="sm" 
+                                        className="rounded-full shadow-lg translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75"
+                                        onClick={() => handleViewClick(service)}
+                                    >
+                                        <Eye className="w-4 h-4 mr-2" />
+                                        Quick View
+                                    </Button>
+                                    <Button
+                                        size="icon"
+                                        variant="secondary"
+                                        className="rounded-full shadow-lg translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-100"
+                                        onClick={() => {
+                                            const imgSrc = (service as any).image || (service as any).imageUrl || '';
+                                            if (imgSrc) setClickImage(imgSrc);
+                                        }}
+                                    >
+                                        <Sparkles className="w-4 h-4" />
+                                    </Button>
+                                </div>
+                            </div>
 
-              {selectedViewService.hasDiscount && (
-                <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-4">
-                  <h4 className="text-xs font-bold text-amber-700 uppercase tracking-widest flex items-center gap-2 mb-3">
-                    <Info className="w-3 h-3" /> Promotion Details
-                  </h4>
-                  <div className="grid grid-cols-2 gap-y-3 text-xs">
-                    <div className="flex flex-col">
-                      <span className="text-muted-foreground">Promo Period</span>
-                      <span className="font-semibold text-amber-900">
-                        {selectedViewService.discountStartDate ? format(new Date(selectedViewService.discountStartDate), 'MMM dd, yyyy') : 'No start'}
-                        {' → '}
-                        {selectedViewService.discountEndDate ? format(new Date(selectedViewService.discountEndDate), 'MMM dd, yyyy') : 'No end'}
-                      </span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-muted-foreground">Reason</span>
-                      <span className="font-semibold text-amber-900">{selectedViewService.discountReason || 'Seasonal Offer'}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
+                            {/* 2. Content Body */}
+                            <CardContent className="flex flex-col flex-1 p-5 gap-4">
+                                <div className="space-y-1.5">
+                                    <div className="flex justify-between items-start gap-2">
+                                        <h3 className="font-bold text-lg leading-tight line-clamp-1 group-hover:text-primary transition-colors">
+                                            {service.name}
+                                        </h3>
+                                        
+                                        {/* Dropdown for extra actions */}
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-6 w-6 -mr-2 text-muted-foreground hover:text-foreground">
+                                                    <MoreVertical className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem onClick={() => handleViewClick(service)}>
+                                                    View Details
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem className="text-xs text-muted-foreground">
+                                                    ID: {((service as any)._id || (service as any).id).slice(-6)}
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem] leading-relaxed">
+                                        {service.description}
+                                    </p>
+                                </div>
+
+                                {/* Divider */}
+                                <div className="w-full h-px bg-border/40" />
+
+                                {/* 3. Footer (Price & Action) - Pushed to bottom */}
+                                <div className="mt-auto flex flex-col gap-4">
+                                    <div className="flex items-end justify-between">
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                                                {formatBillingType(service.billingType)}
+                                            </span>
+                                            <div className="flex items-baseline gap-2">
+                                                <span className="text-2xl font-bold text-foreground">
+                                                    {formatPrice(finalPrice, service.billingType, service.currency)}
+                                                </span>
+                                                {hasDiscount && (
+                                                    <span className="text-xs text-muted-foreground line-through decoration-destructive/50">
+                                                        {formatPrice(service.price, 'one_time', service.currency)}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <Button
+                                        onClick={() => handleAddToCart(service)}
+                                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md hover:shadow-blue-500/25 transition-all duration-300"
+                                    >
+                                        <ShoppingCart className="h-4 w-4 mr-2" />
+                                        Add to Cart
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    );
+                })}
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
+            {/* Pagination Controls */}
+            {effectiveTotalPages > 1 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 py-6 border-t mt-2">
+                    <p className="text-sm text-muted-foreground">
+                        Showing <span className="font-medium text-foreground">{startIndex + 1}</span>-
+                        <span className="font-medium text-foreground">{Math.min(endIndex, total || 0)}</span> of{' '}
+                        <span className="font-medium text-foreground">{total || 0}</span> services
+                    </p>
+                    
+                    <div className="flex items-center gap-1.5 p-1 bg-secondary/30 rounded-lg">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        
+                        <div className="flex items-center px-2">
+                            <span className="text-sm font-medium">Page {currentPage} of {effectiveTotalPages}</span>
+                        </div>
 
-    </>
-  );
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, effectiveTotalPages))}
+                            disabled={currentPage === effectiveTotalPages}
+                        >
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
+                    </div>
+                </div>
+            )}
+
+            {/* Detailed View Dialog */}
+            <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0 gap-0 overflow-hidden">
+                    {selectedViewService && (
+                        <div className="flex flex-col md:flex-row h-full">
+                            {/* Sidebar / Image in Dialog */}
+                            <div className="w-full md:w-2/5 bg-muted relative min-h-[200px] md:min-h-full">
+                                {((selectedViewService as any).image || (selectedViewService as any).imageUrl) ? (
+                                    <img
+                                        src={(selectedViewService as any).image || (selectedViewService as any).imageUrl}
+                                        alt=""
+                                        className="absolute inset-0 w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="flex items-center justify-center h-full text-muted-foreground">
+                                        No Image
+                                    </div>
+                                )}
+                                <div className="absolute top-4 left-4">
+                                     <Badge variant="secondary" className="bg-background/90 backdrop-blur">
+                                        {selectedViewService.categoryName}
+                                     </Badge>
+                                </div>
+                            </div>
+                            
+                            {/* Content in Dialog */}
+                            <div className="flex-1 p-6 md:p-8 space-y-6 bg-background">
+                                <div>
+                                    <h2 className="text-2xl font-bold tracking-tight mb-2">{selectedViewService.name}</h2>
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-3xl font-bold text-blue-600">
+                                            {formatPrice(
+                                                selectedViewService.hasDiscount && selectedViewService.discountValue 
+                                                ? (selectedViewService.discountType === 'percentage' 
+                                                    ? selectedViewService.price * (1 - (selectedViewService.discountValue/100)) 
+                                                    : selectedViewService.price - selectedViewService.discountValue)
+                                                : selectedViewService.price,
+                                                selectedViewService.billingType,
+                                                selectedViewService.currency
+                                            )}
+                                        </span>
+                                        {selectedViewService.hasDiscount && (
+                                            <Badge variant="outline" className="text-rose-600 border-rose-200 bg-rose-50">
+                                                Save {selectedViewService.discountType === 'percentage' ? `${selectedViewService.discountValue}%` : 'Cash'}
+                                            </Badge>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <Separator />
+                                
+                                <div className="space-y-4">
+                                    <div>
+                                        <h4 className="text-sm font-semibold mb-2">Description</h4>
+                                        <p className="text-sm text-muted-foreground leading-relaxed">
+                                            {selectedViewService.description}
+                                        </p>
+                                    </div>
+
+                                    {selectedViewService.tags && selectedViewService.tags.length > 0 && (
+                                        <div>
+                                            <h4 className="text-sm font-semibold mb-2">Tags</h4>
+                                            <div className="flex flex-wrap gap-2">
+                                                {(() => {
+                                                    // tags may be stored as JSON-stringified arrays or simple strings
+                                                    try {
+                                                        const parsed: string[] = selectedViewService.tags.flatMap((t: any) => {
+                                                            if (typeof t === 'string') {
+                                                                // attempt to parse JSON arrays stored as strings
+                                                                if (/^\[.*\]$/.test(t.trim())) {
+                                                                    try {
+                                                                        const inner = JSON.parse(t);
+                                                                        return Array.isArray(inner) ? inner : [String(t)];
+                                                                    } catch (e) {
+                                                                        return [t];
+                                                                    }
+                                                                }
+                                                                return [t];
+                                                            }
+                                                            return [String(t)];
+                                                        });
+
+                                                        return parsed.map((tag, idx) => (
+                                                            <Badge key={idx} className="  px-2 py-1">{tag}</Badge>
+                                                        ));
+                                                    } catch (e) {
+                                                        return selectedViewService.tags.map((tag: any, idx: number) => (
+                                                            <Badge key={idx} className="  px-2 py-1">{String(tag)}</Badge>
+                                                        ));
+                                                    }
+                                                })()}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {selectedViewService.features && selectedViewService.features.length > 0 && (
+                                        <div>
+                                            <h4 className="text-sm font-semibold mb-2">Features</h4>
+                                            <ul className="grid grid-cols-1 gap-2">
+                                                {selectedViewService.features.map((f, i) => (
+                                                    <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                                                        <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
+                                                        <span>{f}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="pt-4 mt-auto">
+                                    <Button 
+                                        className="w-full md:w-auto min-w-[200px]" 
+                                        size="lg"
+                                        onClick={() => {
+                                            handleAddToCart(selectedViewService);
+                                            setViewDialogOpen(false);
+                                        }}
+                                    >
+                                        Add to Cart
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+        </>
+    );
 }

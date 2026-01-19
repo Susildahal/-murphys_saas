@@ -23,13 +23,17 @@ const initialState: AssignState = {
 export const getAssignedServices = createAsyncThunk(
   'assign/getAssignedServices',
   async (
-    params: { page?: number; limit?: number; search?: string; client_id?: string; service_catalog_id?: string } = { page: 1, limit: 10 },
+    params: { page?: number; limit?: number; search?: string; client_id?: string; service_catalog_id?: string; email?: string } = { page: 1, limit: 10 },
     { rejectWithValue }
   ) => {
     try {
-      const { page = 1, limit = 10, search = '', client_id, service_catalog_id } = params;
+      const { page = 1, limit = 10, search = '', client_id, service_catalog_id, email } = params;
+      const query: any = { page, limit, search };
+      if (client_id) query.client_id = client_id;
+      if (service_catalog_id) query.service_catalog_id = service_catalog_id;
+      if (email) query.email = email;
       const response = await axiosInstance.get(`/assigned_services`, {
-        params: { page, limit, search, client_id, service_catalog_id },
+        params: query,
       });
       // Expect response.data.data to be an array of assigned services
       const data = response.data.data || [];

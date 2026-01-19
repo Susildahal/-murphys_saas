@@ -44,7 +44,8 @@ export const createProfile = async (req: AuthenticatedRequest, res: Response) =>
       website: body.website,
       profile_image: body.profile_image || body.imageUrl || undefined,
       public_id: body.public_id || undefined,
-      userId: user?.uid
+      userId: user?.uid,
+      referralSource: body.referralSource
     };
 
     const profile = new Profile(profileData);
@@ -144,7 +145,8 @@ export const updateProfile = async (req: AuthenticatedRequest, res: Response) =>
       role: body.role,
       status: body.status,
       usertypes: body.usertypes,
-      userId: user?.uid
+      userId: user?.uid,
+      referralSource: body.referralSource
     };
 
     // Only update image fields if a new image was uploaded
@@ -305,8 +307,7 @@ export const deleteProfile = async (req: Request, res: Response) => {
         // If user not found in Firebase, just proceed. Log other errors.
         if (firebaseError.code !== 'auth/user-not-found') {
           console.error('Error deleting Firebase user:', firebaseError);
-          // Optional: Decide if we want to block DB deletion if Firebase fails. 
-          // Usually better to proceed or return error. stick to logging for now to prevent blocking.
+
         }
       }
     }

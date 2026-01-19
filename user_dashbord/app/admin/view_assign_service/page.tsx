@@ -1,24 +1,9 @@
 'use client'
 import React, { useEffect } from 'react'
 import Header from '@/app/page/common/header'
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-    CardDescription,
-} from "@/components/ui/card"
-import { RefreshCcw, User, Briefcase, Search } from 'lucide-react'
+import { RefreshCcw, User, Briefcase, Search, Calendar, DollarSign, Clock, CheckCircle2 } from 'lucide-react'
 
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { getAssignedServices, getAssignDetails } from '@/lib/redux/slices/assignSlice';
@@ -32,12 +17,12 @@ import {
     DialogTitle,
     DialogDescription,
 } from '@/components/ui/dialog'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Calendar } from '@/components/ui/calendar'
 import { useToast } from '@/hooks/use-toast'
 import Image from 'next/image'
 import { Select, SelectContent, SelectGroup, SelectTrigger, SelectItem, SelectValue } from '@/components/ui/select';
 import { fetchServices } from '@/lib/redux/slices/serviceSlice';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 
 
@@ -46,7 +31,13 @@ const page = () => {
     const { loading, total, limit, page } = useAppSelector((state) => state.assign);
     const data = useAppSelector((state) => state.assign.data);
     const totalPages = useAppSelector((state) => state.assign.totalPages || 0);
+    const meeState = useAppSelector((s) => s.mee);
+    const currentUserEmail = meeState.data?.email || '';
+    const currentUserId = meeState.data?.uid || '';
+    
+    // Data filtered by backend
     const rows = Array.isArray(data) ? data : (data ? [data] : []);
+        
     const [searchTerm, setSearchTerm] = React.useState('');
     const [debouncedSearch, setDebouncedSearch] = React.useState(searchTerm);
     const [pageNumber, setPageNumber] = React.useState(1);
@@ -73,14 +64,17 @@ const page = () => {
     }, [searchTerm]);
 
     React.useEffect(() => {
-        // Fetch assigned services whenever page, limit or debounced search changes
-        dispatch(getAssignedServices({
-            page: pageNumber,
-            limit: limitNumber,
-            search: debouncedSearch,
-            service_catalog_id: selectedService === 'all' ? undefined : selectedService
-        }));
-    }, [dispatch, pageNumber, limitNumber, debouncedSearch, selectedService]);
+        // Fetch assigned services filtered by current user email from backend
+        if (currentUserEmail) {
+            dispatch(getAssignedServices({
+                page: pageNumber,
+                limit: limitNumber,
+                search: debouncedSearch,
+                service_catalog_id: selectedService === 'all' ? undefined : selectedService,
+                email: currentUserEmail
+            }));
+        }
+    }, [dispatch, pageNumber, limitNumber, debouncedSearch, selectedService, currentUserEmail]);
 
     // Helper function to calculate days ago
     const getDaysAgo = (date: string | Date) => {
@@ -142,81 +136,183 @@ const page = () => {
             />
 
             <div className="border-none bg-none overflow-hidden">
-
                 <div className="p-0">
-                    <div className="overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>#</TableHead>
-                                    <TableHead>Service Name</TableHead>
-                                    <TableHead>Assigned Date</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Price</TableHead>
-                                    <TableHead>Details</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {rows && rows.length > 0 ? (
-                                    rows.map((service: any, index) => {
-                                        const assignedDate = service.start_date || service.assignedDate || service.createdAt;
-                                        const daysAgo = getDaysAgo(assignedDate);
+                    {rows && rows.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {rows.map((service: any, index) => {
+                                const assignedDate = service.start_date || service.assignedDate || service.createdAt;
+                                const endDate = service.end_date;
+                                const daysAgo = getDaysAgo(assignedDate);
+                                const renewalDates = service.renewal_dates || [];
 
-                                        return (
-                                            <TableRow key={service._id ?? service.id}>
-                                                <TableCell>{pageNumber + index}</TableCell>
-                                                <TableCell>{service.service_name || service.serviceName || service.service_catalog_id || '-'}</TableCell>
-                                                <TableCell>
-                                                    <div className="flex flex-col gap-1">
-                                                        <span>{assignedDate ? new Date(String(assignedDate)).toLocaleDateString() : '-'}</span>
-                                                        {daysAgo && <Badge variant="secondary" className="w-fit text-xs">{daysAgo}</Badge>}
+                                return (
+                                    <Card key={service._id ?? service.id} className="hover:shadow-lg transition-all duration-300 border-border/60">
+                                        <CardHeader className="pb-3">
+                                            <div className="flex items-start justify-between">
+                                                <div className="flex-1">
+                                                    <CardTitle className="text-lg line-clamp-1">
+                                                        {service.service_name || service.serviceName || '-'}
+                                                    </CardTitle>
+                                                    <CardDescription className="mt-1">
+                                                        Invoice: {service.invoice_id || 'N/A'}
+                                                    </CardDescription>
+                                                </div>
+                                                <Badge 
+                                                    variant={
+                                                        service.isaccepted === 'accepted' 
+                                                            ? 'default' 
+                                                            : service.isaccepted === 'pending' 
+                                                            ? 'outline' 
+                                                            : 'destructive'
+                                                    }
+                                                    className="ml-2"
+                                                >
+                                                    {service.isaccepted ?? service.status ?? '-'}
+                                                </Badge>
+                                            </div>
+                                        </CardHeader>
+                                        
+                                        <CardContent className="space-y-4">
+                                            {/* Price & Cycle */}
+                                            <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-lg">
+                                                <DollarSign className="h-5 w-5 text-primary" />
+                                                <div>
+                                                    <div className="text-2xl font-bold text-primary">
+                                                        ${service.price ?? '-'}
                                                     </div>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Badge variant={service.isaccepted === 'accepted' ? 'default' : service.isaccepted === 'pending' ? 'outline' : 'destructive'}>
-                                                        {service.isaccepted ?? service.status ?? '-'}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <span className="font-semibold">${service.price ?? '-'}</span>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        onClick={() => {
-                                                            dispatch(getAssignDetails({ client_id: service.client_id, service_catalog_id: service.service_catalog_id }))
-                                                                .then((res: any) => {
-                                                                    if (res.payload) {
-                                                                        setDetailsData(res.payload);
-                                                                        setDetailsOpen(true);
-                                                                    }
-                                                                })
-                                                                .catch(() => {
-                                                                    toast({
-                                                                        title: 'Error',
-                                                                        description: 'Failed to fetch service details.',
-                                                                        variant: 'destructive',
-                                                                    });
-                                                                })
-                                                        }}
-                                                    >
-                                                        View Details
-                                                    </Button>
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    })
-                                ) : (
-                                    <TableRow>
-                                        <TableCell colSpan={6} className="text-center">
-                                            No assigned services found {searchTerm === '' ? '' : <span className='font-bold '>{`for "${searchTerm}"   `} <RefreshCcw className="inline-block ml-2 cursor-pointer hover:animate-spin" onClick={handelreset} /></span>}.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </div>
+                                                    <div className="text-xs text-muted-foreground capitalize">
+                                                        {service.cycle || 'one-time'}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <Separator />
+
+                                            {/* Dates */}
+                                            <div className="space-y-2 text-sm">
+                                                <div className="flex items-center gap-2">
+                                                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                                                    <span className="text-muted-foreground">Start:</span>
+                                                    <span className="font-medium">
+                                                        {assignedDate ? new Date(String(assignedDate)).toLocaleDateString() : '-'}
+                                                    </span>
+                                                    {daysAgo && (
+                                                        <Badge variant="secondary" className="text-xs ml-auto">
+                                                            {daysAgo}
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                                
+                                                {endDate && (
+                                                    <div className="flex items-center gap-2">
+                                                        <Clock className="h-4 w-4 text-muted-foreground" />
+                                                        <span className="text-muted-foreground">End:</span>
+                                                        <span className="font-medium">
+                                                            {new Date(String(endDate)).toLocaleDateString()}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Renewal Dates */}
+                                            {renewalDates.length > 0 && (
+                                                <>
+                                                    <Separator />
+                                                    <div className="space-y-2">
+                                                        <div className="flex items-center gap-2 text-sm font-semibold">
+                                                            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                                                            Renewal Schedule
+                                                        </div>
+                                                        <div className="space-y-2 pl-6">
+                                                            {renewalDates.map((renewal: any, idx: number) => (
+                                                                <div 
+                                                                    key={renewal._id || idx} 
+                                                                    className="flex items-center justify-between text-xs p-2 bg-muted/50 rounded"
+                                                                >
+                                                                    <div className="flex flex-col">
+                                                                        <span className="font-medium capitalize">
+                                                                            {renewal.label || `Renewal ${idx + 1}`}
+                                                                        </span>
+                                                                        <span className="text-muted-foreground">
+                                                                            {renewal.date ? new Date(renewal.date).toLocaleDateString() : 'N/A'}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="flex flex-col items-end">
+                                                                        <span className="font-semibold text-primary">
+                                                                            ${renewal.price || 0}
+                                                                        </span>
+                                                                        <Badge 
+                                                                            variant={renewal.haspaid ? 'default' : 'outline'}
+                                                                            className="text-[10px] h-4 px-1 mt-0.5"
+                                                                        >
+                                                                            {renewal.haspaid ? 'Paid' : 'Unpaid'}
+                                                                        </Badge>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            )}
+
+                                            {/* Action Button */}
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="w-full mt-2"
+                                                onClick={() => {
+                                                    dispatch(getAssignDetails({ 
+                                                        client_id: service.client_id, 
+                                                        service_catalog_id: service.service_catalog_id 
+                                                    }))
+                                                        .then((res: any) => {
+                                                            if (res.payload) {
+                                                                setDetailsData(res.payload);
+                                                                setDetailsOpen(true);
+                                                            }
+                                                        })
+                                                        .catch(() => {
+                                                            toast({
+                                                                title: 'Error',
+                                                                description: 'Failed to fetch service details.',
+                                                                variant: 'destructive',
+                                                            });
+                                                        })
+                                                }}
+                                            >
+                                                View Full Details
+                                            </Button>
+                                        </CardContent>
+                                    </Card>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <Card>
+                            <CardContent className="p-12 text-center">
+                                <div className="flex flex-col items-center gap-4">
+                                    <Briefcase className="h-16 w-16 text-muted-foreground/50" />
+                                    <div>
+                                        <h3 className="text-lg font-semibold mb-2">No services assigned</h3>
+                                        <p className="text-sm text-muted-foreground">
+                                            {searchTerm === '' 
+                                                ? 'You have no assigned services yet.' 
+                                                : (
+                                                    <>
+                                                        No services found for "<span className='font-bold'>{searchTerm}</span>"
+                                                        <RefreshCcw 
+                                                            className="inline-block ml-2 cursor-pointer hover:animate-spin" 
+                                                            onClick={handelreset} 
+                                                        />
+                                                    </>
+                                                )
+                                            }
+                                        </p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             </div>
 

@@ -226,21 +226,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <div className="relative flex justify-center py-2">
               <Search className="h-5 w-5 text-slate-700 dark:text-white/70 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" />
             </div>
-            <div className="flex flex-col items-center gap-3 py-2">
-              <div className="relative cursor-pointer hover:scale-110 transition-transform">
-                <Bell className="h-5 w-5 text-white/80 hover:text-white" />
-                <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
-              </div>
-              <div 
-                className="relative cursor-pointer hover:scale-110 transition-transform"
-                onClick={() => router.push('/admin/cart')}
-              >
-                <ShoppingCart className="h-5 w-5 text-white/80 hover:text-white" />
-                {cartItemCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-3 w-3 bg-blue-500 rounded-full"></span>
-                )}
-              </div>
-            </div>
           </motion.div>
         )}
       </SidebarHeader>
