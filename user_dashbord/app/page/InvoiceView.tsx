@@ -17,6 +17,17 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
   const { settings } = useAppSelector((state) => state.siteSettings)
   const [isGenerating, setIsGenerating] = useState(false)
 
+  // Extract client and service data
+  const clientData = assignmentData?.client_id || {}
+  const serviceData = assignmentData?.service_catalog_id || {}
+  const currency = serviceData?.currency || settings?.currency || 'USD'
+  
+  const getCurrencySymbol = (curr: string) => {
+    const symbols: any = { USD: '$', EUR: '€', GBP: '£', AUD: 'A$', CAD: 'C$', INR: '₹', JPY: '¥' }
+    return symbols[curr] || '$'
+  }
+  const currencySymbol = getCurrencySymbol(currency)
+
   const handleDownloadPDF = async () => {
     if (!invoiceRef.current) {
       alert('Invoice content not found')
@@ -171,27 +182,15 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
   }
 
   const nextRenewalDate = getNextRenewalDate()
-  const allRenewals = (assignmentData.renewal_dates || []).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  const allRenewals = [...(assignmentData.renewal_dates || [])].sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
   return (
-    <div style={{
-      position: 'fixed',
-      inset: '0',
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      zIndex: 99,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px'
-    }}>
+    <div>
       <div style={{
         backgroundColor: '#ffffff',
         width: '100%',
-        maxWidth: '900px',
-        maxHeight: '90vh',
+        maxHeight: '75vh',
         overflow: 'auto',
-        borderRadius: '8px',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.3)'
       }}>
 
         {/* Header */}
@@ -263,90 +262,100 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
               display: 'flex',
               justifyContent: 'space-between',
               marginBottom: '40px',
-              borderBottom: '2px solid #e5e7eb',
+              borderBottom: '2px solid #111827',
               paddingBottom: '20px',
               flexWrap: 'wrap',
               gap: '20px'
             }}>
-              <div style={{ flex: '1', minWidth: '250px' }}>
+              <div style={{ flex: '1', minWidth: '280px' }}>
                 {settings?.logo && (
                   <img
                     src={settings.logo}
-                    alt="Logo"
-                    style={{ height: '60px', marginBottom: '20px', display: 'block' }}
+                    alt="Company Logo"
+                    style={{ height: '60px', marginBottom: '16px', display: 'block', objectFit: 'contain' }}
                     crossOrigin="anonymous"
                   />
                 )}
-                <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: '0 0 10px 0', color: '#111827' }}>
-                  {settings?.appName || "Murphy's Admin"}
+                <h1 style={{ fontSize: '24px', fontWeight: '700', margin: '0 0 8px 0', color: '#111827' }}>
+                  {settings?.appName || "Murphy's Technology"}
                 </h1>
-                <div style={{ fontSize: '14px', color: '#6b7280', lineHeight: '1.6' }}>
-                  <p style={{ margin: '4px 0' }}>{settings?.address || '123 Business Street'}</p>
-                  <p style={{ margin: '4px 0' }}>{settings?.contactEmail || 'invoice@company.com'}</p>
-                  <p style={{ margin: '4px 0' }}>{settings?.contactPhone || '+1 (555) 000-0000'}</p>
+                <div style={{ fontSize: '13px', color: '#4b5563', lineHeight: '1.6' }}>
+                  {settings?.address && <p style={{ margin: '3px 0' }}>{settings.address}</p>}
+                  {settings?.contactEmail && <p style={{ margin: '3px 0' }}>Email: {settings.contactEmail}</p>}
+                  {settings?.contactPhone && <p style={{ margin: '3px 0' }}>Phone: {settings.contactPhone}</p>}
                 </div>
               </div>
-              <div style={{ textAlign: 'right', minWidth: '200px' }}>
-                <h2 style={{ fontSize: '32px', fontWeight: '300', color: '#d1d5db', margin: '0 0 20px 0', letterSpacing: '2px' }}>INVOICE</h2>
-                <div style={{ fontSize: '14px' }}>
-                  <p style={{ color: '#6b7280', margin: '4px 0' }}>Invoice #</p>
-                  <p style={{ fontSize: '16px', fontWeight: '600', color: '#111827', margin: '4px 0' }}>
-                    INV-{assignmentData._id?.slice(-6).toUpperCase()}
+              <div style={{ textAlign: 'right', minWidth: '220px' }}>
+                <h2 style={{ fontSize: '32px', fontWeight: '700', color: '#111827', margin: '0 0 20px 0', letterSpacing: '2px' }}>INVOICE</h2>
+                <div style={{ fontSize: '13px', textAlign: 'right' }}>
+                  <p style={{ color: '#6b7280', margin: '0 0 4px 0', fontSize: '11px', textTransform: 'uppercase' }}>Invoice Number</p>
+                  <p style={{ fontSize: '16px', fontWeight: '700', color: '#111827', margin: '0 0 12px 0', fontFamily: 'monospace' }}>
+                    {assignmentData.invoice_id || `INV-${assignmentData._id?.slice(-8).toUpperCase()}`}
                   </p>
                   <span style={{
                     display: 'inline-block',
-                    marginTop: '8px',
-                    padding: '6px 14px',
-                    borderRadius: '4px',
-                    fontSize: '12px',
-                    fontWeight: '700',
-                    textTransform: 'capitalize',
-                    letterSpacing: '0.5px'
+                    padding: '6px 12px',
+                    border: '1px solid #d1d5db',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    backgroundColor: '#f9fafb',
+                    color: '#374151'
                   }}>
-                    {assignmentData.status}
+                    {assignmentData.status || 'Active'}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Bill To Section */}
+            {/* Bill To & Contract Info Section */}
             <div style={{
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
-              gap: '40px',
+              gap: '30px',
               marginBottom: '40px',
               width: '100%'
             }}>
               <div>
-                <h3 style={{ fontSize: '11px', fontWeight: 'bold', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>
-                  Billed To
+                <h3 style={{ fontSize: '11px', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', borderBottom: '1px solid #e5e7eb', paddingBottom: '6px' }}>
+                  Bill To
                 </h3>
-                <p style={{ fontSize: '18px', fontWeight: '600', color: '#111827', margin: '4px 0' }}>{assignmentData.client_name}</p>
-                <p style={{ fontSize: '14px', color: '#6b7280', margin: '4px 0' }}>{assignmentData.email}</p>
+                <p style={{ fontSize: '16px', fontWeight: '600', color: '#111827', margin: '0 0 6px 0' }}>
+                  {clientData.firstName && clientData.lastName ? `${clientData.firstName} ${clientData.lastName}` : assignmentData.client_name}
+                </p>
+                <p style={{ fontSize: '13px', color: '#6b7280', margin: '3px 0' }}>{clientData.email || assignmentData.email}</p>
+                {clientData.phone && <p style={{ fontSize: '13px', color: '#6b7280', margin: '3px 0' }}>{clientData.phone}</p>}
+                {clientData.city && clientData.country && (
+                  <p style={{ fontSize: '13px', color: '#6b7280', margin: '3px 0' }}>{clientData.city}, {clientData.country}</p>
+                )}
               </div>
               <div>
-                <div style={{ marginBottom: '16px' }}>
-                  <h3 style={{ fontSize: '11px', fontWeight: 'bold', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
-                    Issue Date
-                  </h3>
-                  <p style={{ fontSize: '14px', color: '#111827', fontWeight: '500', margin: '0' }}>{format(new Date(), 'MMM dd, yyyy')}</p>
-                </div>
-                <div style={{ marginBottom: '16px' }}>
-                  <h3 style={{ fontSize: '11px', fontWeight: 'bold', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
-                    Billing Cycle
-                  </h3>
-                  <p style={{ fontSize: '14px', color: '#111827', fontWeight: '500', margin: '0', textTransform: 'capitalize' }}>{assignmentData.cycle}</p>
-                </div>
-                {assignmentData.start_date && (
-                  <div>
-                    <h3 style={{ fontSize: '11px', fontWeight: 'bold', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
-                      Service Period
-                    </h3>
-                    <p style={{ fontSize: '14px', color: '#111827', fontWeight: '500', margin: '0' }}>
-                      {format(new Date(assignmentData.start_date), 'MMM dd, yyyy')} - {assignmentData.end_date ? format(new Date(assignmentData.end_date), 'MMM dd, yyyy') : 'Ongoing'}
-                    </p>
+                <h3 style={{ fontSize: '11px', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', borderBottom: '1px solid #e5e7eb', paddingBottom: '6px' }}>
+                  Contract Information
+                </h3>
+                <div style={{ fontSize: '13px', color: '#374151', lineHeight: '1.8' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
+                    <span style={{ color: '#6b7280' }}>Invoice Date:</span>
+                    <span style={{ fontWeight: '600' }}>{format(new Date(assignmentData.createdAt || new Date()), 'MMM dd, yyyy')}</span>
                   </div>
-                )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
+                    <span style={{ color: '#6b7280' }}>Billing Cycle:</span>
+                    <span style={{ fontWeight: '600', textTransform: 'capitalize' }}>{assignmentData.cycle || 'One-time'}</span>
+                  </div>
+                  {assignmentData.start_date && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
+                      <span style={{ color: '#6b7280' }}>Service Period:</span>
+                      <span style={{ fontWeight: '600' }}>
+                        {format(new Date(assignmentData.start_date), 'MMM dd, yyyy')} - {assignmentData.end_date ? format(new Date(assignmentData.end_date), 'MMM dd, yyyy') : 'Ongoing'}
+                      </span>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
+                    <span style={{ color: '#6b7280' }}>Currency:</span>
+                    <span style={{ fontWeight: '600' }}>{currency}</span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -400,42 +409,48 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
               <tbody>
                 <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
                   <td style={{ padding: '16px 12px', verticalAlign: 'middle' }}>
-                    <div style={{ fontWeight: '500', color: '#111827', marginBottom: '4px' }}>{assignmentData.service_name}</div>
-                    <div style={{ fontSize: '12px', color: '#9ca3af' }}>Main Subscription</div>
+                    <div style={{ fontWeight: '600', color: '#111827', marginBottom: '4px', fontSize: '14px' }}>
+                      {serviceData.name || assignmentData.service_name}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#6b7280' }}>Main Subscription</div>
+                    {serviceData.description && (
+                      <div style={{ fontSize: '11px', color: '#9ca3af', marginTop: '4px' }}>
+                        {serviceData.description.substring(0, 80)}{serviceData.description.length > 80 ? '...' : ''}
+                      </div>
+                    )}
                   </td>
-                  <td style={{ textAlign: 'center', padding: '16px 12px', color: '#6b7280', fontSize: '14px', verticalAlign: 'middle' }}>
+                  <td style={{ textAlign: 'center', padding: '16px 12px', color: '#6b7280', fontSize: '13px', verticalAlign: 'middle' }}>
                     {assignmentData.start_date ? format(new Date(assignmentData.start_date), 'MMM dd, yyyy') : '-'}
                   </td>
-                  <td style={{ textAlign: 'center', padding: '16px 12px', fontWeight: '600', color: '#111827', fontSize: '14px', verticalAlign: 'middle' }}>
-                    ${parseFloat(assignmentData.price || '0').toFixed(2)}
+                  <td style={{ textAlign: 'center', padding: '16px 12px', fontWeight: '600', color: '#111827', fontSize: '15px', verticalAlign: 'middle' }}>
+                    {currencySymbol}{parseFloat(assignmentData.price || '0').toFixed(2)}
                   </td>
                 </tr>
 
                 {allRenewals.filter((r: any) => r.haspaid).map((renewal: any, i: number) => (
-                  <tr key={i} style={{ borderBottom: '1px solid #e5e7eb', backgroundColor: '#f0fdf4' }}>
+                  <tr key={i} style={{ borderBottom: '1px solid #e5e7eb', backgroundColor: '#f9fafb' }}>
                     <td style={{ padding: '16px 12px', verticalAlign: 'middle' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                         <span style={{
                           display: 'inline-block',
-                          padding: '3px 8px',
-                          backgroundColor: '#d1fae5',
-                          color: '#065f46',
-                          border: '1px solid #6ee7b7',
-                          borderRadius: '4px',
-                          fontSize: '11px',
-                          fontWeight: '700',
-                          letterSpacing: '0.3px'
+                          padding: '2px 8px',
+                          backgroundColor: '#ffffff',
+                          color: '#374151',
+                          border: '1px solid #d1d5db',
+                          fontSize: '10px',
+                          fontWeight: '600',
+                          letterSpacing: '0.5px'
                         }}>
                           PAID
                         </span>
-                        <span style={{ color: '#374151', fontWeight: '500' }}>{renewal.label || `Renewal #${i + 1}`}</span>
+                        <span style={{ color: '#111827', fontWeight: '500' }}>{renewal.label || `Renewal #${i + 1}`}</span>
                       </div>
                     </td>
-                    <td style={{ textAlign: 'center', padding: '16px 12px', color: '#6b7280', fontSize: '14px', verticalAlign: 'middle' }}>
+                    <td style={{ textAlign: 'center', padding: '16px 12px', color: '#6b7280', fontSize: '13px', verticalAlign: 'middle' }}>
                       {renewal.date ? format(new Date(renewal.date), 'MMM dd, yyyy') : '-'}
                     </td>
-                    <td style={{ textAlign: 'center', padding: '16px 12px', fontWeight: '600', color: '#111827', fontSize: '14px', verticalAlign: 'middle' }}>
-                      ${parseFloat(renewal.price || '0').toFixed(2)}
+                    <td style={{ textAlign: 'center', padding: '16px 12px', fontWeight: '600', color: '#111827', fontSize: '15px', verticalAlign: 'middle' }}>
+                      {currencySymbol}{parseFloat(renewal.price || '0').toFixed(2)}
                     </td>
                   </tr>
                 ))}
@@ -444,18 +459,18 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
 
             {/* Totals */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '40px', width: '100%' }}>
-              <div style={{ width: '300px', maxWidth: '100%' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #e5e7eb', color: '#6b7280', fontSize: '14px' }}>
-                  <span>Subtotal</span>
-                  <span>${calculateTotal().toFixed(2)}</span>
+              <div style={{ width: '320px', maxWidth: '100%', border: '1px solid #d1d5db' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid #e5e7eb', fontSize: '14px' }}>
+                  <span style={{ color: '#6b7280' }}>Subtotal</span>
+                  <span style={{ fontWeight: '600', color: '#111827' }}>{currencySymbol}{calculateTotal().toFixed(2)}</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #e5e7eb', color: '#6b7280', fontSize: '14px' }}>
-                  <span>Tax (0%)</span>
-                  <span>$0.00</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid #e5e7eb', fontSize: '14px' }}>
+                  <span style={{ color: '#6b7280' }}>Tax (0%)</span>
+                  <span style={{ fontWeight: '600', color: '#111827' }}>{currencySymbol}0.00</span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 0', fontSize: '20px', fontWeight: 'bold', color: '#111827' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px', backgroundColor: '#111827', fontSize: '18px', fontWeight: '700', color: '#ffffff' }}>
                   <span>Total</span>
-                  <span>${calculateTotal().toFixed(2)}</span>
+                  <span>{currencySymbol}{calculateTotal().toFixed(2)} {currency}</span>
                 </div>
               </div>
             </div>
@@ -463,10 +478,8 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
             {/* Next Renewal */}
             {nextRenewalDate && (
               <div style={{
-                backgroundColor: '#eff6ff',
-                border: '1px solid #bfdbfe',
-                borderRadius: '8px',
-                padding: '24px',
+                border: '1px solid #d1d5db',
+                padding: '20px',
                 marginBottom: '40px',
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -475,14 +488,14 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
                 gap: '16px'
               }}>
                 <div>
-                  <h4 style={{ fontWeight: '600', color: '#1e3a8a', margin: '0 0 4px 0', fontSize: '16px' }}>Upcoming Renewal</h4>
-                  <p style={{ fontSize: '14px', color: '#1e40af', margin: '0' }}>Next invoice generation date</p>
+                  <h4 style={{ fontWeight: '600', color: '#111827', margin: '0 0 4px 0', fontSize: '14px' }}>Upcoming Renewal</h4>
+                  <p style={{ fontSize: '13px', color: '#6b7280', margin: '0' }}>Next invoice generation date</p>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#1e3a8a', margin: '0 0 4px 0' }}>
+                  <p style={{ fontSize: '18px', fontWeight: '700', color: '#111827', margin: '0 0 4px 0' }}>
                     {format(nextRenewalDate, 'MMM dd, yyyy')}
                   </p>
-                  <p style={{ fontSize: '12px', fontWeight: '600', color: '#1e40af', textTransform: 'uppercase', letterSpacing: '1px', margin: '0' }}>
+                  <p style={{ fontSize: '11px', fontWeight: '600', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.5px', margin: '0' }}>
                     Due Date
                   </p>
                 </div>

@@ -402,6 +402,11 @@ const page = () => {
                                                 <SelectItem value={"accepted"}>Accepted</SelectItem>
                                                 <SelectItem value={"pending"}>Pending</SelectItem>
                                                 <SelectItem value={"rejected"}>Rejected</SelectItem>
+                                                <SelectItem value={"running"}>Running</SelectItem>
+                                                <SelectItem value={"completed"}>Completed</SelectItem>
+                                              
+
+
                                             </SelectGroup>
                                         </SelectContent>
                                     </Select>

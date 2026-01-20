@@ -23,6 +23,8 @@ import { Select, SelectContent, SelectGroup, SelectTrigger, SelectItem, SelectVa
 import { fetchServices } from '@/lib/redux/slices/serviceSlice';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import InvoiceView from '../../page/InvoiceView';
+import {fetchInvoices} from "../../../lib/redux/slices/invoiceSlicer"
 
 
 
@@ -34,6 +36,7 @@ const page = () => {
     const meeState = useAppSelector((s) => s.mee);
     const currentUserEmail = meeState.data?.email || '';
     const currentUserId = meeState.data?.uid || '';
+    const [id ,setId] = useState<string | undefined>(undefined);
     
     // Data filtered by backend
     const rows = Array.isArray(data) ? data : (data ? [data] : []);
@@ -46,6 +49,8 @@ const page = () => {
     const [detailsData, setDetailsData] = React.useState<any>(null);
     const [renewalsModalOpen, setRenewalsModalOpen] = useState(false);
     const [selectedRenewals, setSelectedRenewals] = useState<any[]>([]);
+    const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
+    const invoiceData = useAppSelector((state) => state.invoices.invoice);
     const { toast } = useToast();
 
     // Filters state
@@ -95,6 +100,22 @@ const page = () => {
         setSearchTerm('');
         setPageNumber(1);
     }
+
+    const viewInvoice = async (invoiceId: string) => {
+        try {
+            await dispatch(fetchInvoices(invoiceId)).unwrap();
+            setInvoiceModalOpen(true);
+        } catch (error) {
+            toast({
+                title: 'Error',
+                description: 'Failed to fetch invoice data.',
+                variant: 'destructive',
+            });
+        }
+    }
+
+
+
 
     return (
         <div className="space-y-6">
@@ -281,6 +302,7 @@ const page = () => {
                                                                     View All {renewalDates.length} Renewals
                                                                 </Button>
                                                             )}
+
                                                         </div>
                                                     </div>
                                                 </>
@@ -313,6 +335,10 @@ const page = () => {
                                             >
                                                 View Full Details
                                             </Button>
+
+
+                                            <Button onClick={() => viewInvoice(service._id)}> View Invoice  </Button>
+
                                         </CardContent>
                                     </Card>
                                 );
@@ -501,6 +527,18 @@ const page = () => {
                             </div>
                         )}
                     </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Invoice Modal */}
+            <Dialog open={invoiceModalOpen} onOpenChange={setInvoiceModalOpen}>
+                <DialogContent className="max-w-[95vw] md:max-w-[900px] max-h-[95vh] p-0 gap-0 overflow-hidden">
+                    {invoiceData && (
+                        <InvoiceView 
+                            assignmentData={invoiceData} 
+                            onClose={() => setInvoiceModalOpen(false)} 
+                        />
+                    )}
                 </DialogContent>
             </Dialog>
         </div>

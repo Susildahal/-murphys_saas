@@ -364,8 +364,8 @@ function Page() {
                 const unpaidCount = billing.renewal_dates.filter(r => !r.haspaid).length;
 
                 return (
-                  <Card key={billing._id} className="overflow-hidden hover:shadow-xl transition-shadow duration-300 border-2">
-                    <CardHeader className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 border-b">
+                  <div key={billing._id} className="overflow-hidden   duration-300 ">
+                    <CardHeader className="">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <CardTitle className="text-2xl font-bold">{billing.service_name}</CardTitle>
@@ -500,7 +500,7 @@ function Page() {
                         </>
                       )}
                     </CardContent>
-                  </Card>
+                  </div>
                 );
               })}
             </div>

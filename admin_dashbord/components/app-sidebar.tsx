@@ -137,6 +137,11 @@ const data = {
       url: "/admin/paymenthistory",
       icon: CreditCard,
     },
+    {
+      name: "Contract Management",
+      url: "/admin/contract_management",
+      icon: BookOpen,
+    },
   ],
 }
 

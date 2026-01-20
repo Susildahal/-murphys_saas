@@ -102,8 +102,8 @@ const data = {
     },
     {
       name: "Contracts ",
-      url: "/admin/contracts",
-      icon: Map,
+      url: "/admin/contract_messages",
+      icon: BookOpen,
     },
     {
     name :" Invite Users",
