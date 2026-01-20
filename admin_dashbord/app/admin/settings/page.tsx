@@ -15,6 +15,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { toast } from '@/hooks/use-toast'
 import { Loader2 } from 'lucide-react'
 import ImageUploadField from '@/app/page/serviceImage'
+import Header from '@/app/page/common/header'
 
 
 
@@ -136,13 +137,10 @@ export default function SiteSettingsPage() {
   }
 
   return (
+    <>
+    <Header title="Site Settings" description="Manage your application's site settings." />
     <div className="space-y-6 p-6">
-      <div className="space-y-0.5">
-        <h2 className="text-2xl font-bold tracking-tight">Site Settings</h2>
-        <p className="text-muted-foreground">
-          Manage your application's general configuration and contact information.
-        </p>
-      </div>
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           
@@ -372,5 +370,6 @@ export default function SiteSettingsPage() {
         </form>
       </Form>
     </div>
+    </>
   )
 }

@@ -186,7 +186,6 @@ const NotificationsPage = () => {
                                         />
                                     </TableHead>
                                     <TableHead className="w-[200px]">User Details</TableHead>
-                                    <TableHead className="w-[150px]">Title</TableHead>
                                     <TableHead className="w-[180px]">Contact Info</TableHead>
                                     <TableHead className="min-w-[200px]">Message</TableHead>
                                     <TableHead className="w-[100px]">Status</TableHead>

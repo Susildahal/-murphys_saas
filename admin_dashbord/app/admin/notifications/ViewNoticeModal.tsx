@@ -9,7 +9,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
-import { Mail, Phone, User, Calendar, Clock, CheckCircle2, XCircle } from 'lucide-react'
+import { Mail, Phone, User, Calendar, Clock } from 'lucide-react'
 import { Notice } from '@/lib/redux/slices/noticSlicer'
 
 interface ViewNoticeModalProps {
@@ -26,7 +26,6 @@ const ViewNoticeModal: React.FC<ViewNoticeModalProps> = ({ isOpen, onClose, noti
             <DialogContent className="sm:max-w-[600px]">
                 <DialogHeader className="border-b pb-4">
                     <div className="flex items-center justify-between pr-8">
-                        <DialogTitle className="text-xl font-bold">{notice.title}</DialogTitle>
                         <Badge
                             variant={notice.status ? "default" : "secondary"}
                             className={notice.status ? "bg-green-500/15 text-green-700 border-green-200" : "text-muted-foreground"}

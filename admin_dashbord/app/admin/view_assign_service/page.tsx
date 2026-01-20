@@ -11,13 +11,6 @@ import {
 } from "@/components/ui/table"
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-    CardDescription,
-} from "@/components/ui/card"
 import { MoreVertical, RefreshCcw, Calendar as CalendarIcon, Plus, Edit2, Trash2, Delete, ChevronDownIcon, Loader2, User, Briefcase, DollarSign, Clock, FileText, Search } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 

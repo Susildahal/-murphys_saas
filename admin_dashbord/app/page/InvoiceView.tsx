@@ -171,7 +171,7 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
   }
 
   const nextRenewalDate = getNextRenewalDate()
-  const allRenewals = (assignmentData.renewal_dates || []).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
+  const allRenewals = [...(assignmentData.renewal_dates || [])].sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
   return (
     <div style={{

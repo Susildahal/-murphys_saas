@@ -116,11 +116,7 @@ const data = {
       url: "/admin/categories",
       icon: Grid3x3,
     },
-    {
-      name: "Payment",
-      url: "/admin/payment",
-      icon: CreditCard,
-    },
+  
     {
       name: "Assigned Services",
       url: "/admin/view_assign_service",

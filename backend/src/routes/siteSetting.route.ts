@@ -11,6 +11,6 @@ const siteSettingRouter = Router();
 siteSettingRouter.get("/", getSiteSettings);
 
 // Protected routes for updates
-siteSettingRouter.put("/", isAdmin, upload.single('logo'), cloudinaryUpload, updateSiteSettings);
+siteSettingRouter.put("/",  upload.single('logo'), cloudinaryUpload, updateSiteSettings);
 
 export default siteSettingRouter;
