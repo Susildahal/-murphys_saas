@@ -74,7 +74,7 @@ const data = {
         },
       ],
     },
-   
+
     {
       title: "Settings",
       url: "#",
@@ -91,6 +91,14 @@ const data = {
         {
           title: "Delete Account",
           url: "/admin/delete_account",
+        },
+        {
+          title: "Privacy Policy",
+          url: "/admin/privacy_policy",
+        },
+        {
+          title: "Terms and Conditions",
+          url: "/admin/termandcondation",
         },
       ],
     },
@@ -116,7 +124,7 @@ const data = {
       url: "/admin/categories",
       icon: Grid3x3,
     },
-  
+
     {
       name: "Assigned Services",
       url: "/admin/view_assign_service",
@@ -127,7 +135,7 @@ const data = {
       url: "/admin/roles",
       icon: Map,
     },
-      {
+    {
       name: "Cart",
       url: "/admin/cart",
       icon: ShoppingBasketIcon,

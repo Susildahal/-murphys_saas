@@ -254,8 +254,21 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
             border: '1px solid #e5e7eb',
             color: '#111827',
             fontFamily: 'Arial, sans-serif',
-            boxSizing: 'border-box'
+            boxSizing: 'border-box',
+            pageBreakInside: 'avoid'
           }}>
+
+            {/* Logo at Top */}
+            {settings?.logo && (
+              <div style={{ textAlign: 'center', marginBottom: '30px', pageBreakInside: 'avoid' }}>
+                <img
+                  src={settings.logo}
+                  alt="Company Logo"
+                  style={{ height: '80px', maxWidth: '200px', display: 'inline-block', objectFit: 'contain' }}
+                  crossOrigin="anonymous"
+                />
+              </div>
+            )}
 
             {/* Logo & Header */}
             <div style={{
@@ -265,7 +278,8 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
               borderBottom: '2px solid #111827',
               paddingBottom: '20px',
               flexWrap: 'wrap',
-              gap: '20px'
+              gap: '20px',
+              pageBreakInside: 'avoid'
             }}>
               <div style={{ flex: '1', minWidth: '280px' }}>
                 {settings?.logo && (
@@ -292,19 +306,22 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
                   <p style={{ fontSize: '16px', fontWeight: '700', color: '#111827', margin: '0 0 12px 0', fontFamily: 'monospace' }}>
                     {assignmentData.invoice_id || `INV-${assignmentData._id?.slice(-8).toUpperCase()}`}
                   </p>
-                  <span style={{
-                    display: 'inline-block',
-                    padding: '6px 12px',
-                    border: '1px solid #d1d5db',
-                    fontSize: '11px',
-                    fontWeight: '600',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    backgroundColor: '#f9fafb',
-                    color: '#374151'
-                  }}>
-                    {assignmentData.status || 'Active'}
-                  </span>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <span style={{
+                      display: 'inline-block',
+                      padding: '6px 12px',
+                      border: '1px solid #d1d5db',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      backgroundColor: '#f9fafb',
+                      color: '#374151',
+                      textAlign: 'center'
+                    }}>
+                      {assignmentData.status || 'Active'}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -315,7 +332,8 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
               gridTemplateColumns: '1fr 1fr',
               gap: '30px',
               marginBottom: '40px',
-              width: '100%'
+              width: '100%',
+              pageBreakInside: 'avoid'
             }}>
               <div>
                 <h3 style={{ fontSize: '11px', fontWeight: '700', color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', borderBottom: '1px solid #e5e7eb', paddingBottom: '6px' }}>
@@ -364,7 +382,8 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
               width: '100%',
               borderCollapse: 'collapse',
               marginBottom: '40px',
-              tableLayout: 'fixed'
+              tableLayout: 'fixed',
+              pageBreakInside: 'auto'
             }}>
               <thead>
                 <tr style={{ backgroundColor: '#f3f4f6' }}>
@@ -428,7 +447,7 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
                 </tr>
 
                 {allRenewals.filter((r: any) => r.haspaid).map((renewal: any, i: number) => (
-                  <tr key={i} style={{ borderBottom: '1px solid #e5e7eb', backgroundColor: '#f9fafb' }}>
+                  <tr key={i} style={{ borderBottom: '1px solid #e5e7eb', backgroundColor: '#f9fafb', pageBreakInside: 'avoid' }}>
                     <td style={{ padding: '16px 12px', verticalAlign: 'middle' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                         <span style={{
@@ -439,7 +458,9 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
                           border: '1px solid #d1d5db',
                           fontSize: '10px',
                           fontWeight: '600',
-                          letterSpacing: '0.5px'
+                          letterSpacing: '0.5px',
+                          textAlign: 'center',
+                          minWidth: '45px'
                         }}>
                           PAID
                         </span>
@@ -458,7 +479,7 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
             </table>
 
             {/* Totals */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '40px', width: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '40px', width: '100%', pageBreakInside: 'avoid' }}>
               <div style={{ width: '320px', maxWidth: '100%', border: '1px solid #d1d5db' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid #e5e7eb', fontSize: '14px' }}>
                   <span style={{ color: '#6b7280' }}>Subtotal</span>
@@ -485,7 +506,8 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 flexWrap: 'wrap',
-                gap: '16px'
+                gap: '16px',
+                pageBreakInside: 'avoid'
               }}>
                 <div>
                   <h4 style={{ fontWeight: '600', color: '#111827', margin: '0 0 4px 0', fontSize: '14px' }}>Upcoming Renewal</h4>
@@ -503,7 +525,7 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
             )}
 
             {/* Footer */}
-            <div style={{ textAlign: 'center', fontSize: '13px', color: '#9ca3af', paddingTop: '40px', borderTop: '1px solid #e5e7eb' }}>
+            <div style={{ textAlign: 'center', fontSize: '13px', color: '#9ca3af', paddingTop: '40px', borderTop: '1px solid #e5e7eb', pageBreakInside: 'avoid' }}>
               <p style={{ margin: '8px 0' }}>{settings?.footerText || 'Thank you for your business!'}</p>
               <p style={{ fontSize: '11px', margin: '8px 0' }}>Generated by {settings?.appName || "Murphy's Admin"}</p>
             </div>

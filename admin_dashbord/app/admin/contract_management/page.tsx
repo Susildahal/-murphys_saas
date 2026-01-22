@@ -13,9 +13,9 @@ import {
   ChatMessage,
 } from "@/lib/realtimeChatService"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"

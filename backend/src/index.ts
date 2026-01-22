@@ -18,6 +18,7 @@ import dashboardrouter from "./routes/dashboard";
 import cartRouter from "./routes/cart.routes";
 import billingrouter from "./routes/billing.routes";
 import invoiceRouter from "./models/invoice.routes";
+import privacyPolicyRouter from "./routes/privacypolicy.route";
 
 // Use profile routes
 
@@ -70,6 +71,7 @@ app.use("/api", dashboardrouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/billing", billingrouter);
 app.use("/api/invoices", invoiceRouter);
+app.use("/api", privacyPolicyRouter);
 
 
 
