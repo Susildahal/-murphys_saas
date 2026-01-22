@@ -25,7 +25,7 @@ const validationSchema = Yup.object({
   phone: Yup.string()
     .matches(/^(\+61|0)?[2-478](?:[ -]?[0-9]){8}$/, "Invalid Australian phone number")
     .required("Phone number is required"),
-  gender: Yup.string().required("Gender is required"),
+  gender: Yup.string().required("Gender is required"),  
 });
 
 export default function CompleteRegistrationPage() {
