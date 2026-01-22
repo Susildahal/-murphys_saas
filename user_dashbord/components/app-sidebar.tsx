@@ -60,10 +60,6 @@ const data = {
       icon: Settings2,
       items: [
         {
-          title: "Site Settings",
-          url: "/admin/settings",
-        },
-        {
           title: "Change Password",
           url: "/admin/change_password",
         },

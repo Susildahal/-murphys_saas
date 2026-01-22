@@ -1,11 +1,19 @@
 import React from 'react'
-import CartPage from '@/app/page/cart'
-import Cart from '../cart/page'
+import Header from '@/app/page/common/header'
+import ContractTable from '@/app/page/contract_table'
 
-const page = () => {
+const NotificationsPage = () => {
   return (
-    <div> <CartPage /></div>
+    <div className="p-6 h-screen overflow-y-auto">
+      <Header
+        title="Notifications"
+        description="View and manage your system notifications and contract notices."
+      />
+      <div className="mt-6">
+        <ContractTable />
+      </div>
+    </div>
   )
 }
 
-export default page
+export default NotificationsPage

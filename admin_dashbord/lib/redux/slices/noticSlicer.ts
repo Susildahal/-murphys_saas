@@ -210,7 +210,7 @@ const noticeSlice = createSlice({
       .addCase(fetchNotices.fulfilled, (state, action) => {
         state.loading = false;
         // normalize status to boolean in all notices (backend may return string or boolean)
-        state.notices = action.payload.data.map(n => {
+        state.notices = (action.payload.data || []).filter(n => !!n).map(n => {
           const rawStatus = (n as any).status;
           const statusBool = rawStatus === true || rawStatus === 'true' || rawStatus === 1 || rawStatus === '1';
           return { ...n, status: !!statusBool };

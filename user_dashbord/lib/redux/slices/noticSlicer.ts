@@ -52,7 +52,7 @@ const initialState: NoticeState = {
 /** Fetch notices (with pagination) */
 export const fetchNotices = createAsyncThunk<
   { data: Notice[]; pagination: Pagination; unreadCount: number },
-  { page?: number; limit?: number } | void,
+  { page?: number; limit?: number, email: string } | void,
   { rejectValue: string }
 >("notices/fetchNotices", async (params, { rejectWithValue }) => {
   try {
@@ -60,6 +60,8 @@ export const fetchNotices = createAsyncThunk<
       params: {
         page: params?.page,
         limit: params?.limit,
+        email: params?.email
+
       },
     });
 
@@ -93,7 +95,7 @@ export const createNotice = createAsyncThunk<
 >("notices/createNotice", async (noticeData, { rejectWithValue }) => {
   try {
     const response = await axiosInstance.post("/notices", noticeData);
-    return response.data.data as Notice;
+    return response.data as Notice;
   } catch (error: any) {
     return rejectWithValue(
       error.response?.data?.message || error.message
@@ -136,28 +138,7 @@ export const toggleNoticeStatus = createAsyncThunk<
   }
 });
 
-/** Fetch unread count only (if backend supports a dedicated endpoint) */
-// export const fetchUnreadCount = createAsyncThunk<number, void, { rejectValue: string }>(
-//   "notices/fetchUnreadCount",
-//   async (_, { rejectWithValue }) => {
-//     try {
-//       // try common endpoint names
-//       const tryEndpoints = ["/notices/unread-count", "/notices/unreadCount", "/notices/unread"];
-//       for (const ep of tryEndpoints) {
-//         try {
-//           const res = await axiosInstance.get(ep);
-//           if (res && typeof res.data?.unreadCount === "number") return res.data.unreadCount as number;
-//           if (typeof res.data === "number") return res.data as number;
-//         } catch (_) {
-//           // ignore and try next
-//         }
-//       }
-//       return 0;
-//     } catch (error: any) {
-//       return rejectWithValue(error.response?.data?.message || error.message);
-//     }
-//   }
-// );
+
 
 /** Delete multiple notices */
 export const deleteManyNotices = createAsyncThunk<

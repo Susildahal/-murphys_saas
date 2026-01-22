@@ -1,459 +1,394 @@
-"use client"
+'use client'
+import React, { useState, useEffect } from 'react'
+import Header from '@/app/page/common/header'
+import { getMee } from '@/lib/redux/slices/meeSlice'
+import { fetchProfileByEmail } from "@/lib/redux/slices/profileSlice"
+import { createNotice, fetchNotices } from "@/lib/redux/slices/noticSlicer"
+import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks'
 
-import { useState, useEffect, useRef } from "react"
-import { useAppSelector } from "@/lib/redux/hooks"
-import { getAuth } from "firebase/auth"
-import {
-  createChatConversation,
-  sendChatMessage,
-  listenToUserConversations,
-  listenToMessages,
-  updateConversationStatus,
-  ChatConversation,
-  ChatMessage,
-} from "@/lib/realtimeChatService"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { 
-  MessageCircle, 
-  Send, 
-  Plus,
-  Loader2,
-  Search,
-  CheckCircle2,
-  Circle,
-  Clock,
-  ArrowLeft
-} from "lucide-react"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog"
-import { toast } from "@/hooks/use-toast"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { toast } from 'sonner'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from "@/components/ui/table"
+import { Badge } from '@/components/ui/badge'
 
-export default function ChatPage() {
-  const [conversations, setConversations] = useState<ChatConversation[]>([])
-  const [selectedConversation, setSelectedConversation] = useState<ChatConversation | null>(null)
-  const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [messageText, setMessageText] = useState("")
+import { Calendar, User, Mail, Phone, Loader2, Eye } from 'lucide-react'
+import { format } from 'date-fns'
+
+function ContractManagementPage() {
+  const dispatch = useAppDispatch()
+  const { data: meeData } = useAppSelector((state) => state.mee)
+  const { profile } = useAppSelector((state) => state.profile)
+  const { notices, loading: noticesLoading ,total } = useAppSelector((state) => state.notices)
+
+  const [open, setOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
-  
-  const [newChat, setNewChat] = useState({
-    subject: "",
-    message: "",
+  const [selectedNotice, setSelectedNotice] = useState<any>(null)
+  const [viewDetailsOpen, setViewDetailsOpen] = useState(false)
+
+  // Form State
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    title: '',
+    message: ''
   })
-  
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const profileState = useAppSelector((state) => state.profile)
-  const profile = Array.isArray(profileState.profile) ? profileState.profile[0] : profileState.profile
-  const auth = getAuth()
-  
-  const userEmail = profile?.email || auth.currentUser?.email || ""
-  const userId = auth.currentUser?.uid || ""
-  const userName = profile?.name || profile?.firstName && profile?.lastName
-    ? `${profile.firstName} ${profile.lastName}`.trim()
-    : "User"
 
-  // Auto-scroll to bottom when new messages arrive
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
+  // Prefill form when profile is available
+  useEffect(() => {
+    if (profile) {
+      // profile might be an array or object based on slice logic
+      const p = Array.isArray(profile) ? profile[0] : profile
+      if (p) {
+        setFormData(prev => ({
+          ...prev,
+          firstName: p.firstName || p.name?.split(' ')[0] || '',
+          lastName: p.lastName || p.name?.split(' ')[1] || '',
+          email: p.email || '',
+          phone: p.phone || ''
+        }))
+      }
+    }
+  }, [profile])
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    if (!meeData) {
+      dispatch(getMee())
+    }
+    if (meeData?.email && !profile) {
+      dispatch(fetchProfileByEmail(meeData.email))
+    }
+    dispatch(fetchNotices(meeData?.email))
+  }, [dispatch, meeData])
 
-  // Listen to conversations
-  useEffect(() => {
-    if (!userEmail) return
-
-    console.log('[DEBUG] Setting up conversation listener for:', userEmail)
-    const unsubscribe = listenToUserConversations(userEmail, (convos) => {
-      console.log('[DEBUG] Received conversations:', convos)
-      setConversations(convos)
-    })
-
-    return () => unsubscribe()
-  }, [userEmail])
-
-  // Listen to messages in selected conversation
-  useEffect(() => {
-    if (!selectedConversation?.id) return
-
-    console.log('[DEBUG] Setting up message listener for conversation:', selectedConversation.id)
-    const unsubscribe = listenToMessages(selectedConversation.id, (msgs) => {
-      console.log('[DEBUG] Received messages:', msgs)
-      setMessages(msgs)
-    })
-
-    return () => unsubscribe()
-  }, [selectedConversation?.id])
-
-  const handleCreateChat = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newChat.subject || !newChat.message || !userEmail) return
-    
     setSubmitting(true)
     try {
-      const conversationId = await createChatConversation({
-        userId,
-        userEmail,
-        userName,
-        subject: newChat.subject,
-        initialMessage: newChat.message,
-      })
-      
-      toast({
-        title: "Chat Started",
-        description: "Your conversation has been created",
-      })
-      
-      setNewChat({ subject: "", message: "" })
-      setIsDialogOpen(false)
-    } catch (error) {
-      console.error("Error creating chat:", error)
-      toast({
-        title: "Error",
-        description: "Failed to create chat",
-        variant: "destructive",
-      })
+      await dispatch(createNotice(formData)).unwrap()
+      toast.success('Contract added successfully')
+      setOpen(false)
+      setFormData(prev => ({ ...prev, title: '', message: '' }))
+    } catch (error: any) {
+      toast.error(error || 'Failed to add contract')
     } finally {
       setSubmitting(false)
     }
   }
-
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!messageText.trim() || !selectedConversation?.id) return
-    
-    setSubmitting(true)
-    try {
-      await sendChatMessage(selectedConversation.id, {
-        message: messageText,
-        senderId: userId,
-        senderName: userName,
-        senderEmail: userEmail,
-        isAdmin: false,
-      })
-      
-      setMessageText("")
-    } catch (error) {
-      console.error("Error sending message:", error)
-      toast({
-        title: "Error",
-        description: "Failed to send message",
-        variant: "destructive",
-      })
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-green-500"
-      case "resolved":
-        return "bg-blue-500"
-      case "closed":
-        return "bg-gray-500"
-      default:
-        return "bg-gray-400"
-    }
-  }
-
-  const formatTime = (timestamp: number) => {
-    const date = new Date(timestamp)
-    const now = new Date()
-    const diff = now.getTime() - date.getTime()
-    
-    if (diff < 60000) return "Just now"
-    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`
-    if (diff < 86400000) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    return date.toLocaleDateString()
-  }
-
-  const filteredConversations = conversations.filter(conv =>
-    conv.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    conv.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
-  )
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      {/* Conversations Sidebar */}
-      <div className="w-full md:w-96 border-r border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex flex-col">
-        {/* Header */}
-        <div className="p-4 border-b border-slate-200 dark:border-slate-700">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <MessageCircle className="w-6 h-6 text-blue-500" />
-              Messages
-            </h1>
-            
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="rounded-full">
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>Start New Conversation</DialogTitle>
-                  <DialogDescription>
-                    Send a message to our admin team
-                  </DialogDescription>
-                </DialogHeader>
-                
-                <form onSubmit={handleCreateChat} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="subject">Subject</Label>
-                    <Input
-                      id="subject"
-                      placeholder="What's this about?"
-                      value={newChat.subject}
-                      onChange={(e) => setNewChat({ ...newChat, subject: e.target.value })}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="message">Message</Label>
-                    <Textarea
-                      id="message"
-                      placeholder="Type your message..."
-                      rows={6}
-                      value={newChat.message}
-                      onChange={(e) => setNewChat({ ...newChat, message: e.target.value })}
-                      required
-                    />
-                  </div>
-                  
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsDialogOpen(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button type="submit" disabled={submitting}>
-                      {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                      Start Chat
-                    </Button>
-                  </div>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </div>
-          
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search conversations..."
-              className="pl-10"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </div>
+    <div className="">
+      <Header
+        title="Contract Management"
+        description="Manage your system contracts and notices."
+        buttonText='Add Contract'
+        onButtonClick={() => setOpen(true)}
+        total={total}
+      />
 
-        {/* Conversations List */}
-        <ScrollArea className="flex-1">
-          {filteredConversations.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-              <MessageCircle className="w-16 h-16 text-muted-foreground/30 mb-4" />
-              <p className="text-muted-foreground">No conversations yet</p>
-              <p className="text-sm text-muted-foreground">Start a new chat with admin</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-slate-200 dark:divide-slate-700">
-              {filteredConversations.map((conv) => (
-                <button
-                  key={conv.id}
-                  onClick={() => setSelectedConversation(conv)}
-                  className={`w-full p-4 text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${
-                    selectedConversation?.id === conv.id ? "bg-blue-50 dark:bg-blue-950/20 border-l-4 border-blue-500" : ""
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="relative">
-                      <Avatar className="w-12 h-12">
-                        <AvatarFallback className="bg-gradient-to-br from-blue-400 to-blue-600 text-white">
-                          {conv.userName.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-slate-900 ${getStatusColor(conv.status)}`} />
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start mb-1">
-                        <h3 className="font-semibold truncate">{conv.subject}</h3>
-                        <span className="text-xs text-muted-foreground ml-2">
-                          {formatTime(conv.lastMessageTime)}
-                        </span>
+      <div className="mt-3">
+
+
+        <div className="rounded-lg ">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>User Details</TableHead>
+                <TableHead>Contact Info</TableHead>
+                <TableHead>Title</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {noticesLoading && notices.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-24 text-center">
+                    <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
+                  </TableCell>
+                </TableRow>
+              ) : notices.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                    No contracts found.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                notices?.filter(notice => notice !== null && notice !== undefined).map((notice) => (
+                  <TableRow key={notice._id}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div className="bg-primary/10 p-2 rounded-full">
+                          <User className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium uppercase">{notice?.firstName} {notice?.lastName}</p>
+                        </div>
                       </div>
-                      <p className="text-sm text-muted-foreground truncate">{conv.lastMessage}</p>
-                      <Badge variant="secondary" className="mt-1 text-xs capitalize">
-                        {conv.status}
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Mail className="h-3 w-3" />
+                          {notice?.email}
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Phone className="h-3 w-3" />
+                          {notice?.phone}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <TooltipProvider>
+                        <div className="space-y-1 max-w-[200px]">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <p className="font-medium truncate cursor-pointer hover:underline">{notice?.title}</p>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{notice?.title}</p>
+                            </TooltipContent>
+                          </Tooltip>
+
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <p className="text-xs text-muted-foreground truncate cursor-pointer hover:underline">{notice?.message}</p>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="max-w-xs">{notice?.message}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </TooltipProvider>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={notice?.status ? "default" : "secondary"}>
+                        {notice?.status ? "Active" : "Pending"}
                       </Badge>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </ScrollArea>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Calendar className="h-3 w-3" />
+                        {notice?.createdAt ? format(new Date(notice.createdAt), 'MMM d, yyyy') : '-'}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedNotice(notice)
+                          setViewDetailsOpen(true)
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                        <span className="sr-only">View Details</span>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
-      {/* Chat Area */}
-      <div className="flex-1 flex flex-col bg-white dark:bg-slate-900">
-        {selectedConversation ? (
-          <>
-            {/* Chat Header */}
-            <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
-              <div className="flex items-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="md:hidden"
-                  onClick={() => setSelectedConversation(null)}
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                </Button>
-                <Avatar className="w-10 h-10">
-                  <AvatarFallback className="bg-gradient-to-br from-blue-400 to-blue-600 text-white">
-                    {selectedConversation.userName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <h2 className="font-semibold">{selectedConversation.subject}</h2>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedConversation.status === "active" && "Active conversation"}
-                    {selectedConversation.status === "resolved" && "Resolved"}
-                    {selectedConversation.status === "closed" && "Closed"}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add New Contract</DialogTitle>
+            <DialogDescription>
+              Create a new contract notice. Some fields are pre-filled from your profile.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First Name</Label>
+                <Input
+                  id="firstName"
+                  value={formData.firstName}
+                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                  placeholder="First name"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last Name</Label>
+                <Input
+                  id="lastName"
+                  value={formData.lastName}
+                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                  placeholder="Last name"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                disabled
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="Email address"
+                  required
+                  className='cursor-not-allowed'
+
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone</Label>
+                <Input
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="Phone number"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="title">Contract Title</Label>
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                placeholder="Ente contract title"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="message">Message / Description</Label>
+              <Textarea
+                id="message"
+                value={formData.message}
+                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                placeholder="Type your message here..."
+                rows={4}
+                required
+              />
+            </div>
+
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={submitting}>
+                {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Add Contract
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={viewDetailsOpen} onOpenChange={setViewDetailsOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Contract Details</DialogTitle>
+            <DialogDescription>
+              Full details of the selected contract notice.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedNotice && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-xs uppercase tracking-wider">User</Label>
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-primary" />
+                    <p className="font-medium">{selectedNotice.firstName} {selectedNotice.lastName}</p>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-xs uppercase tracking-wider">Status</Label>
+                  <div>
+                    <Badge variant={selectedNotice.status ? "default" : "secondary"}>
+                      {selectedNotice.status ? "Active" : "Pending"}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-xs uppercase tracking-wider">Email</Label>
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <p className="text-sm">{selectedNotice.email}</p>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-muted-foreground text-xs uppercase tracking-wider">Phone</Label>
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <p className="text-sm">{selectedNotice.phone}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-muted-foreground text-xs uppercase tracking-wider">Title</Label>
+                <p className="text-lg font-semibold">{selectedNotice.title}</p>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-muted-foreground text-xs uppercase tracking-wider">Message</Label>
+                <div className="bg-muted/50 p-4 rounded-lg">
+                  <p className="text-sm whitespace-pre-wrap leading-relaxed">{selectedNotice.message}</p>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-muted-foreground text-xs uppercase tracking-wider">Created Date</Label>
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <p className="text-sm">
+                    {selectedNotice.createdAt ? format(new Date(selectedNotice.createdAt), 'PPP p') : '-'}
                   </p>
                 </div>
-                <Badge variant="outline" className="capitalize">
-                  {selectedConversation.status}
-                </Badge>
               </div>
             </div>
-
-            {/* Messages */}
-            <ScrollArea className="flex-1 p-4">
-              <div className="space-y-4 max-w-4xl mx-auto">
-                {messages.map((msg, index) => {
-                  const isOwn = msg.senderEmail === userEmail
-                  const showAvatar = index === 0 || messages[index - 1].isAdmin !== msg.isAdmin
-                  
-                  return (
-                    <div
-                      key={msg.id}
-                      className={`flex gap-3 ${isOwn ? "flex-row-reverse" : "flex-row"}`}
-                    >
-                      {showAvatar ? (
-                        <Avatar className="w-8 h-8 flex-shrink-0">
-                          <AvatarFallback className={msg.isAdmin ? "bg-gradient-to-br from-purple-400 to-purple-600" : "bg-gradient-to-br from-blue-400 to-blue-600"}>
-                            {msg.senderName.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                      ) : (
-                        <div className="w-8" />
-                      )}
-                      
-                      <div className={`flex flex-col ${isOwn ? "items-end" : "items-start"} max-w-[70%]`}>
-                        {showAvatar && (
-                          <div className={`flex items-center gap-2 mb-1 ${isOwn ? "flex-row-reverse" : "flex-row"}`}>
-                            <span className="text-xs font-semibold">
-                              {msg.isAdmin ? `${msg.senderName} (Admin)` : msg.senderName}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {formatTime(msg.timestamp)}
-                            </span>
-                          </div>
-                        )}
-                        
-                        <div
-                          className={`rounded-2xl px-4 py-2 ${
-                            isOwn
-                              ? "bg-blue-500 text-white rounded-tr-sm"
-                              : msg.isAdmin
-                              ? "bg-purple-100 dark:bg-purple-950/30 text-purple-900 dark:text-purple-100 rounded-tl-sm"
-                              : "bg-slate-100 dark:bg-slate-800 rounded-tl-sm"
-                          }`}
-                        >
-                          <p className="text-sm whitespace-pre-wrap break-words">{msg.message}</p>
-                        </div>
-                        
-                        {isOwn && (
-                          <div className="flex items-center gap-1 mt-1">
-                            {msg.read ? (
-                              <CheckCircle2 className="w-3 h-3 text-blue-500" />
-                            ) : (
-                              <Circle className="w-3 h-3 text-muted-foreground" />
-                            )}
-                            <span className="text-xs text-muted-foreground">
-                              {msg.read ? "Read" : "Sent"}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-                <div ref={messagesEndRef} />
-              </div>
-            </ScrollArea>
-
-            {/* Message Input */}
-            {selectedConversation.status !== "closed" && (
-              <form onSubmit={handleSendMessage} className="p-4 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
-                <div className="flex gap-2 max-w-4xl mx-auto">
-                  <Input
-                    placeholder="Type a message..."
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    className="flex-1"
-                    disabled={submitting}
-                  />
-                  <Button type="submit" disabled={!messageText.trim() || submitting} size="icon">
-                    {submitting ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Send className="w-4 h-4" />
-                    )}
-                  </Button>
-                </div>
-              </form>
-            )}
-          </>
-        ) : (
-          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-            <MessageCircle className="w-24 h-24 text-muted-foreground/20 mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No Conversation Selected</h3>
-            <p className="text-muted-foreground mb-4">
-              Choose a conversation from the list or start a new one
-            </p>
-            <Button onClick={() => setIsDialogOpen(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Start New Chat
-            </Button>
-          </div>
-        )}
-      </div>
+          )}
+          <DialogFooter>
+            <Button onClick={() => setViewDetailsOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
+
+export default ContractManagementPage
