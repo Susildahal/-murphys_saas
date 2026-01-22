@@ -25,7 +25,6 @@ import axiosInstance from "@/lib/axios";
 export default function AdminLoginPage() {
   const auth = getAuth(app);
   const router = useRouter();
-
   const [modalOpen, setModalOpen] = useState(false);
   const [modalLoading, setModalLoading] = useState(false);
   const [modalStatus, setModalStatus] = useState<string | null>(null);
@@ -306,25 +305,21 @@ export default function AdminLoginPage() {
                   "Log In"
                 )}
               </Button>
-              <div className=" flex justify-center items-center  cursor-pointer pt-4">
-
+              <div className="flex flex-col items-center gap-3">
                 <Button
-        variant="link"
-        className="absolute bottom-3   cursor-pointer text-neutral-500 hover:text-purple-600 transition text-sm"
-        onClick={() => setModalOpen(true)}
-      >
-        <Mail className="w-4 h-4 mr-2 inline-block" />
-        Log in with Magic Link
-      </Button>
-      </div>
+                  variant="ghost"
+                  onClick={() => setModalOpen(true)}
+                  className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-purple-600 transition"
+                >
+                  <Mail className="w-4 h-4" />
+                  Log in with Magic Link
+                </Button>
 
-              {/* Register Link */}
-              <div className="text-center pt-12">
                 <p className="text-sm text-neutral-600">
-                  Don't have an account?{" "}
+                  Don't have an account?{' '}
                   <button
                     type="button"
-                    onClick={() => router.push("/register")}
+                    onClick={() => router.push('/register')}
                     className="text-purple-600 hover:text-purple-700 font-medium transition"
                   >
                     Sign up
