@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  reactStrictMode: false, // Disable strict mode to suppress findDOMNode warnings from react-quill
   turbopack: {
     // ensures Turbopack uses this folder as the workspace root (silences "inferred workspace root" warning)
     root: '.',

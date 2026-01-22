@@ -11,6 +11,7 @@ import siteSettingReducer from './slices/siteSettingSlice';
 import  noticeSlice from './slices/noticSlicer';
 import dashboardSlice from './slices/dashboardSlicer';
 import cartReducer from './slices/cartSlicer';
+import ticketReducer from './slices/ticketSlice';
 
 
 export const store = configureStore({
@@ -27,6 +28,7 @@ export const store = configureStore({
     siteSettings: siteSettingReducer,
     notices: noticeSlice,
     dashboard: dashboardSlice,
+    tickets: ticketReducer,
   },
 });
 

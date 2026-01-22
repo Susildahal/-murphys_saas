@@ -13,9 +13,12 @@ import dashboardSlice from './slices/dashboardSlicer';
 import cartReducer from './slices/cartSlice';
 import  billingReducer from './slices/billingSlicer'; 
 import InvoiceSlice from './slices/invoiceSlicer';
+import ticketReducer from './slices/ticketSlice';
+import authReducer from './slices/authSlice';
 
 export const store = configureStore({
   reducer: {
+    auth: authReducer,
     profile: profileReducer,
     services: serviceReducer,
     categories: categoryReducer,
@@ -30,6 +33,7 @@ export const store = configureStore({
     cart: cartReducer,
     billing: billingReducer,
     invoices: InvoiceSlice,
+    tickets: ticketReducer,
   },
 });
 

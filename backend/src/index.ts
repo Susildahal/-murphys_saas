@@ -19,6 +19,8 @@ import cartRouter from "./routes/cart.routes";
 import billingrouter from "./routes/billing.routes";
 import invoiceRouter from "./models/invoice.routes";
 import privacyPolicyRouter from "./routes/privacypolicy.route";
+import ticketRouter from "./routes/ticket.route";
+import authRouter from "./routes/auth.routes";
 
 // Use profile routes
 
@@ -58,6 +60,7 @@ app.get("/", (_req, res) => {
 });
 
 // Mount API routes
+app.use("/api", authRouter);
 app.use("/api", profilerouter);
 app.use("/api", inviterouter);
 app.use("/api", paymentrouter);
@@ -72,6 +75,7 @@ app.use("/api/cart", cartRouter);
 app.use("/api/billing", billingrouter);
 app.use("/api/invoices", invoiceRouter);
 app.use("/api", privacyPolicyRouter);
+app.use("/api", ticketRouter);
 
 
 

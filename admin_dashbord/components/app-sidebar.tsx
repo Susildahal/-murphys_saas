@@ -146,10 +146,10 @@ const data = {
       icon: CreditCard,
     },
     {
-      name: "Contract Management",
-      url: "/admin/contract_management",
-      icon: BookOpen,
-    },
+      name: "Open Tickets",
+      url: "/admin/tickets",
+      icon: GalleryVerticalEnd,
+    }
   ],
 }
 

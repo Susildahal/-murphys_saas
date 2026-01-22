@@ -115,6 +115,11 @@ const data = {
     name :" Payment History",
     url:"/admin/billing-history",
     icon: CreditCard,
+    },
+      {
+    name :" Open Tickets",
+    url:"/admin/open_ticket",
+    icon: CreditCard,
     }
   ],
 }
