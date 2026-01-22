@@ -3,10 +3,16 @@ import React, { useState, useEffect } from 'react'
 import Header from '@/app/page/common/header'
 import { getMee } from '@/lib/redux/slices/meeSlice'
 import { fetchProfileByEmail } from "@/lib/redux/slices/profileSlice"
-import { createNotice, fetchNotices } from "@/lib/redux/slices/noticSlicer"
+import { createNotice, fetchNotices, deleteNotice } from "@/lib/redux/slices/noticSlicer"
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks'
-
+import Pagination from '@/app/page/common/Pagination'
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"
 import {
   Dialog,
   DialogContent,
@@ -35,19 +41,22 @@ import {
 } from "@/components/ui/table"
 import { Badge } from '@/components/ui/badge'
 
-import { Calendar, User, Mail, Phone, Loader2, Eye } from 'lucide-react'
+import { Calendar, User, Mail, Phone, Loader2, Eye, Trash2, MoreVertical } from 'lucide-react'
 import { format } from 'date-fns'
 
 function ContractManagementPage() {
   const dispatch = useAppDispatch()
   const { data: meeData } = useAppSelector((state) => state.mee)
   const { profile } = useAppSelector((state) => state.profile)
-  const { notices, loading: noticesLoading ,total } = useAppSelector((state) => state.notices)
+  const { notices, loading: noticesLoading ,total ,page , limit, totalPages } = useAppSelector((state) => state.notices)
 
   const [open, setOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [selectedNotice, setSelectedNotice] = useState<any>(null)
   const [viewDetailsOpen, setViewDetailsOpen] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [noticeToDelete, setNoticeToDelete] = useState<any>(null)
+  const [deleting, setDeleting] = useState(false)
 
   // Form State
   const [formData, setFormData] = useState({
@@ -83,7 +92,9 @@ function ContractManagementPage() {
     if (meeData?.email && !profile) {
       dispatch(fetchProfileByEmail(meeData.email))
     }
-    dispatch(fetchNotices(meeData?.email))
+    if (meeData?.email) {
+      dispatch(fetchNotices({ email: meeData.email }))
+    }
   }, [dispatch, meeData])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -98,6 +109,37 @@ function ContractManagementPage() {
       toast.error(error || 'Failed to add contract')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!noticeToDelete) return
+    setDeleting(true)
+    try {
+      await dispatch(deleteNotice(noticeToDelete._id)).unwrap()
+      toast.success('Contract deleted successfully')
+      setDeleteDialogOpen(false)
+      setNoticeToDelete(null)
+        // refresh current page
+        if (meeData?.email) {
+          dispatch(fetchNotices({ page, limit, email: meeData.email }))
+        } else {
+          dispatch(fetchNotices())
+        }
+    } catch (error: any) {
+      toast.error(error || 'Failed to delete contract')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const handlePageChange = (newPage: number) => {
+    // fetch notices for the selected page; backend filters by email when provided
+    if (meeData?.email) {
+      dispatch(fetchNotices({ page: newPage, limit, email: meeData.email }))
+    } else {
+      // no email yet; fetch default list
+      dispatch(fetchNotices())
     }
   }
 
@@ -136,7 +178,7 @@ function ContractManagementPage() {
               ) : notices.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                    No contracts found.
+                    You don't have any contracts.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -189,7 +231,7 @@ function ContractManagementPage() {
                     </TableCell>
                     <TableCell>
                       <Badge variant={notice?.status ? "default" : "secondary"}>
-                        {notice?.status ? "Active" : "Pending"}
+                        {notice?.status ? " Success" : "Pending"}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -199,17 +241,38 @@ function ContractManagementPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedNotice(notice)
-                          setViewDetailsOpen(true)
-                        }}
-                      >
-                        <Eye className="h-4 w-4" />
-                        <span className="sr-only">View Details</span>
-                      </Button>
+                      <div className="flex items-center justify-end">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" aria-label="Actions" className='cursor-pointer'>
+                              <MoreVertical className="h-4 w-4 rotate-90 " />
+                            </Button>   
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem
+                              onSelect={() => {
+                                setSelectedNotice(notice)
+                                setViewDetailsOpen(true)
+                              }}
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              View
+                            </DropdownMenuItem>
+                            {notice?.email === meeData?.email && (
+                              <DropdownMenuItem
+                                variant="destructive"
+                                onSelect={() => {
+                                  setNoticeToDelete(notice)
+                                  setDeleteDialogOpen(true)
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -387,6 +450,48 @@ function ContractManagementPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Delete Contract</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this contract? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          {noticeToDelete && (
+            <div className="space-y-2 py-4">
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <p className="font-medium">{noticeToDelete.title}</p>
+                <p className="text-sm text-muted-foreground mt-1">{noticeToDelete.message}</p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setDeleteDialogOpen(false)
+                setNoticeToDelete(null)
+              }}
+              disabled={deleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleting}
+            >
+              {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Pagination page={page} totalPages={totalPages} onPageChange={handlePageChange} />
     </div>
   )
 }

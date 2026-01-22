@@ -22,6 +22,7 @@ export default function CartPage() {
   const meeState = useAppSelector((s) => s.mee);
   const userid = meeState.data?.uid || '';
   const router = useRouter();
+  const [viewingSingleService, setViewingSingleService] = React.useState<string | null>(null);
 
   useEffect(() => {
     if (userid) {
@@ -120,6 +121,11 @@ export default function CartPage() {
   const cartItems = cart?.Services || [];
   const totalAmount = calculateTotal();
 
+  // Filter to show only single service if viewing one
+  const displayedItems = viewingSingleService 
+    ? cartItems.filter(item => (item.serviceId as any)?._id === viewingSingleService)
+    : cartItems;
+
   return (
     <>
     <Header
@@ -128,24 +134,35 @@ export default function CartPage() {
       link="/admin/services"
       buttonText="Add New items"
       extra={
-        cartItems.length > 0 ? (
-          // keep extra small and inline so header can place it next to the action button
-          <Button
-            variant="outline"
-            onClick={handleClearCart}
-            className="text-destructive hover:text-destructive"
-          >
-            <X className="h-4 w-4 mr-2" />
-            Clear Cart
-          </Button>
-        ) : null
+        <>
+          {viewingSingleService && (
+            <Button
+              variant="outline"
+              onClick={() => setViewingSingleService(null)}
+              className="mr-2"
+            >
+              Show All Services
+            </Button>
+          )}
+          {cartItems.length > 0 && !viewingSingleService ? (
+            // keep extra small and inline so header can place it next to the action button
+            <Button
+              variant="outline"
+              onClick={handleClearCart}
+              className="text-destructive hover:text-destructive"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Clear Cart
+            </Button>
+          ) : null}
+        </>
       }
       icon={<ShoppingCart className="h-8 w-8 text-blue-600" />}
     />
 
     <div className="">
       {/* Cart Status Notice */}
-      {cart && cartItems.length > 0 && (
+      {cart && displayedItems.length > 0 && !viewingSingleService && (
         <div className="mb-6">
           <Alert className="bg-blue-50 border-blue-200">
             <Info className="h-4 w-4 text-blue-600" />
@@ -157,7 +174,7 @@ export default function CartPage() {
         </div>
       )}
 
-      {cartItems.length === 0 ? (
+      {displayedItems.length === 0 ? (
         <Card className="p-12 text-center">
           <div className="flex flex-col items-center gap-4">
             <ShoppingCart className="h-16 w-16 text-muted-foreground/50" />
@@ -171,7 +188,7 @@ export default function CartPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
-            {cartItems.map((cartService) => {
+            {displayedItems.map((cartService) => {
               const service = cartService.serviceId;
               if (!service || typeof service !== 'object') return null;
               
@@ -303,7 +320,7 @@ export default function CartPage() {
                             ) : (
                               <Button
                                 size="sm"
-                                onClick={() => router.push(`/services/${(service as any)._id}`)}
+                                onClick={() => setViewingSingleService((service as any)._id)}
                                 className="bg-indigo-600 hover:bg-indigo-700 text-white"
                               >
                                 View Service
@@ -320,17 +337,18 @@ export default function CartPage() {
           </div>
 
           {/* Order Summary */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-4">
-              <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
-                <CardDescription>Review your cart items</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Items ({cartItems.length})</span>
-                    <span className="font-medium">${totalAmount.toFixed(2)}</span>
+          {!viewingSingleService && (
+            <div className="lg:col-span-1">
+              <Card className="sticky top-4">
+                <CardHeader>
+                  <CardTitle>Order Summary</CardTitle>
+                  <CardDescription>Review your cart items</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Items ({cartItems.length})</span>
+                      <span className="font-medium">${totalAmount.toFixed(2)}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between text-lg font-bold">
@@ -349,7 +367,8 @@ export default function CartPage() {
             
               </CardContent>
             </Card>
-          </div>
+            </div>
+          )}
         </div>
       )}
     </div>

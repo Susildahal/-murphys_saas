@@ -27,12 +27,19 @@ export const getNotices = async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
+    const email = req.query.email as string | undefined;
     const skip = (page - 1) * limit;
 
+  let filter = {};
+  if (email) {
+    filter = { email };
+  }
+
     const [total, unread, notices] = await Promise.all([
-      Notice.countDocuments(),
-      Notice.countDocuments({ status: false }),
-      Notice.find().skip(skip).limit(limit).sort({ createdAt: -1 }),
+      // use the same filter for total so when email is provided we count only that user's notices
+      Notice.countDocuments(filter),
+      Notice.countDocuments({ ...filter, status: false }),
+      Notice.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 }),
     ]);
 
 
