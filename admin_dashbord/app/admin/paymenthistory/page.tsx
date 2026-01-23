@@ -3,7 +3,6 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import { 
   Receipt, 
   CheckCircle2, 
@@ -478,6 +477,115 @@ function BillingHistoryPage() {
         title="Billing History"
         description="View and manage all your payment transactions"
         total={billingHistory.length}
+        extra={
+              <div>
+          
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <div>
+                <Select value={clientFilter} onValueChange={setClientFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Clients" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Clients</SelectItem>
+                    {clients.map((client: any) => (
+                      <SelectItem key={client._id || client.id} value={client.email}>
+                        {client.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Select value={filter} onValueChange={setFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="failed">Failed</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="refunded">Refunded</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={`w-full justify-start text-left font-normal ${!calendarStartDate && 'text-muted-foreground'}`}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {calendarStartDate ? format(calendarStartDate, 'PPP') : 'Pick a date'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={calendarStartDate}
+                      onSelect={(date) => {
+                        setCalendarStartDate(date);
+                        setStartDate(date ? format(date, 'yyyy-MM-dd') : '');
+                      }}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={`w-full justify-start text-left font-normal ${!calendarEndDate && 'text-muted-foreground'}`}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {calendarEndDate ? format(calendarEndDate, 'PPP') : 'Pick a date'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={calendarEndDate}
+                      onSelect={(date) => {
+                        setCalendarEndDate(date);
+                        setEndDate(date ? format(date, 'yyyy-MM-dd') : '');
+                      }}
+                      initialFocus
+                      disabled={(date) => calendarStartDate ? date < calendarStartDate : false}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="flex items-end">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setFilter('all');
+                    setClientFilter('all');
+                    setStartDate('');
+                    setEndDate('');
+                    setCalendarStartDate(undefined);
+                    setCalendarEndDate(undefined);
+                    setPage(1);
+                  }}
+                  className="w-full"
+                >
+                  Clear Filters
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </div>
+
+        }
       />
 
       <div className="space-y-6 p-6">
@@ -559,121 +667,7 @@ function BillingHistoryPage() {
         </div>
 
         {/* Filters */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
-              Filters
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              <div>
-                <label className="text-sm font-medium mb-2 block">Client</label>
-                <Select value={clientFilter} onValueChange={setClientFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Clients" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Clients</SelectItem>
-                    {clients.map((client: any) => (
-                      <SelectItem key={client._id || client.id} value={client.email}>
-                        {client.email}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium mb-2 block">Status</label>
-                <Select value={filter} onValueChange={setFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Statuses" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="failed">Failed</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="refunded">Refunded</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium mb-2 block">Start Date</label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={`w-full justify-start text-left font-normal ${!calendarStartDate && 'text-muted-foreground'}`}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {calendarStartDate ? format(calendarStartDate, 'PPP') : 'Pick a date'}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={calendarStartDate}
-                      onSelect={(date) => {
-                        setCalendarStartDate(date);
-                        setStartDate(date ? format(date, 'yyyy-MM-dd') : '');
-                      }}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium mb-2 block">End Date</label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={`w-full justify-start text-left font-normal ${!calendarEndDate && 'text-muted-foreground'}`}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {calendarEndDate ? format(calendarEndDate, 'PPP') : 'Pick a date'}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={calendarEndDate}
-                      onSelect={(date) => {
-                        setCalendarEndDate(date);
-                        setEndDate(date ? format(date, 'yyyy-MM-dd') : '');
-                      }}
-                      initialFocus
-                      disabled={(date) => calendarStartDate ? date < calendarStartDate : false}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="flex items-end">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setFilter('all');
-                    setClientFilter('all');
-                    setStartDate('');
-                    setEndDate('');
-                    setCalendarStartDate(undefined);
-                    setCalendarEndDate(undefined);
-                    setPage(1);
-                  }}
-                  className="w-full"
-                >
-                  Clear Filters
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+    
 
         {/* Transaction History */}
         <Card>

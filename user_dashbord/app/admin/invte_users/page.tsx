@@ -35,7 +35,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 import DeleteModel from '@/app/page/common/DeleteModel'
 import SpinnerComponent from '@/app/page/common/Spinner'
@@ -183,7 +182,7 @@ function Page() {
         description="Send invitations to new users by entering their email addresses below."
         buttonText="Invite New User"
         onButtonClick={() => setModalOpen(true)}
-        total={pagination.total}
+       
 
       />
       {/* Debug: show pagination state */}

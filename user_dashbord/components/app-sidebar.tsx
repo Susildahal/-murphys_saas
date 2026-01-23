@@ -152,7 +152,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }, [searchQuery])
 
   return (
-    <Sidebar collapsible="icon" {...props} className="border-r bg-gradient-to-b from-blue-600 via-blue-700 to-blue-800 dark:from-blue-600 dark:via-blue-700 dark:to-blue-800 text-white">
+    <Sidebar collapsible="icon" {...props} className="border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
@@ -161,20 +161,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           background: transparent;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.2);
+          background: rgba(148, 163, 184, 0.3);
           border-radius: 3px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.3);
+          background: rgba(148, 163, 184, 0.5);
         }
         .custom-scrollbar {
           scrollbar-width: thin;
-          scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+          scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
         }
       `}</style>
 
       {/* Fixed Header */}
-      <SidebarHeader className="border-b border-white/10 bg-blue-600/30 backdrop-blur-xl pb-4">
+      <SidebarHeader className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 pb-4">
         <motion.div
           className="flex h-14 items-center px-4 pt-2"
           animate={{
@@ -213,11 +213,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               transition={{ duration: 0.3, ease: "easeInOut" }}
             >
               <div className="relative group">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-700 dark:text-white/70 group-hover:text-slate-900 dark:group-hover:text-white transition-colors pointer-events-none" />
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors pointer-events-none" />
                 <Input
                   type="search"
                   placeholder="Search navigation..."
-                  className="h-9 pl-9 bg-white/10 border-white/20 text-slate-900 dark:text-white placeholder:text-slate-700 dark:placeholder:text-white/60 shadow-none hover:bg-white/15 focus-visible:bg-white/20 focus-visible:border-white/30 focus-visible:ring-2 focus-visible:ring-white/20 transition-all rounded-lg text-sm"
+                  className="h-9 pl-9 bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 shadow-none hover:bg-slate-200 dark:hover:bg-slate-800 focus-visible:bg-white dark:focus-visible:bg-slate-900 focus-visible:border-slate-300 dark:focus-visible:border-slate-700 focus-visible:ring-2 focus-visible:ring-slate-200 dark:focus-visible:ring-slate-800 transition-all rounded-lg text-sm"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -235,7 +235,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             transition={{ delay: 0.2, duration: 0.2 }}
           >
             <div className="relative flex justify-center py-2">
-              <Search className="h-5 w-5 text-slate-700 dark:text-white/70 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors" />
+              <Search className="h-5 w-5 text-slate-400 dark:text-slate-500 cursor-pointer hover:text-slate-600 dark:hover:text-slate-300 transition-colors" />
             </div>
           </motion.div>
         )}
@@ -253,9 +253,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               transition={{ duration: 0.2 }}
               className="flex flex-col items-center justify-center py-8 px-4 text-center"
             >
-              <Search className="h-12 w-12 text-slate-600 dark:text-white/40 mb-3" />
-              <p className="text-sm font-medium text-slate-800 dark:text-white/80">No navigation items found</p>
-              <p className="text-xs text-slate-700 dark:text-white/60 mt-1">Try a different search term</p>
+              <Search className="h-12 w-12 text-slate-300 dark:text-slate-700 mb-3" />
+              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">No navigation items found</p>
+              <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Try a different search term</p>
             </motion.div>
           ) : (
             <motion.div
@@ -274,7 +274,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
 
       {/* Fixed Footer */}
-      <SidebarFooter className="border-t border-white/10 bg-blue-600/30 backdrop-blur supports-[backdrop-filter]:bg-blue-600/20 p-2 mt-auto">
+      <SidebarFooter className="border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 p-2 mt-auto">
         <NavUser />
       </SidebarFooter>
 
