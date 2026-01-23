@@ -24,7 +24,7 @@ import { fetchServices } from '@/lib/redux/slices/serviceSlice';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import InvoiceView from '../../page/InvoiceView';
-import {fetchInvoices} from "../../../lib/redux/slices/invoiceSlicer"
+import { fetchInvoices } from "../../../lib/redux/slices/invoiceSlicer"
 
 
 
@@ -36,11 +36,11 @@ const page = () => {
     const meeState = useAppSelector((s) => s.mee);
     const currentUserEmail = meeState.data?.email || '';
     const currentUserId = meeState.data?.uid || '';
-    const [id ,setId] = useState<string | undefined>(undefined);
-    
+    const [id, setId] = useState<string | undefined>(undefined);
+
     // Data filtered by backend
     const rows = Array.isArray(data) ? data : (data ? [data] : []);
-        
+
     const [searchTerm, setSearchTerm] = React.useState('');
     const [debouncedSearch, setDebouncedSearch] = React.useState(searchTerm);
     const [pageNumber, setPageNumber] = React.useState(1);
@@ -140,7 +140,7 @@ const page = () => {
                                 }}
                             />
                         </div>
-                      
+
                         <Select value={selectedService} onValueChange={(val) => { setSelectedService(val); setPageNumber(1); }}>
                             <SelectTrigger className="w-[180px]">
                                 <SelectValue placeholder="All Services" />
@@ -173,15 +173,15 @@ const page = () => {
                                         {/* Service Image */}
                                         {service.service_image && (
                                             <div className="relative w-full h-48 overflow-hidden">
-                                                <Image 
-                                                    src={service.service_image} 
-                                                    alt={service.service_name || 'Service'} 
+                                                <Image
+                                                    src={service.service_image}
+                                                    alt={service.service_name || 'Service'}
                                                     fill
                                                     className="object-cover"
                                                 />
                                             </div>
                                         )}
-                                        
+
                                         <CardHeader className="pb-3">
                                             <div className="flex items-start justify-between">
                                                 <div className="flex-1">
@@ -192,13 +192,13 @@ const page = () => {
                                                         Invoice: {service.invoice_id || 'N/A'}
                                                     </CardDescription>
                                                 </div>
-                                                <Badge 
+                                                <Badge
                                                     variant={
-                                                        service.isaccepted === 'accepted' 
-                                                            ? 'default' 
-                                                            : service.isaccepted === 'pending' 
-                                                            ? 'outline' 
-                                                            : 'destructive'
+                                                        service.isaccepted === 'accepted'
+                                                            ? 'default'
+                                                            : service.isaccepted === 'pending'
+                                                                ? 'outline'
+                                                                : 'destructive'
                                                     }
                                                     className="ml-2"
                                                 >
@@ -206,7 +206,7 @@ const page = () => {
                                                 </Badge>
                                             </div>
                                         </CardHeader>
-                                        
+
                                         <CardContent className="space-y-4">
                                             {/* Price & Cycle */}
                                             <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-lg">
@@ -237,7 +237,7 @@ const page = () => {
                                                         </Badge>
                                                     )}
                                                 </div>
-                                                
+
                                                 {endDate && (
                                                     <div className="flex items-center gap-2">
                                                         <Clock className="h-4 w-4 text-muted-foreground" />
@@ -263,8 +263,8 @@ const page = () => {
                                                         </div>
                                                         <div className="space-y-2 pl-6">
                                                             {renewalDates.slice(0, 3).map((renewal: any, idx: number) => (
-                                                                <div 
-                                                                    key={renewal._id || idx} 
+                                                                <div
+                                                                    key={renewal._id || idx}
                                                                     className="flex items-center justify-between text-xs p-2 bg-muted/50 rounded"
                                                                 >
                                                                     <div className="flex flex-col">
@@ -279,7 +279,7 @@ const page = () => {
                                                                         <span className="font-semibold text-primary">
                                                                             ${renewal.price || 0}
                                                                         </span>
-                                                                        <Badge 
+                                                                        <Badge
                                                                             variant={renewal.haspaid ? 'default' : 'outline'}
                                                                             className="text-[10px] h-4 px-1 mt-0.5"
                                                                         >
@@ -309,36 +309,37 @@ const page = () => {
                                             )}
 
                                             {/* Action Button */}
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="w-full mt-2"
-                                                onClick={() => {
-                                                    dispatch(getAssignDetails({ 
-                                                        client_id: service.client_id, 
-                                                        service_catalog_id: service.service_catalog_id 
-                                                    }))
-                                                        .then((res: any) => {
-                                                            if (res.payload) {
-                                                                setDetailsData(res.payload);
-                                                                setDetailsOpen(true);
-                                                            }
-                                                        })
-                                                        .catch(() => {
-                                                            toast({
-                                                                title: 'Error',
-                                                                description: 'Failed to fetch service details.',
-                                                                variant: 'destructive',
-                                                            });
-                                                        })
-                                                }}
-                                            >
-                                                View Full Details
-                                            </Button>
+                                            <div className=' flex gap-2 '>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className=" w-[50%] "
+                                                    onClick={() => {
+                                                        dispatch(getAssignDetails({
+                                                            client_id: service.client_id,
+                                                            service_catalog_id: service.service_catalog_id
+                                                        }))
+                                                            .then((res: any) => {
+                                                                if (res.payload) {
+                                                                    setDetailsData(res.payload);
+                                                                    setDetailsOpen(true);
+                                                                }
+                                                            })
+                                                            .catch(() => {
+                                                                toast({
+                                                                    title: 'Error',
+                                                                    description: 'Failed to fetch service details.',
+                                                                    variant: 'destructive',
+                                                                });
+                                                            })
+                                                    }}
+                                                >
+                                                    View Full Details
+                                                </Button>
 
 
-                                            <Button onClick={() => viewInvoice(service._id)}> View Invoice  </Button>
-
+                                                <Button className=" w-[50%] " size="sm" onClick={() => viewInvoice(service._id)}> View Invoice  </Button>
+                                            </div>
                                         </CardContent>
                                     </Card>
                                 );
@@ -352,14 +353,14 @@ const page = () => {
                                     <div>
                                         <h3 className="text-lg font-semibold mb-2">No services assigned</h3>
                                         <p className="text-sm text-muted-foreground">
-                                            {searchTerm === '' 
-                                                ? 'You have no assigned services yet.' 
+                                            {searchTerm === ''
+                                                ? 'You have no assigned services yet.'
                                                 : (
                                                     <>
                                                         No services found for "<span className='font-bold'>{searchTerm}</span>"
-                                                        <RefreshCcw 
-                                                            className="inline-block ml-2 cursor-pointer hover:animate-spin" 
-                                                            onClick={handelreset} 
+                                                        <RefreshCcw
+                                                            className="inline-block ml-2 cursor-pointer hover:animate-spin"
+                                                            onClick={handelreset}
                                                         />
                                                     </>
                                                 )
@@ -509,7 +510,7 @@ const page = () => {
                                             <div className="text-2xl font-bold text-primary">
                                                 ${renewal.price || 0}
                                             </div>
-                                            <Badge 
+                                            <Badge
                                                 variant={renewal.haspaid ? 'default' : 'destructive'}
                                                 className="text-xs"
                                             >
@@ -520,7 +521,7 @@ const page = () => {
                                 </CardContent>
                             </Card>
                         ))}
-                        
+
                         {selectedRenewals.length === 0 && (
                             <div className="text-center py-8 text-muted-foreground">
                                 No renewal dates available
@@ -534,9 +535,9 @@ const page = () => {
             <Dialog open={invoiceModalOpen} onOpenChange={setInvoiceModalOpen}>
                 <DialogContent className="max-w-[95vw] md:max-w-[900px] max-h-[95vh] p-0 gap-0 overflow-hidden">
                     {invoiceData && (
-                        <InvoiceView 
-                            assignmentData={invoiceData} 
-                            onClose={() => setInvoiceModalOpen(false)} 
+                        <InvoiceView
+                            assignmentData={invoiceData}
+                            onClose={() => setInvoiceModalOpen(false)}
                         />
                     )}
                 </DialogContent>

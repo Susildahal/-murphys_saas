@@ -25,6 +25,7 @@ import { quillModules, quillFormats } from '@/lib/quillConfig'
 import { format } from 'date-fns'
 import Image from 'next/image'
 import 'react-quill/dist/quill.snow.css'
+import Header from '@/app/page/common/header'
 
 const problemTypes = [
   'Technical Issue',
@@ -189,7 +190,7 @@ export default function TicketDetailsPage() {
 
   if (!currentTicket) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-4xl mx-auto ">
         <Card>
           <CardContent className="pt-6">
             <p className="text-center text-muted-foreground">Ticket not found</p>
@@ -201,14 +202,13 @@ export default function TicketDetailsPage() {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <Button
-        variant="ghost"
-        onClick={() => router.back()}
-        className="mb-6"
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Back
-      </Button>
+      <Header
+
+        title="Ticket Details"
+        description="View and manage the details of this support ticket."
+      />
+
+ 
 
       <Card>
         <CardHeader>

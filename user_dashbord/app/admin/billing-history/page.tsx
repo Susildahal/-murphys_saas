@@ -407,13 +407,104 @@ function BillingHistoryPage() {
         title="Billing History"
         description="View and manage all your payment transactions"
         total={billingHistory.length}
+        extraInfo={    
+        <div>
+         
+          <div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div>
+                <Select value={filter} onValueChange={setFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="failed">Failed</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="refunded">Refunded</SelectItem>
+                  </SelectContent>
+                </Select>
+
+              </div>
+
+              <div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={`w-full justify-start text-left font-normal ${!calendarStartDate && 'text-muted-foreground'}`}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {calendarStartDate ? format(calendarStartDate, 'PPP') : 'Pick a date'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={calendarStartDate}
+                      onSelect={(date) => {
+                        setCalendarStartDate(date);
+                        setStartDate(date ? format(date, 'yyyy-MM-dd') : '');
+                      }}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={`w-full justify-start text-left font-normal ${!calendarEndDate && 'text-muted-foreground'}`}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {calendarEndDate ? format(calendarEndDate, 'PPP') : 'Pick a date'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={calendarEndDate}
+                      onSelect={(date) => {
+                        setCalendarEndDate(date);
+                        setEndDate(date ? format(date, 'yyyy-MM-dd') : '');
+                      }}
+                      initialFocus
+                      disabled={(date) => calendarStartDate ? date < calendarStartDate : false}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="flex items-end">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setFilter('all');
+                    setStartDate('');
+                    setEndDate('');
+                    setCalendarStartDate(undefined);
+                    setCalendarEndDate(undefined);
+                    setPage(1);
+                  }}
+                  className="w-full"
+                >
+                  Clear Filters
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>}
       />
 
-      <div className="space-y-6 p-6">
+      <div className="space-y-6 ">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-3">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center">
                   <CheckCircle2 className="h-6 w-6 text-emerald-600" />
@@ -430,7 +521,7 @@ function BillingHistoryPage() {
           </Card>
 
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-3">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950 flex items-center justify-center">
                   <XCircle className="h-6 w-6 text-red-600" />
@@ -449,7 +540,7 @@ function BillingHistoryPage() {
           </Card>
 
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-3">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-950 flex items-center justify-center">
                   <Clock className="h-6 w-6 text-amber-600" />
@@ -487,7 +578,7 @@ function BillingHistoryPage() {
           </Card>
         </div>
 
-        {/* Filters */}
+        {/* Filters
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -584,7 +675,7 @@ function BillingHistoryPage() {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Transaction History */}
         <Card>

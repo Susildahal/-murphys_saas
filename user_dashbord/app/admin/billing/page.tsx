@@ -7,7 +7,6 @@ import Header from '@/app/page/common/header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import { 
   CreditCard, 
   Calendar, 
@@ -308,7 +307,7 @@ function Page() {
                           </div>
                           <div className="flex items-center gap-4">
                             <span className="font-bold">${renewal.price}</span>
-                            {!renewal.haspaid && (
+                            {!renewal.haspaid ? (
                               <Button 
                                 variant="outline" 
                                 size="sm" 
@@ -322,6 +321,8 @@ function Page() {
                               >
                                 Pay
                               </Button>
+                            ) : (
+                              <Badge variant="secondary" className="text-[11px] uppercase">Paid</Badge>
                             )}
                           </div>
                         </div>

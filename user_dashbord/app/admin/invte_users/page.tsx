@@ -49,7 +49,17 @@ function Page() {
 
   const mee = useAppSelector((state: any) => state.mee.data);
   const { loading, items, pagination } = useAppSelector((s: any) => s.invite);
-  const data = items || [];
+  // Normalize items to always be an array so UI can safely call .map()
+  const normalizeItems = (raw: any) => {
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw;
+    // Some APIs return { data: [...] }
+    if (raw.data && Array.isArray(raw.data)) return raw.data;
+    // If a single object was returned, wrap it in an array
+    if (typeof raw === 'object') return [raw];
+    return [];
+  };
+  const data = normalizeItems(items);
   const [page, setPage] = useState<number>(pagination?.page || 1);
   // default to 10 items per page when pagination not yet available
   const [limit, setLimit] = useState<number>(pagination?.limit || 1);
@@ -64,9 +74,29 @@ function Page() {
   }, [dispatch, mee]);
 
   React.useEffect(() => {
-    if (!data || data.length === 0 || page !== pagination?.page || limit !== pagination?.limit)
-      dispatch(getinvite({ page, limit }));
-  }, [dispatch, page, limit]);
+    // Avoid making requests until we know the current user (mee) is available
+    if (!mee) return;
+
+    // Do not trigger another request while a fetch is already in progress
+    if (loading) return;
+
+    // Determine if items are present (handle array, { data: [] } or single object)
+    const hasItems = (() => {
+      if (!items) return false;
+      if (Array.isArray(items)) return items.length > 0;
+      if (items.data && Array.isArray(items.data)) return items.data.length > 0;
+      // if it's a single object assume data exists
+      return Object.keys(items).length > 0;
+    })();
+
+    const pageMismatch = pagination && typeof pagination.page === 'number' && pagination.page !== page;
+    const limitMismatch = pagination && typeof pagination.limit === 'number' && pagination.limit !== limit;
+
+    // Fetch if we have no items yet, or pagination state changed
+    if (!hasItems || pageMismatch || limitMismatch) {
+      dispatch(getinvite({ page, limit, email: mee?.email }));
+    }
+  }, [dispatch, page, limit, mee?.email]);
 
   // Sync local page/limit state when server pagination updates
   React.useEffect(() => {

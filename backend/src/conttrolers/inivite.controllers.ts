@@ -149,8 +149,12 @@ export const getInvites = async (req: Request, res: Response) => {
       }
       return res.status(200).json({ data: invite, message: "Invite retrieved successfully" });
     }
-    const total = await Invite.countDocuments( );
-    const invites = await Invite.find({ invite_type: 'invite' }).skip(skip).limit(limit);
+
+    const [total , invites] = await Promise.all([
+      Invite.countDocuments({ invite_type: 'invite' }),
+      Invite.find({ invite_type: 'invite' }).skip(skip).limit(limit)
+    ]);
+
     res.status(200).json({ data: invites, 
       pagination: {
         total,
