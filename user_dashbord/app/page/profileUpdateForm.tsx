@@ -47,14 +47,13 @@ const profileSchema = z.object({
   middleName: z.string().optional(),
   lastName: z.string().min(2, { message: 'Last name must be at least 2 characters' }),
   email: z.string().nullable(),
+  countryCode: z.string().optional(),
   phone: z.string().optional().refine((v) => {
     if (!v) return true;
     const digits = v.replace(/\D/g, '');
-    // convert leading country code to local 0 prefix if provided (e.g. 61412... -> 0412...)
-    const normalized = digits.startsWith('61') ? '0' + digits.slice(2) : digits;
-    // Australian mobiles should start with 04 and have 10 digits total (e.g. 0412345678)
-    return /^0?4\d{8}$/.test(normalized);
-  }, { message: 'Please enter a valid Australian mobile number (e.g. 0412 345 678 or +61 412 345 678)' }),
+    // Accept international numbers: require between 7 and 15 digits (basic check)
+    return digits.length >= 7 && digits.length <= 15;
+  }, { message: 'Please enter a valid phone number with country code (e.g. +61 412 345 678)' }),
   gender: z.string().optional(),
   dob: z.string().optional().refine((v) => {
     if (!v) return true;
@@ -89,6 +88,8 @@ export default function ProfileUpdateForm() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [dobOpen, setDobOpen] = useState(false);
   const [date, setDate] = useState<Date | undefined>(undefined);
+  const [countryCallingCodes, setCountryCallingCodes] = useState<Array<any>>([]);
+  const [countrySearch, setCountrySearch] = useState<string>('');
 
   
 
@@ -108,6 +109,7 @@ export default function ProfileUpdateForm() {
       lastName: '',
       email: '',
       phone: '',
+      countryCode: '+61',
       gender: '',
       dob: '',
       referralSource: '',
@@ -127,6 +129,7 @@ export default function ProfileUpdateForm() {
         lastName: pd.lastName || '',
         email: meeData?.email || pd.email || '',
         phone: pd.phone || '',
+        countryCode: pd.countryCode || '+61',
         gender: pd.gender || '',
         dob: pd.dob || '',
         referralSource: pd.referralSource || '',
@@ -140,6 +143,49 @@ export default function ProfileUpdateForm() {
       if (pd.dob) setDate(new Date(pd.dob));
     }
   }, [data, meeData, form]);
+
+
+  // Fetch country calling codes from public API (restcountries)
+  useEffect(() => {
+    let mounted = true;
+    const fetchCodes = async () => {
+      try {
+        const res = await fetch('https://restcountries.com/v3.1/all?fields=idd,name,cca2');
+        if (!res.ok) return;
+        const arr = await res.json();
+        const codes: any[] = [];
+        arr.forEach((c: any) => {
+          const root = c?.idd?.root;
+          const suffixes = Array.isArray(c?.idd?.suffixes) && c.idd.suffixes.length ? c.idd.suffixes : [''];
+          if (root) {
+            suffixes.forEach((s: string) => {
+              const raw = `${root}${s}`;
+              const formatted = raw.startsWith('+') ? raw : `+${raw}`;
+              codes.push({ code: formatted, name: c?.name?.common || c?.cca2, iso2: c?.cca2 });
+            });
+          }
+        });
+        // dedupe by code
+        const map = new Map<string, any>();
+        codes.forEach((it) => { if (!map.has(it.code)) map.set(it.code, it); });
+        const list = Array.from(map.values()).sort((a: any, b: any) => a.name.localeCompare(b.name));
+        if (mounted) {
+          setCountryCallingCodes(list);
+          // set a sensible default if none selected
+          const current = form.getValues('countryCode');
+          if (!current) {
+            const au = list.find((x: any) => x.iso2 === 'AU');
+            form.setValue('countryCode', au?.code || list[0]?.code || '+61');
+          }
+        }
+      } catch (e) {
+        // ignore
+        console.error('Failed to fetch country codes', e);
+      }
+    };
+    fetchCodes();
+    return () => { mounted = false; };
+  }, [form]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -155,9 +201,16 @@ export default function ProfileUpdateForm() {
   const onSubmit = async (formData: ProfileFormData) => {
     try {
       const email = meeData?.email || formData.email || '';
+      // combine country code and phone into a single phone value for backend
+      const code = (formData as any).countryCode || form.getValues('countryCode') || '';
+      const phoneVal = formData.phone ? `${code} ${formData.phone}`.trim() : undefined;
+
+      const payload: any = { ...formData, email };
+      if (phoneVal) payload.phone = phoneVal;
+
       const fd = new FormData();
-      Object.entries({ ...formData, email }).forEach(([key, value]) => {
-        if (value) fd.append(key, String(value));
+      Object.entries(payload).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) fd.append(key, String(value));
       });
       if (imageFile) fd.append('profile_image', imageFile);
 
@@ -209,6 +262,25 @@ export default function ProfileUpdateForm() {
   }
 
   return digits
+}
+
+// General phone formatter aware of selected country code
+const formatPhone = (value: string, countryCode = '+61') => {
+  let digits = value.replace(/\D/g, '');
+
+  // If Australian country code or local mobile, format as 04xx xxx xxx
+  if (countryCode === '+61' || digits.startsWith('61') || digits.startsWith('04') || digits.startsWith('4')) {
+    if (digits.startsWith('61')) digits = '0' + digits.slice(2);
+    if (digits.length === 9 && digits.startsWith('4')) digits = '0' + digits;
+    if (digits.length > 10) digits = digits.slice(0, 10);
+    if (digits.length > 4 && digits.length <= 7) return `${digits.slice(0, 4)} ${digits.slice(4)}`;
+    if (digits.length > 7) return `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7, 10)}`;
+    return digits;
+  }
+
+  // Generic grouping: groups of 3 from start
+  if (digits.length > 12) digits = digits.slice(0, 15);
+  return digits.replace(/(\d{3})(?=\d)/g, '$1 ').trim();
 }
 
 
@@ -472,22 +544,103 @@ export default function ProfileUpdateForm() {
 <FormField
   control={form.control}
   name="phone"
+  
   render={({ field }) => (
     <FormItem>
       <FormLabel>Mobile Number</FormLabel>
 
       <FormControl>
-        <Input
-          {...field}
-          type="tel"
-          placeholder="0412 345 678"
-          inputMode="numeric"
-          className="bg-muted/50 border-none"
-          onChange={(e) => {
-            const formatted = formatAusMobile(e.target.value)
-            field.onChange(formatted)
-          }}
-        />
+        <div className="flex items-center gap-3">
+          <div className="w-36">
+            <Select value={form.watch('countryCode') || '+61'} onValueChange={(val) => form.setValue('countryCode', val)}>
+              <SelectTrigger className="w-full bg-muted/50 border-none text-sm pr-4">
+                <SelectValue />
+              </SelectTrigger>
+              {/* Dropdown with search at top (sticky) */}
+              <SelectContent className="p-0" position="popper" align="start">
+                {/* Sticky search bar at top */}
+                <div className="sticky top-0 z-10 bg-popover border-b border-border p-3">
+                  <Input
+                    placeholder="Search country or code..."
+                    value={countrySearch}
+                    onChange={(e) => setCountrySearch(e.target.value)}
+                    className="w-full bg-background text-sm py-2 rounded-md"
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                  />
+                </div>
+
+                {/* Scrollable country list */}
+                <div className="max-h-64 overflow-y-auto p-1">
+                  {countryCallingCodes.length === 0 ? (
+                    <SelectItem value="+61">+61 (Default)</SelectItem>
+                  ) : (
+                    countryCallingCodes
+                      .filter((c) => {
+                        if (!countrySearch) return true;
+                        const q = countrySearch.toLowerCase();
+                        return String(c.name).toLowerCase().includes(q) || String(c.code).toLowerCase().includes(q) || String(c.iso2).toLowerCase().includes(q);
+                      })
+                      .map((c) => (
+                        <SelectItem key={c.code + c.iso2} value={c.code}>{c.code} ({c.name})</SelectItem>
+                      ))
+                  )}
+                  {countryCallingCodes.length > 0 && 
+                   countryCallingCodes.filter((c) => {
+                     if (!countrySearch) return true;
+                     const q = countrySearch.toLowerCase();
+                     return String(c.name).toLowerCase().includes(q) || String(c.code).toLowerCase().includes(q) || String(c.iso2).toLowerCase().includes(q);
+                   }).length === 0 && (
+                    <div className="px-3 py-6 text-center text-sm text-muted-foreground">
+                      No countries found
+                    </div>
+                  )}
+                </div>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Input
+            {...field}
+            type="tel"
+            placeholder="412 345 678"
+            inputMode="numeric"
+            className="flex-1 bg-muted/50 border-none"
+            onChange={(e) => {
+              const raw = e.target.value || '';
+              
+              // Only detect country code if user types "+" at the start
+              if (raw.startsWith('+') && countryCallingCodes && countryCallingCodes.length) {
+                const normalized = raw.replace(/\s+/g, '');
+                let matchedCode: string | undefined;
+                
+                // Try longest-first match (e.g. +1, +44, +965)
+                const codesSorted = [...countryCallingCodes].sort((a, b) => b.code.length - a.code.length);
+                for (const c of codesSorted) {
+                  const codeStr = String(c.code);
+                  if (normalized.startsWith(codeStr)) {
+                    matchedCode = codeStr;
+                    break;
+                  }
+                }
+                
+                if (matchedCode) {
+                  // Extract phone number after the country code
+                  let remainder = normalized.slice(matchedCode.length);
+                  form.setValue('countryCode', matchedCode);
+                  const formatted = formatPhone(remainder, matchedCode);
+                  field.onChange(formatted);
+                  return;
+                }
+              }
+              
+              // Normal formatting without country code detection
+              const code = form.getValues('countryCode') || '+61';
+              const formatted = formatPhone(raw, code);
+              field.onChange(formatted);
+            }}
+          />
+        </div>
       </FormControl>
 
       <FormMessage />

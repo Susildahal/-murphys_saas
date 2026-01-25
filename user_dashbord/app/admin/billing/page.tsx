@@ -252,7 +252,7 @@ function Page() {
 
         {/* Services List - Simple UI */}
         <section className="space-y-4">
-          <h2 className="text-lg font-bold tracking-tight">Service History</h2>
+          {/* <h2 className="text-lg font-bold tracking-tight">Service History</h2> */}
           {billingInfo.length === 0 && !loading ? (
              <Card className="border-dashed shadow-none py-12 text-center">
                 <Info className="h-8 w-8 mx-auto text-muted-foreground mb-2" />

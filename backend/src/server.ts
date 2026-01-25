@@ -5,12 +5,16 @@ dotenv.config();
 
 import app from "./index";
 import connectDB from "./config/connectdb";
+import { startRenewalReminderScheduler } from "./services/renewalScheduler";
 
 const PORT = Number(process.env.PORT) || 5000;
 
 connectDB().then(() => {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
+    
+    // Start renewal reminder scheduler
+    startRenewalReminderScheduler();
   });
 }).catch((error) => {
   console.error("Failed to connect to the database", error);

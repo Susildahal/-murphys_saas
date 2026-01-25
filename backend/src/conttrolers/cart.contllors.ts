@@ -1,6 +1,5 @@
 import Cart from '../models/cart.model';
 import { Request, Response } from 'express';
-import service from '../models/service.model';
 import Profile from '../models/profile.model';
 
 // Add service to cart
@@ -52,9 +51,7 @@ export const getCartByUserId = async (req: Request, res: Response) => {
             Cart.countDocuments({ userid }),
             Cart.findOne({ userid }).populate('Services.serviceId')
         ]);
-        if (!cart) {
-            return res.status(404).json({ message: 'Cart not found' });
-        }
+       
         res.status(200).json({
             cart,
             pagination: {

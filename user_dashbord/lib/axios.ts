@@ -91,9 +91,8 @@ axiosInstance.interceptors.response.use(
       // You could trigger a logout here if needed
     } else if (error.response?.status === 403) {
       showErrorToast('You do not have permission to perform this action.', 'Access Denied');
-    } else if (error.response?.status === 404) {
-      showErrorToast('The requested resource was not found.', 'Not Found');
-    } else if (error.response?.status === 500) {
+    } 
+     else if (error.response?.status === 500) {
       showErrorToast('Something went wrong on the server. Please try again later.', 'Server Error');
     } else if (error.response?.data?.message) {
       showErrorToast(error.response.data.message, 'Error');

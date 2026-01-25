@@ -6,6 +6,8 @@ import transporter from "../config/nodemiller";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import mongoose from 'mongoose';
+import twilioClient from "../config/twilio";
+import NotificationService from "../services/notificationService";
 dotenv.config()
 
 interface JwtPayload {
@@ -197,9 +199,12 @@ export const getAllAssignedServices = async (req: Request, res: Response) => {
               '$client_name',
             ],
           },
-          service_name: { $ifNull: ['$service.name', '$service_name'] },
+          service_name: { $ifNull: ['$service.name', '$service_name' ] },
+          service_description: { $ifNull: ['$service.description', '$service_description' ] },
+          service_image : { $ifNull: ['$service.image', '$service_image' ]
         },
       },
+    },
 
       { $project: { client: 0, service: 0 } },
       { $skip: skip },
@@ -342,6 +347,22 @@ export const updateAssignedService = async (req: Request, res: Response) => {
         { new: true }
       );
 
+      // Send notification for new renewal
+      if (pushed) {
+        const clientProfile = await Profile.findById(pushed.client_id);
+        if (clientProfile) {
+          await NotificationService.notifyNewRenewal({
+            email: pushed.email,
+            phone: clientProfile.phone || undefined,
+            clientName: pushed.client_name,
+            serviceName: pushed.service_name,
+            renewalLabel: renewal_label,
+            renewalDate: renewalDateStr,
+            renewalPrice: Number(renewal_price)
+          }).catch(err => console.error('Notification error:', err));
+        }
+      }
+
       return res.status(200).json({
         data: pushed,
         message: 'Renewal date added successfully',
@@ -377,6 +398,57 @@ export const deleteAssignedService = async (req: Request, res: Response) => {
     res.status(200).json({ data: assignedService, message: 'Assigned service deleted successfully' });
   }
   catch (error) {
+    res.status(400).json({ message: (error as Error).message });
+  }
+};
+
+/**
+ * Mark renewal as paid and send notification
+ */
+export const markRenewalAsPaid = async (req: Request, res: Response) => {
+  try {
+    const { id, renewal_id } = req.params;
+    
+    const assignedService = await AssignService.findById(id);
+    if (!assignedService) {
+      return res.status(404).json({ message: 'Assigned service not found' });
+    }
+
+    const renewal = assignedService.renewal_dates?.find((r: any) => String(r._id) === String(renewal_id));
+    if (!renewal) {
+      return res.status(404).json({ message: 'Renewal not found' });
+    }
+
+    // Update renewal to paid
+    const updated = await AssignService.findOneAndUpdate(
+      { _id: id, 'renewal_dates._id': renewal_id },
+      { $set: { 'renewal_dates.$.haspaid': true } },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Failed to update renewal' });
+    }
+
+    // Send payment confirmation notification
+    const clientProfile = await Profile.findById(updated.client_id);
+    if (clientProfile && renewal.label && renewal.date && renewal.price !== null && renewal.price !== undefined) {
+      await NotificationService.notifyRenewalPaid({
+        email: updated.email,
+        phone: clientProfile.phone || undefined,
+        clientName: updated.client_name,
+        serviceName: updated.service_name,
+        renewalLabel: renewal.label,
+        renewalDate: renewal.date.toISOString(),
+        renewalPrice: renewal.price
+      }).catch(err => console.error('Notification error:', err));
+    }
+
+    res.status(200).json({
+      data: updated,
+      message: 'Renewal marked as paid and notifications sent'
+    });
+  } catch (error) {
     res.status(400).json({ message: (error as Error).message });
   }
 };

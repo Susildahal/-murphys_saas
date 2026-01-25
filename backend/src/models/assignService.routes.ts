@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 const assignServiceSchema = new mongoose.Schema({
     invoice_id:{ type:String, required:true },
     client_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Profile', required: true },
-    assign_by:{ ennum: ['admin', 'user'], type: String, required: true },
+    assign_by:{ ennum: ['admin', 'user'], type: String , default: 'admin' },
     client_name: { type: String, required: true },
     service_catalog_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Service', required: true },
     service_name: { type: String, required: true },

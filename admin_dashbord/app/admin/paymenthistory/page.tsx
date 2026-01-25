@@ -10,7 +10,6 @@ import {
   Clock,
   DollarSign,
   Calendar as CalendarIcon,
-  Filter,
   Download,
   FileText,
   Trash2
