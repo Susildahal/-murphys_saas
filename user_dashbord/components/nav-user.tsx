@@ -50,8 +50,11 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { useEffect, useState } from "react"
-import { fetchProfile } from "@/lib/redux/slices/profileSlice"
+import {
+  fetchProfileByEmail
+} from "@/lib/redux/slices/profileSlice"
 import Link from "next/link"
+import { getMee } from "@/lib/redux/slices/meeSlice"
 
 export function NavUser() {
   const { isMobile } = useSidebar()
@@ -59,16 +62,8 @@ export function NavUser() {
   const profileState = useAppSelector((state) => state.profile)
   const dispatch = useAppDispatch()
   const profile = Array.isArray(profileState.profile) ? profileState.profile[0] : profileState.profile
-
-  const [showLogoutDialog, setShowLogoutDialog] = useState(false)
-
-  const userName = profile?.name || profile?.firstName && profile?.lastName
-    ? `${profile.firstName} ${profile.lastName}`.trim()
-    : "User"
-  const userEmail = profile?.email || getAuth().currentUser?.email || "Not available"
-  const userAvatar = profile?.profile_image || ""
-  const userRole = profile?.role_type || "User"
-
+  const meeState = useAppSelector((state) => state.mee)
+  const mee = meeState?.data
 
   const getInitials = (name: string) => {
     return name
@@ -78,6 +73,22 @@ export function NavUser() {
       .toUpperCase()
       .slice(0, 2) || 'U'
   }
+
+  const userName = profile?.name || profile?.firstName && profile?.lastName
+    ? `${profile.firstName} ${profile.lastName}`.trim()
+    : "User"
+  const userEmail = profile?.email || getAuth().currentUser?.email || "Not available"
+  const userAvatar = profile?.profile_image || ""
+  const userRole = profile?.role_type || "User"
+
+  useEffect(() => {
+    if (!mee && userEmail !== "Not available") {
+      dispatch(getMee())
+    }
+  }, [dispatch, userEmail, mee])
+
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false)
+
 
   const handleLogout = async () => {
     try {
@@ -89,7 +100,7 @@ export function NavUser() {
   }
   const getProfile = async () => {
     // Dispatch an action to fetch the profile data
-    await dispatch(fetchProfile({ page: 1, limit: 1 })).unwrap()
+    await dispatch(fetchProfileByEmail(userEmail)).unwrap()
   }
 
   useEffect(() => {

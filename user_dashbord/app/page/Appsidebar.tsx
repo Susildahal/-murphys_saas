@@ -18,7 +18,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { ShoppingCart ,Bell } from "lucide-react"
+import { Bell } from "lucide-react"
 import { useEffect } from "react"
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { fetchNotices } from "@/lib/redux/slices/noticSlicer"
@@ -33,15 +33,7 @@ export default function Sidebar({ children }: SidebarProps) {
   const pathSegments = pathname.split('/').filter(Boolean)
   const currentPage = pathSegments[pathSegments.length - 1]
   const formattedPage = currentPage ? currentPage.charAt(0).toUpperCase() + currentPage.slice(1) : 'Dashboard'
-  const data = {
-    user: {
-      name: "",
-      email: "",
-      avatar: "/avatars/shadcn.jpg",
 
-    },
-
-  }
   const dispatch = useAppDispatch();
   const { notices, unreadCount } = useAppSelector((state) => state.notices);
 

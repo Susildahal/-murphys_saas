@@ -351,9 +351,8 @@ export default function DashboardPage() {
                                 </div>
                                 <p className="font-medium">No services found</p>
                                 <p className="text-sm max-w-xs mx-auto mb-4 opacity-70">You don't have any active services yet. Start by browsing our catalog.</p>
-                                <Link href="/admin/services/create">
                                   <Button size="sm">Browse Services</Button>
-                                </Link>
+                                
                               </div>
                             </TableCell>
                           </TableRow>
