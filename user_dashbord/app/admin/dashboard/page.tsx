@@ -121,10 +121,10 @@ export default function DashboardPage() {
 
   const quickActions = [
     {
-      title: "New Service",
-      desc: "Request a new service",
+      title: "Billing",
+      desc: "Billing History",
       icon: PlusCircle,
-      href: "/admin/services/create",
+      href: "/admin/billing",
       color: "text-emerald-500",
       bg: "hover:bg-emerald-500/10"
     },

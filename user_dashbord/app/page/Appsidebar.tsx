@@ -18,7 +18,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { ShoppingCart } from "lucide-react"
+import { ShoppingCart ,Bell } from "lucide-react"
 import { useEffect } from "react"
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { fetchNotices } from "@/lib/redux/slices/noticSlicer"
@@ -79,11 +79,11 @@ export default function Sidebar({ children }: SidebarProps) {
           <div className="flex items-center gap-2">
 
             <Link
-              href="/admin/notifications"
+              href="/admin/contract_messages"
               className="relative inline-flex items-center"
             >
               {/* Bell Icon */}
-              <ShoppingCart className="h-5 w-5 cursor-pointer transition-colors duration-200 hover:text-blue-600" />
+              <Bell className="h-5 w-5 cursor-pointer transition-colors duration-200 hover:text-blue-600" />
 
               {/* Unread Count Badge */}
               {unreadCount > 0 && (
