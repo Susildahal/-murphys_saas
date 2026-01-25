@@ -151,10 +151,6 @@ export function NavUser() {
                   <User className="h-4 w-4 mr-2" />
                   <span>My Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/admin/settings')} className="cursor-pointer py-2.5">
-                  <Settings className="h-4 w-4 mr-2" />
-                  <span>Settings</span>
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push('/admin/change_password')} className="cursor-pointer py-2.5">
                   <Settings className="h-4 w-4 mr-2" />
                   <span>Change Password</span>

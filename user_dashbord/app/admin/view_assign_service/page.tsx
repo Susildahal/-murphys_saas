@@ -44,8 +44,6 @@ const page = () => {
     const [debouncedSearch, setDebouncedSearch] = React.useState(searchTerm);
     const [pageNumber, setPageNumber] = React.useState(1);
     const [limitNumber, setLimitNumber] = React.useState(10);
-    const [detailsOpen, setDetailsOpen] = React.useState(false);
-    const [detailsData, setDetailsData] = React.useState<any>(null);
     const [renewalsModalOpen, setRenewalsModalOpen] = useState(false);
     const [selectedRenewals, setSelectedRenewals] = useState<any[]>([]);
     const [invoiceModalOpen, setInvoiceModalOpen] = useState(false);
@@ -105,11 +103,6 @@ const page = () => {
             await dispatch(fetchInvoices(invoiceId)).unwrap();
             setInvoiceModalOpen(true);
         } catch (error) {
-            toast({
-                title: 'Error',
-                description: 'Failed to fetch invoice data.',
-                variant: 'destructive',
-            });
         }
     }
 
@@ -157,10 +150,10 @@ const page = () => {
                 }
             />
 
-            <div className="border-none bg-none overflow-hidden">
+            <div className="space-y-4">
                 <div className="p-0">
                     {rows && rows.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="space-y-4">
                             {rows.map((service: any, index) => {
                                 const assignedDate = service.start_date || service.assignedDate || service.createdAt;
                                 const endDate = service.end_date;
@@ -168,233 +161,212 @@ const page = () => {
                                 const renewalDates = service.renewal_dates || [];
                                 
                                 // Calculate renewal statistics
+                                const servicePrice = Number(service.price || 0);
                                 const totalRenewalAmount = renewalDates.reduce((sum: number, r: any) => sum + (Number(r.price) || 0), 0);
                                 const paidCount = renewalDates.filter((r: any) => r.haspaid).length;
                                 const unpaidCount = renewalDates.length - paidCount;
                                 const paidAmount = renewalDates.filter((r: any) => r.haspaid).reduce((sum: number, r: any) => sum + (Number(r.price) || 0), 0);
-                                const unpaidAmount = totalRenewalAmount - paidAmount;
+                                const remainingAmount = servicePrice - paidAmount;
+                                const unpaidRenewalAmount = totalRenewalAmount - paidAmount;
+                                const collectedPercentage = servicePrice > 0 ? (paidAmount / servicePrice) * 100 : 0;
 
                                 return (
-                                    <Card key={service._id ?? service.id} className="hover:shadow-lg transition-all duration-300 border-border/60 overflow-hidden">
-                                        {/* Service Image */}
-                                        {service.service_image && (
-                                            <div className="relative w-full h-48 overflow-hidden">
-                                                <Image
-                                                    src={service.service_image}
-                                                    alt={service.service_name || 'Service'}
-                                                    fill
-                                                    className="object-cover"
-                                                />
-                                            </div>
-                                        )}
-
-                                        <CardHeader className="pb-3">
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex-1">
-                                                    <CardTitle className="text-lg line-clamp-1">
-                                                        {service.service_name || service.serviceName || '-'}
-                                                    </CardTitle>
-                                                    <CardDescription className="mt-1">
-                                                        Invoice: {service.invoice_id || 'N/A'}
-                                                    </CardDescription>
-                                                </div>
-                                                <Badge
-                                                    variant={
-                                                        service.isaccepted === 'accepted'
-                                                            ? 'default'
-                                                            : service.isaccepted === 'pending'
-                                                                ? 'outline'
-                                                                : 'destructive'
-                                                    }
-                                                    className="ml-2"
-                                                >
-                                                    {service.isaccepted ?? service.status ?? '-'}
-                                                </Badge>
-                                            </div>
-                                        </CardHeader>
-
-                                        <CardContent className="space-y-4">
-                                            {/* Price & Cycle */}
-                                            <div className="flex items-center gap-2 p-3 bg-primary/5 rounded-lg">
-                                                <DollarSign className="h-5 w-5 text-primary" />
-                                                <div className="flex-1">
-                                                    <div className="text-2xl font-bold text-primary">
-                                                        ${service.price ?? '-'}
-                                                    </div>
-                                                    <div className="text-xs text-muted-foreground capitalize">
-                                                        {service.cycle || 'one-time'}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <Separator />
-
-                                            {/* Dates */}
-                                            <div className="space-y-2 text-sm">
-                                                <div className="flex items-center gap-2">
-                                                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                                                    <span className="text-muted-foreground">Start:</span>
-                                                    <span className="font-medium">
-                                                        {assignedDate ? new Date(String(assignedDate)).toLocaleDateString() : '-'}
-                                                    </span>
-                                                    {daysAgo && (
-                                                        <Badge variant="secondary" className="text-xs ml-auto">
-                                                            {daysAgo}
-                                                        </Badge>
-                                                    )}
-                                                </div>
-
-                                                {endDate && (
-                                                    <div className="flex items-center gap-2">
-                                                        <Clock className="h-4 w-4 text-muted-foreground" />
-                                                        <span className="text-muted-foreground">End:</span>
-                                                        <span className="font-medium">
-                                                            {new Date(String(endDate)).toLocaleDateString()}
-                                                        </span>
+                                    <div key={service._id ?? service.id} className="bg-white dark:bg-zinc-900 rounded-lg shadow hover:shadow-lg transition-shadow duration-200">
+                                        {/* Header */}
+                                        <div className="px-6 py-5">
+                                            <div className="flex items-start gap-4">
+                                                {service.service_image && (
+                                                    <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-800 shrink-0">
+                                                        <Image
+                                                            src={service.service_image}
+                                                            alt={service.service_name || 'Service'}
+                                                            width={48}
+                                                            height={48}
+                                                            className="w-full h-full object-cover"
+                                                        />
                                                     </div>
                                                 )}
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className="text-xl font-normal text-gray-900 dark:text-gray-100 mb-1 truncate">
+                                                        {service.service_name || service.serviceName || '-'}
+                                                    </h3>
+                                                    <div className="flex items-center gap-3 flex-wrap">
+                                                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                                                            {service.invoice_id || 'N/A'}
+                                                        </span>
+                                                        <span className="text-gray-300 dark:text-gray-600">•</span>
+                                                        <span className="text-sm text-gray-600 dark:text-gray-400 capitalize">
+                                                            {service.cycle || 'one-time'}
+                                                        </span>
+                                                        {daysAgo && (
+                                                            <>
+                                                                <span className="text-gray-300 dark:text-gray-600">•</span>
+                                                                <span className="text-sm text-gray-600 dark:text-gray-400">{daysAgo}</span>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="text-right shrink-0">
+                                                    <div className="text-2xl font-normal text-gray-900 dark:text-gray-100">
+                                                        ${servicePrice.toFixed(2)}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                                                        {service.isaccepted === 'accepted' || service.isaccepted === 'running' 
+                                                            ? <span className="text-green-600 dark:text-green-400">Active</span>
+                                                            : service.isaccepted === 'pending' 
+                                                                ? <span className="text-amber-600 dark:text-amber-400">Pending</span>
+                                                                : <span className="text-red-600 dark:text-red-400">Inactive</span>
+                                                        }
+                                                    </div>
+                                                </div>
                                             </div>
+                                        </div>
 
-                                            {/* Renewal Dates */}
-                                            {renewalDates.length > 0 && (
-                                                <>
-                                                    <Separator />
-                                                    <div className="space-y-3">
-                                                        <div className="flex items-center gap-2 text-sm font-semibold">
-                                                            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                                                            Renewal Schedule
-                                                            <Badge variant="secondary" className="ml-auto">
-                                                                {renewalDates.length} Total
-                                                            </Badge>
+                                        {/* Payment Progress */}
+                                        {renewalDates.length > 0 && (
+                                            <>
+                                                <div className="border-t border-gray-100 dark:border-zinc-800 px-6 py-5">
+                                                    {/* Progress Section */}
+                                                    <div className="mb-5">
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                                                                Payment progress
+                                                            </span>
+                                                            <span className="text-sm text-gray-900 dark:text-gray-100 font-medium">
+                                                                {collectedPercentage.toFixed(0)}%
+                                                            </span>
                                                         </div>
-                                                        
-                                                        {/* Renewal Statistics Grid */}
-                                                        <div className="grid grid-cols-2 gap-2">
-                                                            <div className="p-2.5 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                                                                <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium uppercase">Paid</div>
-                                                                <div className="flex items-baseline gap-1 mt-0.5">
-                                                                    <span className="text-lg font-bold text-emerald-700 dark:text-emerald-300">{paidCount}</span>
-                                                                    <span className="text-xs text-emerald-600 dark:text-emerald-400">/ {renewalDates.length}</span>
-                                                                </div>
-                                                                <div className="text-xs font-semibold text-emerald-700 dark:text-emerald-300 mt-0.5">
-                                                                    ${paidAmount.toFixed(2)}
-                                                                </div>
-                                                            </div>
-                                                            
-                                                            <div className="p-2.5 bg-orange-50 dark:bg-orange-950/30 rounded-lg border border-orange-200 dark:border-orange-800">
-                                                                <div className="text-[10px] text-orange-600 dark:text-orange-400 font-medium uppercase">Unpaid</div>
-                                                                <div className="flex items-baseline gap-1 mt-0.5">
-                                                                    <span className="text-lg font-bold text-orange-700 dark:text-orange-300">{unpaidCount}</span>
-                                                                    <span className="text-xs text-orange-600 dark:text-orange-400">/ {renewalDates.length}</span>
-                                                                </div>
-                                                                <div className="text-xs font-semibold text-orange-700 dark:text-orange-300 mt-0.5">
-                                                                    ${unpaidAmount.toFixed(2)}
-                                                                </div>
-                                                            </div>
+                                                        <div className="h-1 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                                            <div 
+                                                                className="h-full bg-blue-600 dark:bg-blue-500 rounded-full transition-all duration-300"
+                                                                style={{ width: `${Math.min(collectedPercentage, 100)}%` }}
+                                                            />
                                                         </div>
-
-                                                        {/* Total Amount */}
-                                                        <div className="p-3 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/20">
-                                                            <div className="flex items-center justify-between">
-                                                                <span className="text-xs font-medium text-muted-foreground">Total Renewal Value</span>
-                                                                <div className="flex flex-col items-end">
-                                                                    <span className="text-2xl font-bold text-primary">${totalRenewalAmount.toFixed(2)}</span>
-                                                                    <span className="text-[10px] text-muted-foreground">
-                                                                        {((paidCount / renewalDates.length) * 100).toFixed(0)}% Collected
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                            {/* Progress bar */}
-                                                            <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
-                                                                <div 
-                                                                    className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 transition-all duration-500"
-                                                                    style={{ width: `${(paidCount / renewalDates.length) * 100}%` }}
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                        
-                                                        {/* Renewal Items Preview */}
-                                                        <div className="space-y-2">
-                                                            {renewalDates.slice(0, 2).map((renewal: any, idx: number) => (
-                                                                <div
-                                                                    key={renewal._id || idx}
-                                                                    className="flex items-center justify-between text-xs p-2.5 bg-gradient-to-r from-muted/50 to-muted/30 rounded-lg border border-border/50 hover:border-primary/30 transition-colors"
-                                                                >
-                                                                    <div className="flex flex-col gap-0.5">
-                                                                        <span className="font-semibold capitalize text-foreground">
-                                                                            {renewal.label || `Renewal ${idx + 1}`}
-                                                                        </span>
-                                                                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                                                                            <Calendar className="h-2.5 w-2.5" />
-                                                                            {renewal.date ? new Date(renewal.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
-                                                                        </span>
-                                                                    </div>
-                                                                    <div className="flex flex-col items-end gap-1">
-                                                                        <span className="font-bold text-primary text-sm">
-                                                                            ${renewal.price || 0}
-                                                                        </span>
-                                                                        <Badge
-                                                                            variant={renewal.haspaid ? 'default' : 'destructive'}
-                                                                            className="text-[9px] h-4 px-1.5"
-                                                                        >
-                                                                            {renewal.haspaid ? '✓ Paid' : '✗ Due'}
-                                                                        </Badge>
-                                                                    </div>
-                                                                </div>
-                                                            ))}
-                                                            {renewalDates.length > 2 && (
-                                                                <Button
-                                                                    variant="outline"
-                                                                    size="sm"
-                                                                    className="w-full text-xs mt-2 border-dashed hover:border-solid hover:bg-primary/5"
-                                                                    onClick={() => {
-                                                                        setSelectedRenewals(renewalDates);
-                                                                        setRenewalsModalOpen(true);
-                                                                    }}
-                                                                >
-                                                                    <Eye className="h-3 w-3 mr-1.5" />
-                                                                    View All {renewalDates.length} Renewals
-                                                                </Button>
-                                                            )}
+                                                        <div className="flex items-center justify-between mt-1.5">
+                                                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                ${paidAmount.toFixed(2)} collected
+                                                            </span>
+                                                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                                {remainingAmount > 0 ? `$${remainingAmount.toFixed(2)} remaining` : 'Complete'}
+                                                            </span>
                                                         </div>
                                                     </div>
-                                                </>
-                                            )}
 
-                                            {/* Action Button */}
-                                            <div className=' flex gap-2 '>
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className=" w-[50%] "
-                                                    onClick={() => {
-                                                        dispatch(getAssignDetails({
-                                                            client_id: service.client_id,
-                                                            service_catalog_id: service.service_catalog_id
-                                                        }))
-                                                            .then((res: any) => {
-                                                                if (res.payload) {
-                                                                    setDetailsData(res.payload);
-                                                                    setDetailsOpen(true);
-                                                                }
-                                                            })
-                                                            .catch(() => {
-                                                                toast({
-                                                                    title: 'Error',
-                                                                    description: 'Failed to fetch service details.',
-                                                                    variant: 'destructive',
-                                                                });
-                                                            })
-                                                    }}
-                                                >
-                                                    View Full Details
-                                                </Button>
+                                                    {/* Stats Grid */}
+                                                    <div className="grid grid-cols-4 gap-4 mb-5">
+                                                        <div className="bg-gray-50 dark:bg-zinc-800/50 rounded-lg px-3 py-3">
+                                                            <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total renewals</div>
+                                                            <div className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                                                ${totalRenewalAmount.toFixed(0)}
+                                                            </div>
+                                                        </div>
+                                                        <div className="bg-gray-50 dark:bg-zinc-800/50 rounded-lg px-3 py-3">
+                                                            <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Items paid</div>
+                                                            <div className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                                                                {paidCount}/{renewalDates.length}
+                                                            </div>
+                                                        </div>
+                                                        <div className="bg-green-50 dark:bg-green-950/20 rounded-lg px-3 py-3">
+                                                            <div className="text-xs text-green-700 dark:text-green-400 mb-1">Paid</div>
+                                                            <div className="text-lg font-medium text-green-900 dark:text-green-300">
+                                                                ${paidAmount.toFixed(0)}
+                                                            </div>
+                                                        </div>
+                                                        <div className="bg-amber-50 dark:bg-amber-950/20 rounded-lg px-3 py-3">
+                                                            <div className="text-xs text-amber-700 dark:text-amber-400 mb-1">Pending</div>
+                                                            <div className="text-lg font-medium text-amber-900 dark:text-amber-300">
+                                                                {unpaidCount}
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
+                                                    {/* Dates */}
+                                                    <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
+                                                        <div className="flex items-center gap-2">
+                                                            <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                                                            <span>
+                                                                {assignedDate ? new Date(String(assignedDate)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-'}
+                                                            </span>
+                                                        </div>
+                                                        {endDate && (
+                                                            <>
+                                                                <span className="text-gray-300 dark:text-gray-600">→</span>
+                                                                <div className="flex items-center gap-2">
+                                                                    <Clock className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                                                                    <span>
+                                                                        {new Date(String(endDate)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                                    </span>
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
 
-                                                <Button className=" w-[50%] " size="sm" onClick={() => viewInvoice(service._id)}> View Invoice  </Button>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
+                                                {/* Renewals List */}
+                                                <div className="border-t border-gray-100 dark:border-zinc-800 px-6 py-4">
+                                                    <div className="flex items-center justify-between mb-3">
+                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                            Renewal schedule
+                                                        </span>
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                            {renewalDates.length} {renewalDates.length === 1 ? 'item' : 'items'}
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    <div className="space-y-2">
+                                                        {renewalDates.slice(0, 3).map((renewal: any, idx: number) => (
+                                                            <div 
+                                                                key={renewal._id || idx} 
+                                                                className="flex items-center gap-3 py-2.5 px-3 rounded hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer"
+                                                            >
+                                                                <div className={`w-2 h-2 rounded-full shrink-0 ${renewal.haspaid ? 'bg-green-500' : 'bg-amber-500'}`} />
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="text-sm text-gray-900 dark:text-gray-100 truncate capitalize">
+                                                                        {renewal.label || `Renewal ${idx + 1}`}
+                                                                    </div>
+                                                                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                                                                        {renewal.date ? new Date(renewal.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                                                                    </div>
+                                                                </div>
+                                                                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                                    ${renewal.price || 0}
+                                                                </div>
+                                                                <div className={`text-xs px-2 py-1 rounded ${
+                                                                    renewal.haspaid 
+                                                                        ? 'text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-950/20' 
+                                                                        : 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20'
+                                                                }`}>
+                                                                    {renewal.haspaid ? 'Paid' : 'Due'}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+
+                                                    {renewalDates.length > 3 && (
+                                                        <button
+                                                            className="w-full mt-2 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20 rounded transition-colors font-medium"
+                                                            onClick={() => {
+                                                                setSelectedRenewals(renewalDates);
+                                                                setRenewalsModalOpen(true);
+                                                            }}
+                                                        >
+                                                            Show all {renewalDates.length} renewals
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {/* Footer */}
+                                        <div className="border-t border-gray-100 dark:border-zinc-800 px-6 py-4">
+                                            <button 
+                                                className="w-full py-2.5 px-4 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20 rounded transition-colors"
+                                                onClick={() => viewInvoice(service._id)}
+                                            >
+                                                View invoice
+                                            </button>
+                                        </div>
+                                    </div>
                                 );
                             })}
                         </div>
@@ -450,81 +422,7 @@ const page = () => {
             </div>
 
             {/* Details Dialog */}
-            <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-                <DialogContent className="max-w-4xl">
-                    <DialogHeader>
-                        <DialogTitle>Assigned Service Details</DialogTitle>
-                        <DialogDescription>Complete details for the selected assigned service</DialogDescription>
-                    </DialogHeader>
-                    <div className="mt-4">
-                        {detailsData ? (() => {
-                            const payload = (detailsData as any).data ? (detailsData as any).data : detailsData;
-                            const client = payload.clientProfile || payload.client;
-                            const service = payload.service;
-                            const parseArrayField = (val: any) => {
-                                try {
-                                    if (!val) return [];
-                                    if (Array.isArray(val)) return val.flatMap((v) => {
-                                        try { return typeof v === 'string' ? JSON.parse(v) : v; } catch { return v; }
-                                    });
-                                    if (typeof val === 'string') {
-                                        let parsed: any = val;
-                                        let attempts = 0;
-                                        while (typeof parsed === 'string' && attempts < 3) {
-                                            try { parsed = JSON.parse(parsed); } catch { break; }
-                                            attempts++;
-                                        }
-                                        return Array.isArray(parsed) ? parsed : [parsed];
-                                    }
-                                    return [val];
-                                } catch { return [] }
-                            };
-
-                            return (
-                                <div className="grid grid-cols-1 gap-4">
-                                    <div className="grid grid-cols-1 gap-4">
-                                        <div className="border rounded-lg p-4">
-                                            <h3 className="text-lg font-semibold mb-3">Service Details</h3>
-                                            <div className="space-y-2">
-                                                <div><strong>Name:</strong> {service?.name || service?.service_name || service?.serviceName || '-'}</div>
-                                                <div><strong>Description:</strong> {service?.description ?? '-'}</div>
-                                                <div><strong>Category:</strong> {service?.categoryName ?? '-'}</div>
-                                                <div><strong>Price:</strong> {service?.price ?? payload.price ?? '-'} {service?.currency ?? payload.currency ?? ''}</div>
-                                                <div><strong>Billing:</strong> {service?.billingType ?? service?.cycle ?? payload.cycle ?? '-'}</div>
-                                                <div><strong>Duration (days):</strong> {service?.durationInDays ?? '-'}</div>
-                                                <div><strong>Featured:</strong> {service?.isFeatured ? 'Yes' : 'No'}</div>
-                                                <div className="mt-2">
-                                                    <strong>Tags:</strong>
-                                                    <div className="flex flex-wrap gap-2 mt-1">
-                                                        {parseArrayField(service?.tags).map((t: any, i: number) => (
-                                                            <Badge key={i} variant="secondary">{String(t)}</Badge>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                <div className="mt-2">
-                                                    <strong>Features:</strong>
-                                                    <div className="flex flex-wrap gap-2 mt-1">
-                                                        {parseArrayField(service?.features).map((f: any, i: number) => (
-                                                            <Badge key={i} variant="outline">{String(f)}</Badge>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                {service?.image && (
-                                                    <div className="mt-2">
-                                                        <Image src={service.image} alt={service.name || 'service image'} width={300} height={180} className="rounded-md object-cover" />
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )
-                        })() : (
-                            <div>No details available.</div>
-                        )}
-                    </div>
-                </DialogContent>
-            </Dialog>
+        
 
             {/* All Renewals Modal */}
             <Dialog open={renewalsModalOpen} onOpenChange={setRenewalsModalOpen}>
@@ -578,7 +476,7 @@ const page = () => {
                                             <div>
                                                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total Value</p>
                                                 <p className="text-3xl font-bold text-primary mt-1">${totalAmount.toFixed(2)}</p>
-                                                <p className="text-xs text-muted-foreground mt-1">{((paidTotal / selectedRenewals.length) * 100).toFixed(1)}% collected</p>
+                                                <p className="text-xs text-muted-foreground mt-1">{totalAmount > 0 ? ((paidValue / totalAmount) * 100).toFixed(1) : '0.0'}% collected</p>
                                             </div>
                                             <DollarSign className="h-12 w-12 text-primary opacity-30" />
                                         </div>
