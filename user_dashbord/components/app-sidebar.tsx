@@ -6,7 +6,6 @@ import {
   BookOpen,
   Bot,
   Command,
-
   Map,
   PieChart,
   Settings2,
@@ -18,6 +17,7 @@ import {
   Search,
   ShoppingCart,
   Bell,
+  Ticket
 } from "lucide-react"
 import { motion, AnimatePresence } from "motion/react"
 import { useRouter } from "next/navigation"
@@ -46,16 +46,14 @@ const data = {
   },
   teams: [
     {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
+      name: "",
+      logo: "",
+      plan: "",
     },
   ],
   navMain: [
-
-   
     {
-      title: "Settings",
+      title: "Account Settings",
       url: "#",
       icon: Settings2,
       items: [
@@ -79,7 +77,7 @@ const data = {
     {
       name: "Profile",
       url: "/admin/profile",
-      icon: PieChart,
+      icon: User,
     },
     {
       name: "Services",
@@ -87,50 +85,49 @@ const data = {
       icon: Briefcase,
     },
     {
-      name: "Cart",
-      url: "/admin/cart",
-      icon: ShoppingCart,
-    },
-    {
       name: "My Services",
       url: "/admin/view_assign_service",
       icon: AudioWaveform,
     },
     {
-      name: "Contracts ",
+      name: "Cart",
+      url: "/admin/cart",
+      icon: ShoppingCart,
+    },
+    {
+      name: "Contracts",
       url: "/admin/contract_messages",
       icon: BookOpen,
     },
     {
-    name :" Invite Users",
-    url:"/admin/invte_users",
-    icon: Bot,
-    },
-     {
-    name :" Billing",
-    url:"/admin/billing",
-    icon: CreditCard,
+      name: "Billing",
+      url: "/admin/billing",
+      icon: CreditCard,
     },
     {
-    name :" Payment History",
-    url:"/admin/billing-history",
-    icon: CreditCard,
+      name: "Payment History",
+      url: "/admin/billing-history",
+      icon: CreditCard,
     },
-      {
-    name :" Open Tickets",
-    url:"/admin/open_ticket",
-    icon: CreditCard,
+    {
+      name: "Support Tickets",
+      url: "/admin/open_ticket",
+      icon: Ticket,
+    },
+    {
+      name: "Invite Users",
+      url: "/admin/invte_users",
+      icon: Bot,
     }
   ],
 }
+
+import { User } from "lucide-react"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [searchQuery, setSearchQuery] = React.useState("")
   const { state } = useSidebar()
   const isCollapsed = state === "collapsed"
-  const router = useRouter()
-  const cartState = useAppSelector((s) => s.cart)
-  const cartItemCount = cartState.cart?.Services?.length || 0
 
   // Filter projects based on search
   const filteredProjects = React.useMemo(() => {
@@ -152,129 +149,97 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }, [searchQuery])
 
   return (
-    <Sidebar collapsible="icon" {...props} className="border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+    <Sidebar collapsible="icon" {...props} className="border-r bg-background">
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
+          width: 5px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
           background: transparent;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(148, 163, 184, 0.3);
-          border-radius: 3px;
+          background: var(--muted-foreground);
+          opacity: 0.2;
+          border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(148, 163, 184, 0.5);
-        }
-        .custom-scrollbar {
-          scrollbar-width: thin;
-          scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+          opacity: 0.4;
         }
       `}</style>
 
       {/* Fixed Header */}
-      <SidebarHeader className="border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 pb-4">
-        <motion.div
-          className="flex h-14 items-center px-4 pt-2"
-          animate={{
-            justifyContent: isCollapsed ? "center" : "flex-start"
-          }}
-          transition={{ duration: 0.3, ease: "easeInOut" }}
-        >
+      <SidebarHeader className="bg-background pb-4 pt-4">
+        <div className="flex px-4 items-center justify-between">
           <AnimatePresence mode="wait">
-            <motion.div
-              key={isCollapsed ? "collapsed" : "expanded"}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.2 }}
-              className="flex items-center"
-            >
+            {!isCollapsed && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center gap-2"
+              >
+                <Image
+                  src="/logo.png"
+                  alt="Murphys Logo"
+                  width={130}
+                  height={130}
+                  className="object-contain"
+                />
+
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {isCollapsed && (
+            <div className="flex w-full justify-center">
               <Image
                 src="/logo.png"
                 alt="Murphys Logo"
-                width={isCollapsed ? 32 : 130}
-                height={isCollapsed ? 32 : 40}
+                width={32}
+                height={32}
                 className="object-contain"
-                priority
               />
-            </motion.div>
-          </AnimatePresence>
-        </motion.div>
-
-        <AnimatePresence>
-          {!isCollapsed && (
-            <motion.div
-              className="px-4 space-y-3"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
-            >
-              <div className="relative group">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 dark:text-slate-500 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors pointer-events-none" />
-                <Input
-                  type="search"
-                  placeholder="Search navigation..."
-                  className="h-9 pl-9 bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-500 dark:placeholder:text-slate-400 shadow-none hover:bg-slate-200 dark:hover:bg-slate-800 focus-visible:bg-white dark:focus-visible:bg-slate-900 focus-visible:border-slate-300 dark:focus-visible:border-slate-700 focus-visible:ring-2 focus-visible:ring-slate-200 dark:focus-visible:ring-slate-800 transition-all rounded-lg text-sm"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-             
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {isCollapsed && (
-          <motion.div
-            className="px-2 space-y-2"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.2 }}
-          >
-            <div className="relative flex justify-center py-2">
-              <Search className="h-5 w-5 text-slate-400 dark:text-slate-500 cursor-pointer hover:text-slate-600 dark:hover:text-slate-300 transition-colors" />
             </div>
-          </motion.div>
-        )}
+          )}
+        </div>
+
+        <div className="px-4 mt-4">
+          {!isCollapsed ? (
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                type="search"
+                placeholder="Search..."
+                className="h-9 pl-9 bg-muted/40 border-none shadow-none focus-visible:ring-1"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          ) : (
+            <div className="flex justify-center py-2">
+              <Search className="h-4 w-4 text-muted-foreground" />
+            </div>
+          )}
+        </div>
       </SidebarHeader>
 
       {/* Scrollable Content */}
-      <SidebarContent className="overflow-y-auto custom-scrollbar flex-1 px-2 py-4">
-        <AnimatePresence mode="wait">
-          {filteredProjects.length === 0 && filteredNavMain.length === 0 ? (
-            <motion.div
-              key="no-results"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-              className="flex flex-col items-center justify-center py-8 px-4 text-center"
-            >
-              <Search className="h-12 w-12 text-slate-300 dark:text-slate-700 mb-3" />
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">No navigation items found</p>
-              <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Try a different search term</p>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="results"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-2"
-            >
-              <NavProjects projects={filteredProjects} />
-              <NavMain items={filteredNavMain} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <SidebarContent className="overflow-y-auto custom-scrollbar flex-1 px-3 py-4 gap-6">
+        {filteredProjects.length === 0 && filteredNavMain.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
+            <Search className="h-8 w-8 opacity-50 mb-2" />
+            <p className="text-xs">No matches found</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <NavProjects projects={filteredProjects} />
+            <NavMain items={filteredNavMain} />
+          </div>
+        )}
       </SidebarContent>
 
       {/* Fixed Footer */}
-      <SidebarFooter className="border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 p-2 mt-auto">
+      <SidebarFooter className="p-4 bg-background">
         <NavUser />
       </SidebarFooter>
 
