@@ -18,7 +18,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ArrowLeft, RefreshCcw } from 'lucide-react';
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -30,7 +30,7 @@ import SpinnerComponent from '@/app/page/common/Spinner';
 
 export default function Page() {
   const dispatch = useAppDispatch();
-  const { loading ,total} = useAppSelector((state) => state.services);
+  const { loading, total } = useAppSelector((state) => state.services);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -39,7 +39,7 @@ export default function Page() {
   const router = useRouter();
 
   useEffect(() => {
-    dispatch(fetchCategories({ page: 1, limit:100 }));
+    dispatch(fetchCategories({ page: 1, limit: 100 }));
     dispatch(fetchServices({ page: 1, limit: 10 }));
   }, [dispatch]);
 
@@ -52,79 +52,79 @@ export default function Page() {
     setDialogOpen(false);
     setSelectedService(null);
     dispatch(fetchServices({ page: 1, limit: 10 }));
-    
+
   };
 
   const handleRefresh = () => {
     dispatch(fetchServices({ page: 1, limit: 10 }));
   };
   if (loading) {
-     <SpinnerComponent />;
+    <SpinnerComponent />;
   }
 
   return (
     <>
       <div className="  bg-none   ">
         <div className="">
-        <div className="">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className=' flex gap-2 justify-center items-center '>
-              <Button variant="ghost" className=" cursor-pointer hover:bg-transparent">
-<ArrowLeft className="h-6 w-6 inline-block mr-2  text-blue-600 cursor-pointer" onClick={() => router.push('/admin/dashboard')} />
-  </Button>
-  <div className=' flex flex-col'>             
-     <CardTitle className="text- ">Service Management {  total === 0 ? "" : "Total:"+ `_${total}` }</CardTitle>
-              <CardDescription className="text-base "> 
-                Manage your services, pricing, and categories
-              </CardDescription>
-              </div>
-
-            </div>
-            <div className="flex gap-2">
-              <RefreshCcw className="h-6 w-6 text-gray-500 inline-block mr-2 cursor-pointer" onClick={handleRefresh} />
-
-              
-                <div>
-                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Filter by Category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Categories</SelectItem>
-                            {categories.filter(cat => cat.status === 'active').map((category) => (
-                              <SelectItem key={category._id} value={category._id}>
-                                {category.name}
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+          <div className="">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className=' flex gap-2 justify-center items-center '>
+                <Button variant="ghost" className=" cursor-pointer hover:bg-transparent">
+                  <ArrowLeft className="h-6 w-6 inline-block mr-2  text-blue-600 cursor-pointer" onClick={() => router.push('/admin/dashboard')} />
+                </Button>
+                <div className=' flex flex-col'>
+                  <CardTitle className="text- ">Service Management {total === 0 ? "" : "Total:" + `_${total}`}</CardTitle>
+                  <CardDescription className="text-base ">
+                    Manage your services, pricing, and categories
+                  </CardDescription>
                 </div>
+
+              </div>
+              <div className="flex gap-2">
+                <RefreshCcw className="h-6 w-6 text-gray-500 inline-block mr-2 cursor-pointer" onClick={handleRefresh} />
+
+
+                <div>
+                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Filter by Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      {categories.filter(cat => cat.status === 'active').map((category) => (
+                        <SelectItem key={category._id} value={category._id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
+          </div>
+
+          <div className="pt-4">
+            <ServiceTable categoryFilter={categoryFilter} />
           </div>
         </div>
 
-        <div className="pt-4">
-          <ServiceTable onEdit={handleEdit} categoryFilter={categoryFilter} />
-        </div>
-      </div>
- 
-      <Dialog  open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="  max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">
-              {selectedService ? 'Edit Service' : 'Create New Service'}
-            </DialogTitle>
-            <DialogDescription>
-              {selectedService
-                ? 'Update the service details below'
-                : 'Fill in the details to create a new service'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-4">
-            <ServiceForm service={selectedService} onSuccess={handleSuccess} />
-          </div>
-        </DialogContent>
-      </Dialog>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent className="  max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl">
+                {selectedService ? 'Edit Service' : 'Create New Service'}
+              </DialogTitle>
+              <DialogDescription>
+                {selectedService
+                  ? 'Update the service details below'
+                  : 'Fill in the details to create a new service'}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4">
+              <ServiceForm service={selectedService} onSuccess={handleSuccess} />
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </>
   );

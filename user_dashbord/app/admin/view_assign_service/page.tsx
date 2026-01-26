@@ -21,8 +21,7 @@ import { useToast } from '@/hooks/use-toast'
 import Image from 'next/image'
 import { Select, SelectContent, SelectGroup, SelectTrigger, SelectItem, SelectValue } from '@/components/ui/select';
 import { fetchServices } from '@/lib/redux/slices/serviceSlice';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import { Card, CardContent } from '@/components/ui/card';
 import InvoiceView from '../../page/InvoiceView';
 import { fetchInvoices } from "../../../lib/redux/slices/invoiceSlicer"
 

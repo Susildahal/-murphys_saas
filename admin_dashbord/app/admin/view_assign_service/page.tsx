@@ -76,7 +76,7 @@ const page = () => {
 
     // Fetch clients and services for filters
     React.useEffect(() => {
-        dispatch(getadminProfile({ role_type: 'client', limit: 100 })).then((res: any) => {
+        dispatch(getadminProfile({ role_type: 'client user', limit: 100 })).then((res: any) => {
             if (res.payload?.data) setClientsList(res.payload.data);
         });
         dispatch(fetchServices({ limit: 100 })).then((res: any) => {
@@ -137,7 +137,7 @@ const page = () => {
         } else if (diffDays <= 30) {
             text = `${diffDays}d left`;
             variant = 'outline';
-        } else {
+        } else {    
             text = `${diffDays}d left`;
             variant = 'secondary';
         }
@@ -168,12 +168,6 @@ const page = () => {
     const [deleteOpen, setDeleteOpen] = React.useState(false);
 
 
-
-
-    // removed redundant search helper - main effect handles fetching on debouncedSearch changes
-
-
-
     return (
         <div className="space-y-6">
             {loading && <SpinnerComponent />}
@@ -199,19 +193,25 @@ const page = () => {
                         </div>
                         <Select value={selectedClient} onValueChange={(val) => { setSelectedClient(val); setPageNumber(1); }}>
                             <SelectTrigger className="w-[180px]">
+                                <User className="h-4 w-4 mr-2" />
                                 <SelectValue placeholder="All Clients" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">All Clients</SelectItem>
-                                {clientsList.map((client) => (
-                                    <SelectItem key={client._id} value={client._id}>
-                                        {client.firstName} {client.lastName}
-                                    </SelectItem>
-                                ))}
+                                {clientsList.map((client) => {
+                                    const label = [client.firstName, client.lastName].filter(Boolean).join(' ') || client.name || client.email || client._id || client.id;
+                                    const value = client._id || client.id;
+                                    return (
+                                        <SelectItem key={value} value={String(value)}>
+                                            {label}
+                                        </SelectItem>
+                                    )
+                                })}
                             </SelectContent>
                         </Select>
                         <Select value={selectedService} onValueChange={(val) => { setSelectedService(val); setPageNumber(1); }}>
                             <SelectTrigger className="w-[180px]">
+                                <Briefcase className="h-4 w-4 mr-2" />
                                 <SelectValue placeholder="All Services" />
                             </SelectTrigger>
                             <SelectContent>

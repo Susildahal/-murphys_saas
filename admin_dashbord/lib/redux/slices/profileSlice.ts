@@ -156,6 +156,7 @@ export const getadminProfile = createAsyncThunk(
           search: params.search || '',
         },
       });
+      console.log('getadminProfile response:', params.role_type || params.profile_type, response.data);
 
       const data = response.data?.data || response.data;
       const pagination = response.data?.pagination || {};
