@@ -71,23 +71,13 @@ export default function OpenTicketPage() {
   }
 
   const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'urgent': return 'bg-red-500/10 text-red-600 border-red-200 dark:bg-red-500/20 dark:text-red-400'
-      case 'high': return 'bg-orange-500/10 text-orange-600 border-orange-200 dark:bg-orange-500/20 dark:text-orange-400'
-      case 'medium': return 'bg-yellow-500/10 text-yellow-600 border-yellow-200 dark:bg-yellow-500/20 dark:text-yellow-400'
-      case 'low': return 'bg-green-500/10 text-green-600 border-green-200 dark:bg-green-500/20 dark:text-green-400'
-      default: return 'bg-gray-500/10 text-gray-600 border-gray-200 dark:bg-gray-500/20 dark:text-gray-400'
-    }
+    // Use single blue shade for all priorities
+    return 'bg-blue-500/10 text-blue-600 border-blue-200 dark:bg-blue-500/20 dark:text-blue-400'
   }
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'open': return 'bg-blue-500/10 text-blue-600 border-blue-200 dark:bg-blue-500/20 dark:text-blue-400'
-      case 'in-progress': return 'bg-purple-500/10 text-purple-600 border-purple-200 dark:bg-purple-500/20 dark:text-purple-400'
-      case 'resolved': return 'bg-green-500/10 text-green-600 border-green-200 dark:bg-green-500/20 dark:text-green-400'
-      case 'closed': return 'bg-gray-500/10 text-gray-600 border-gray-200 dark:bg-gray-500/20 dark:text-gray-400'
-      default: return 'bg-gray-500/10 text-gray-600 border-gray-200 dark:bg-gray-500/20 dark:text-gray-400'
-    }
+    // Use single blue shade for all statuses
+    return 'bg-blue-500/10 text-blue-600 border-blue-200 dark:bg-blue-500/20 dark:text-blue-400'
   }
 
   // Calculate stats
@@ -125,10 +115,10 @@ export default function OpenTicketPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 border-l-purple-500 shadow-sm">
+            <Card className="border-l-4 border-l-blue-500 shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                 <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
-                <Clock className="h-4 w-4 text-purple-500" />
+                <Clock className="h-4 w-4 text-blue-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.inProgress}</div>
@@ -136,10 +126,10 @@ export default function OpenTicketPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 border-l-green-500 shadow-sm">
+            <Card className="border-l-4 border-l-blue-500 shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Resolved</CardTitle>
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <CheckCircle2 className="h-4 w-4 text-blue-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.resolved}</div>
@@ -147,10 +137,10 @@ export default function OpenTicketPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 border-l-red-500 shadow-sm">
+            <Card className="border-l-4 border-l-blue-500 shadow-sm">
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Urgent</CardTitle>
-                <AlertCircle className="h-4 w-4 text-red-500" />
+                <AlertCircle className="h-4 w-4 text-blue-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stats.urgent}</div>
@@ -210,9 +200,9 @@ export default function OpenTicketPage() {
                     <TableRow key={ticket._id} className="hover:bg-muted/50">
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                            <TicketIcon className="h-4 w-4 text-primary" />
-                          </div>
+                              <div className="h-8 w-8 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
+                                <TicketIcon className="h-4 w-4 text-blue-600" />
+                              </div>
                           <span className="truncate max-w-[200px]">{ticket.assignedServiceName}</span>
                         </div>
                       </TableCell>
@@ -254,7 +244,7 @@ export default function OpenTicketPage() {
                               Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              className="text-destructive focus:text-destructive"
+                              className="text-blue-600 focus:text-blue-700"
                               onClick={() => {
                                 setTicketToDelete(ticket)
                                 setDeleteDialogOpen(true)
@@ -276,10 +266,10 @@ export default function OpenTicketPage() {
       </div>
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-destructive" />
+              <AlertCircle className="h-5 w-5 text-blue-600" />
               Delete Ticket
             </DialogTitle>
             <DialogDescription>
@@ -325,7 +315,7 @@ export default function OpenTicketPage() {
               Cancel
             </Button>
             <Button
-              variant="destructive"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
               onClick={handleDelete}
               disabled={deleting}
             >
