@@ -7,7 +7,7 @@ import Category from "../models/category.model";
 import Cart from "../models/cart.model";
 import Ticket from "../models/ticket.model";
 import BillingHistory from "../models/billingHistory.model";
-
+import { AuthenticatedRequest } from "../middleware/auth";
 // Helper function to get date range based on filter
 const getDateRange = (filter: string) => {
   const now = new Date();
@@ -132,9 +132,14 @@ export const getDashboardStats = async (req: Request, res: Response) => {
   }
 };
 
-export const getUserDashboardStats = async (req: Request, res: Response) => {
+export const getUserDashboardStats = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { email } = req.query;
+
+    const profileEmail = req.user?.email;
+    if (!profileEmail) {
+      return res.status(401).json({ error: "Unauthorized: Email not found in token" });
+    }
+    const email = profileEmail;
 
     if (!email) {
       return res.status(400).json({ error: "User email is required" });
@@ -146,8 +151,6 @@ export const getUserDashboardStats = async (req: Request, res: Response) => {
     // Build query object for filtering
     const dateQuery = dateRange ? { createdAt: dateRange } : {};
     const baseQuery = { email: email };
-    const ticketQuery = { userEmail: email, ...dateQuery };
-    const billingQuery = { user_email: email, ...dateQuery };
 
     // Combine date query with base query for assigned services
     const assignedServiceQuery = { ...baseQuery, ...dateQuery };
@@ -159,7 +162,11 @@ export const getUserDashboardStats = async (req: Request, res: Response) => {
       pendingInvoices,
       totalSpent,
       recentServices,
-      unreadNoticesCount
+      unreadNoticesCount,
+      unpaidInvoices,
+      unpaidamount,
+      resentInvoices,
+
     ] = await Promise.all([
       AssignedService.countDocuments({ ...baseQuery, status: 'active' }),
       Ticket.countDocuments({ userEmail: email }),
@@ -173,8 +180,21 @@ export const getUserDashboardStats = async (req: Request, res: Response) => {
         .sort({ createdAt: -1 })
         .limit(5)
         .select('service_name status price createdAt'),
-      Notice.countDocuments({ status: false }) // Keeping global unread notices or maybe filtering by checking if read by user if implemented
+      Notice.countDocuments({ status: false }),
+      // Calculate unpaid invoices and amounts from AssignedService renewal_dates (haspaid === false)
+      AssignedService.countDocuments({ email: email, 'renewal_dates.haspaid': false }),
+      AssignedService.aggregate([
+        { $match: { email: email } },
+        { $unwind: { path: '$renewal_dates', preserveNullAndEmptyArrays: false } },
+        { $match: { 'renewal_dates.haspaid': false } },
+        { $group: { _id: null, totalUnpaid: { $sum: '$renewal_dates.price' } } }
+      ]),
+      // Recent billing records for the user
+      BillingHistory.find({ user_email: email }).sort({ createdAt: -1 }).limit(5).select('invoice_id amount payment_status payment_date'),
     ]);
+    
+
+    
 
     return res.status(200).json({
       stats: {
@@ -183,9 +203,13 @@ export const getUserDashboardStats = async (req: Request, res: Response) => {
         pendingInvoices,
         totalSpent: totalSpent[0]?.total || 0,
         unreadNotices: unreadNoticesCount,
-        totalTickets
+        totalTickets,
+        unpaidInvoices,
+        unpaidAmount: unpaidamount[0]?.totalUnpaid || 0,
+      
       },
       recentServices,
+      resentInvoices,
       filter
     });
 
@@ -194,3 +218,4 @@ export const getUserDashboardStats = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Failed to fetch user dashboard stats" });
   }
 };
+

@@ -11,10 +11,18 @@ interface DashboardState {
     activeService: number;
     inactiveService: number;
     recentAssign: any[];
+    // mirror API naming for user dashboard
+    recentServices?: any[];
+    stats?: any;
     // User specific fields
     openTickets: number;
     pendingInvoices: number;
     totalSpent: number;
+    unpaidInvoices: number;
+    unpaidAmount: number;
+    resentInvoices: any[];
+    // user-specific nested stats
+    userStats?: any;
     loading: boolean;
     error: string | null;
 }
@@ -28,29 +36,34 @@ const initialState: DashboardState = {
     activeService: 0,
     inactiveService: 0,
     recentAssign: [],
+    recentServices: [],
+    stats: {},
     openTickets: 0,
     pendingInvoices: 0,
     totalSpent: 0,
+    unpaidInvoices: 0,
+    unpaidAmount: 0,
+    resentInvoices: [],
+    userStats: {},
     loading: false,
     error: null,
 };
 
 export const fetchDashboardStats = createAsyncThunk(
     "dashboard/fetchStats",
-    async ({ filter = 'all', email }: { filter?: string, email?: string }, { rejectWithValue }) => {
+    // Accept either a filter string, an options object {filter?, email?}, or nothing for defaults
+    async (
+        payload: any | undefined,
+        { rejectWithValue }
+    ) => {
         try {
-            if (email) {
+
                 const response = await axiosInstance.get("/user-stats", {
-                    params: { filter, email }
                 });
                 return { ...response.data, isUser: true };
-            }
-            const response = await axiosInstance.get("/stats", {
-                params: { filter }
-            });
-            return { ...response.data, isUser: false };
-        }
-        catch (error: any) {
+            
+           
+        } catch (error: any) {
             return rejectWithValue(error.response?.data?.error || "Failed to fetch dashboard stats");
         }
     }
@@ -70,14 +83,22 @@ const dashboardSlice = createSlice({
                 state.loading = false;
                 if (action.payload.isUser) {
                     // Populate user specific stats
-                    const { stats, recentServices } = action.payload;
-                    state.activeService = stats.activeServices;
-                    state.openTickets = stats.openTickets;
-                    state.pendingInvoices = stats.pendingInvoices;
-                    state.totalSpent = stats.totalSpent;
-                    state.unreadNotices = stats.unreadNotices;
-                    state.recentAssign = recentServices;
-                    // Reset others or keep them?
+                    const { stats, recentServices, resentInvoices } = action.payload;
+                    // keep a copy of raw user stats and mirror API fields
+                    state.userStats = stats || {};
+                    state.stats = stats || {};
+                    state.recentServices = recentServices || [];
+                    state.resentInvoices = resentInvoices || [];
+                    // Map individual fields for backward compatibility
+                    state.activeService = stats?.activeServices || 0;
+                    state.openTickets = stats?.openTickets || 0;
+                    state.pendingInvoices = stats?.pendingInvoices || 0;
+                    state.totalSpent = stats?.totalSpent || 0;
+                    state.unreadNotices = stats?.unreadNotices || 0;
+                    state.unpaidInvoices = stats?.unpaidInvoices || 0;
+                    state.unpaidAmount = stats?.unpaidAmount || 0;
+                    state.recentAssign = recentServices || [];
+                    // Reset admin-only counts to avoid showing stale values
                     state.totalServices = 0;
                     state.totalProfiles = 0;
                 } else {

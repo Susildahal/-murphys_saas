@@ -96,7 +96,7 @@ const data = {
       icon: BookOpen,
     },
     {
-      name: "Billing",
+      name: "Payment ",
       url: "/admin/billing",
       icon: CreditCard,
     },

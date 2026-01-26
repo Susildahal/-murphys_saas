@@ -16,6 +16,15 @@ import { Badge } from "@/components/ui/badge"
 import { useRouter } from "next/navigation"
 import { getMee } from "@/lib/redux/slices/meeSlice"
 import { useSidebar } from "@/components/ui/sidebar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 interface AppHeaderProps {
   onSearchChange?: (value: string) => void
@@ -63,7 +72,7 @@ export function AppHeader({ onSearchChange, searchValue }: AppHeaderProps) {
         {/* Left: hamburger */}
         <div className="flex items-center gap-4">
           <button
-            className="h-10 w-10 rounded-lg   border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm"
+            className="h-10 w-10 rounded-lg   border-slate-200 dark:border-slate-700 flex items-center justify-center "
             onClick={toggleSidebar}
             aria-label="Toggle sidebar"
           >
@@ -78,7 +87,7 @@ export function AppHeader({ onSearchChange, searchValue }: AppHeaderProps) {
             <Input
               type="search"
               placeholder="Search or type command..."
-              className="w-full h-11 pl-12 pr- border border-slate-200 dark:border-slate-700 "
+              className="w-full h-11 lg:pl-12 pl-2 pr-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 "
               value={searchValue}
               onChange={(e) => onSearchChange?.(e.target.value)}
             />
@@ -88,7 +97,7 @@ export function AppHeader({ onSearchChange, searchValue }: AppHeaderProps) {
         {/* Right: icons */}
         <div className="flex items-center gap-3">
           <button
-            className="h-10 w-10 rounded-full  border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm"
+            className="h-10 w-10 rounded-full  border border-slate-200 dark:border-slate-700 flex items-center justify-center "
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             aria-label="Toggle theme"
           >
@@ -100,7 +109,7 @@ export function AppHeader({ onSearchChange, searchValue }: AppHeaderProps) {
           </button>
 
           <button
-            className="relative h-10 w-10 rounded-full  border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm"
+            className="hidden md:inline-flex relative h-10 w-10 rounded-full  border border-slate-200 dark:border-slate-700 flex items-center justify-center "
             onClick={() => router.push('/admin/contract_messages')}
             aria-label="Notifications"
           >
@@ -114,14 +123,34 @@ export function AppHeader({ onSearchChange, searchValue }: AppHeaderProps) {
               </Badge>
             )}
           </button>
+          <DropdownMenu>
+          <DropdownMenuTrigger asChild>
 
           <button
-            className="h-10 w-10 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center shadow-sm"
+            className="hidden md:inline-flex h-10 w-10 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center "
             onClick={() => router.push('/admin/profile')}
             aria-label="Settings"
           >
             <Settings className="h-5 w-5 text-slate-700 dark:text-slate-200" />
           </button>
+          </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className=" border"
+              side="bottom"
+              align="end"
+              sideOffset={8}
+            >
+              <DropdownMenuGroup>
+                <DropdownMenuItem onClick={() => router.push('/admin/change_password')} className="cursor-pointer py-2.5">
+                  <span>Change password</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push('/admin/delete_account')} className="cursor-pointer py-2.5">
+                  <span>Delete Account</span>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
 
           <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
             <Avatar className="h-10 w-10 cursor-pointer ring-2 ring-white dark:ring-slate-800">
