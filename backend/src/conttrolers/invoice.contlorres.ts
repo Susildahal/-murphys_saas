@@ -1,7 +1,5 @@
 import AssignService from "../models/assignService.routes";
 import Setting from "../models/siteSetting.model";
-import Profile from "../models/profile.model";
-import Service from "../models/service.model";
 import { Request ,Response } from "express";
 
 
@@ -33,10 +31,6 @@ export const getInvoiceControllers =  async (req: Request, res: Response) => {
             error: (err as Error).message,
         });
     }
-
-
-
-
 };
 
 

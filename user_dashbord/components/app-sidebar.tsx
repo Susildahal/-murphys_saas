@@ -114,6 +114,11 @@ const data = {
       name: "Invite Users",
       url: "/admin/invte_users",
       icon: Bot,
+    },
+    {
+      name: "invoices",
+      url: "/admin/invoices",
+      icon: Bot,
     }
   ],
 }
