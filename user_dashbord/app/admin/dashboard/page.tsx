@@ -32,11 +32,14 @@ export default function DashboardPage() {
   const error = dashboard?.error;
 
   useEffect(() => {
-    if (!dashboard || dashboard.length===0) {
-    dispatch(fetchDashboardStats(null as any))
-  }
-
-  }, [dispatch, dashboard]);
+    // Fetch user-specific dashboard when profile email is available, otherwise fetch default stats
+    if (profile?.email) {
+      dispatch(fetchDashboardStats({ email: profile.email } as any));
+    } else {
+      // call with default 'all' filter to satisfy thunk signature
+      dispatch(fetchDashboardStats('all'));
+    }
+  }, [dispatch, profile?.email]);
 
   if (loading) {
     return (
@@ -70,7 +73,18 @@ export default function DashboardPage() {
     {
       title: "Next Due",
       value: `$${unpaidAmount || 0}`,
-      subtitle: unpaidInvoices > 0 ? `Due in ${Math.ceil((new Date().getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} days` : 'No due invoices',
+      subtitle: (() => {
+        // Prefer earliest upcoming renewal from recent services if available
+        const now = Date.now();
+        const nextDates = recentServices
+          .map((s: any) => s.renewal_date ? new Date(s.renewal_date).getTime() : null)
+          .filter((d: any) => d !== null) as number[];
+        if (nextDates.length === 0) return unpaidInvoices > 0 ? `You have unpaid invoices` : 'No due invoices';
+        const next = Math.min(...nextDates);
+        const days = Math.ceil((next - now) / (1000 * 60 * 60 * 24));
+        if (days < 0) return 'Overdue';
+        return `Due in ${days} day${days !== 1 ? 's' : ''}`;
+      })(),
       icon: Calendar,
       color: 'text-blue-500',
       borderColor: 'border-l-blue-500',
@@ -78,7 +92,7 @@ export default function DashboardPage() {
     },
     {
       title: "Active Services",
-      value: stats.activeServices || 0,
+      value: stats.activeServices ?? dashboard?.activeService ?? 0,
       subtitle: recentServices.length > 0 ? `Next Renewal: ${format(new Date(recentServices[0]?.renewal_date || new Date()), 'dd MMM')}` : 'No active services',
       icon: Clock,
       color: 'text-blue-500',

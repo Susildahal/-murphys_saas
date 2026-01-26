@@ -294,8 +294,8 @@ const formatPhone = (value: string, countryCode = '+61') => {
       >
         {/* Left Column: Avatar & Summary */}
         <div className="lg:col-span-4 space-y-6">
-          <Card className="border-none shadow-xl bg-card overflow-hidden">
-            <div className="h-24 bg-gradient-to-r from-[#480082] to-indigo-600" />
+          <Card className="border-none  bg-card overflow-hidden">
+            <div className="h-24 " />
             <CardContent className="relative pt-0">
               <div className="flex flex-col items-center -mt-12">
                 <div className="relative group">
