@@ -151,3 +151,21 @@ export const markAllAsRead = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to mark notices as read', message: error instanceof Error ? error.message : 'Unknown error' });
   }
 };
+
+
+
+// export const getusernotices = async (req: AutheancationRequest, res: Response) => {
+//   try {
+//     const profileEmail = req.user?.email;
+//     if (!profileEmail) {
+//       return res.status(401).json({ error: 'Unauthorized', message: 'Authentication required' });
+//     }
+//     const email = profileEmail;
+
+//     const notices = await Notice.find({ email }).sort({ createdAt: -1 });
+//     res.status(200).json({ data: notices });
+//   }
+//   catch (error) {
+//     res.status(500).json({ error: 'Failed to fetch user notices', message: error instanceof Error ? error.message : 'Unknown error' });
+//   }
+// };

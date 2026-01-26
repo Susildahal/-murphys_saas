@@ -397,6 +397,11 @@ export default function ServiceTable({ categoryFilter = 'all' }: ServiceTablePro
                                             </Badge>
                                         )}
                                     </div>
+                                    {selectedViewService.hasDiscount && (
+                                        <div className="mt-2">
+                                            <p className="text-sm text-muted-foreground">Discount period: {selectedViewService.discountStartDate ? format(new Date(selectedViewService.discountStartDate), 'MMM dd, yyyy') : 'N/A'} — {selectedViewService.discountEndDate ? format(new Date(selectedViewService.discountEndDate), 'MMM dd, yyyy') : 'N/A'}</p>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <Separator />

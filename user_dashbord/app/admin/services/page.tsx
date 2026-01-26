@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/select';
 import { fetchCategories } from '@/lib/redux/slices/categorySlice';
 import SpinnerComponent from '@/app/page/common/Spinner';
+import Header from '@/app/page/common/header';
 
 export default function Page() {
   const dispatch = useAppDispatch();
@@ -65,21 +66,11 @@ export default function Page() {
   return (
     <>
       <div className="  bg-none   ">
-        <div className="">
-          <div className="">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className=' flex gap-2 justify-center items-center '>
-                <Button variant="ghost" className=" cursor-pointer hover:bg-transparent">
-                  <ArrowLeft className="h-6 w-6 inline-block mr-2  text-blue-600 cursor-pointer" onClick={() => router.push('/admin/dashboard')} />
-                </Button>
-                <div className=' flex flex-col'>
-                  <CardTitle className="text- ">Service Management {total === 0 ? "" : "Total:" + `_${total}`}</CardTitle>
-                  <CardDescription className="text-base ">
-                    Manage your services, pricing, and categories
-                  </CardDescription>
-                </div>
-
-              </div>
+        <Header 
+          title="Service Management"
+          description="Manage your services, pricing, and categories"
+          total={total}
+          extra ={
               <div className="flex gap-2">
                 <RefreshCcw className="h-6 w-6 text-gray-500 inline-block mr-2 cursor-pointer" onClick={handleRefresh} />
 
@@ -100,8 +91,12 @@ export default function Page() {
                   </Select>
                 </div>
               </div>
-            </div>
-          </div>
+
+          }
+
+        />
+        <div className="">
+        
 
           <div className="pt-4">
             <ServiceTable categoryFilter={categoryFilter} />
