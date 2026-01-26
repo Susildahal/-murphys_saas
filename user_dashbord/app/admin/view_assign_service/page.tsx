@@ -34,7 +34,6 @@ const page = () => {
     const totalPages = useAppSelector((state) => state.assign.totalPages || 0);
     const meeState = useAppSelector((s) => s.mee);
     const currentUserEmail = meeState.data?.email || '';
-    const [id, setId] = useState<string | undefined>(undefined);
 
     // Data filtered by backend
     const rows = Array.isArray(data) ? data : (data ? [data] : []);
@@ -54,11 +53,7 @@ const page = () => {
     const [servicesList, setServicesList] = React.useState<any[]>([]);
 
     // Fetch services for filters
-    React.useEffect(() => {
-        dispatch(fetchServices({ limit: 100 })).then((res: any) => {
-            if (res.payload?.services) setServicesList(res.payload.services);
-        });
-    }, [dispatch]);
+    
 
     // Debounce search input to avoid excessive requests
     React.useEffect(() => {
@@ -132,19 +127,6 @@ const page = () => {
                             />
                         </div>
 
-                        <Select value={selectedService} onValueChange={(val) => { setSelectedService(val); setPageNumber(1); }}>
-                            <SelectTrigger className="w-[180px]">
-                                <SelectValue placeholder="All Services" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Services</SelectItem>
-                                {servicesList.map((service) => (
-                                    <SelectItem key={service.id || service._id} value={service.id || service._id}>
-                                        {service.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
                     </div>
                 }
             />

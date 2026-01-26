@@ -16,6 +16,7 @@ import { fetchDashboardStats } from '@/lib/redux/slices/dashboardSlicer';
 import { format } from 'date-fns';
 import Link from 'next/link';
 import Header from '@/app/page/common/header';
+import SpinnerComponent from '@/app/page/common/Spinner';
 
 export default function DashboardPage() {
   const dispatch = useAppDispatch();
@@ -31,16 +32,17 @@ export default function DashboardPage() {
   const error = dashboard?.error;
 
   useEffect(() => {
-  
+    if (!dashboard || dashboard.length===0) {
     dispatch(fetchDashboardStats(null as any))
+  }
 
-  }, [dispatch]);
+  }, [dispatch, dashboard]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" />
-      </div>
+      <>
+      <SpinnerComponent />
+      </>
     );
   }
 
@@ -186,7 +188,7 @@ export default function DashboardPage() {
             <CardContent className="">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold ">Active Services</h2>
-                <Link href="/services/assigned-services">
+                <Link href="/admin/view_assign_service">
                   <Button variant="link" className="text-blue-600 text-sm">View All</Button>
                 </Link>
               </div>

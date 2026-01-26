@@ -27,9 +27,9 @@ import Image from 'next/image';
 import SpinnerComponent from './common/Spinner';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils'; // Assuming you have a cn utility, if not use string templates
 
-interface ServiceTableProps {
+
+interface ServiceTableProps {   
     categoryFilter?: string;
 }
 
@@ -141,14 +141,9 @@ export default function ServiceTable({ categoryFilter = 'all' }: ServiceTablePro
 
     if (services.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-12">
-                <div className="bg-muted/50 p-6 rounded-full mb-4">
-                    <Sparkles className="w-8 h-8 text-muted-foreground" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">No services found</h3>
-                <p className="text-sm text-muted-foreground text-center max-w-sm">
-                    {categoryFilter === 'all' ? 'Create your first service to get started' : 'No services available in this category at the moment.'}
-                </p>
+            <div className="">
+                <SpinnerComponent />
+               
             </div>
         );
     }
