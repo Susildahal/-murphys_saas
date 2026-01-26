@@ -52,7 +52,7 @@ const initialState: NoticeState = {
 /** Fetch notices (with pagination) */
 export const fetchNotices = createAsyncThunk<
   { data: Notice[]; pagination: Pagination; unreadCount: number },
-  { page?: number; limit?: number, email: string } | void,
+  { page?: number; limit?: number; email?: string } | void,
   { rejectValue: string }
 >("notices/fetchNotices", async (params, { rejectWithValue }) => {
   try {
