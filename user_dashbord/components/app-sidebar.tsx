@@ -5,11 +5,9 @@ import {
   AudioWaveform,
   BookOpen,
   Bot,
-  Command,
-  Map,
-  PieChart,
+
   Settings2,
-  SquareTerminal,
+
   LayoutDashboard,
   Briefcase,
   Grid3x3,
@@ -20,8 +18,6 @@ import {
   Ticket
 } from "lucide-react"
 import { motion, AnimatePresence } from "motion/react"
-import { useRouter } from "next/navigation"
-import { useAppSelector } from "@/lib/redux/hooks"
 
 import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
@@ -124,8 +120,11 @@ const data = {
 
 import { User } from "lucide-react"
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [searchQuery, setSearchQuery] = React.useState("")
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  searchQuery?: string
+}
+
+export function AppSidebar({ searchQuery = "", ...props }: AppSidebarProps) {
   const { state } = useSidebar()
   const isCollapsed = state === "collapsed"
 
@@ -149,7 +148,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }, [searchQuery])
 
   return (
-    <Sidebar collapsible="icon" {...props} className="border-r bg-background">
+    <Sidebar collapsible="icon" {...props} className="border-r bg-white dark:bg-black text-slate-900 dark:text-white">
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 5px;
@@ -199,25 +198,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 height={32}
                 className="object-contain"
               />
-            </div>
-          )}
-        </div>
-
-        <div className="px-4 mt-4">
-          {!isCollapsed ? (
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
-              <Input
-                type="search"
-                placeholder="Search..."
-                className="h-9 pl-9 bg-muted/40 border-none shadow-none focus-visible:ring-1"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          ) : (
-            <div className="flex justify-center py-2">
-              <Search className="h-4 w-4 text-muted-foreground" />
             </div>
           )}
         </div>

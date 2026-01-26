@@ -39,8 +39,8 @@ export function NavMain({
   const pathnameNormalized = pathname ? pathname.replace(/\/+$|(?<!^)\/$/, '') : ''
 
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-2 mb-2">
+    <SidebarGroup className="">
+      <SidebarGroupLabel className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider px-2 mb-2">
         Account Management
       </SidebarGroupLabel>
       <SidebarMenu className="space-y-1">
@@ -73,7 +73,7 @@ export function NavMain({
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                  <SidebarMenuSub className="mr-0 border-l border-muted ml-3.5 pl-3 mt-1 space-y-0.5">
+                  <SidebarMenuSub className="mr-0 border-l border-slate-200 dark:border-slate-800 ml-3.5 pl-3 mt-1 space-y-0.5">
                     {item.items?.map((subItem) => {
                       const subUrl = normalize(subItem.url)
                       const subIsActive = !!subItem.url && (pathnameNormalized === subUrl || pathnameNormalized.startsWith(subUrl + '/'))
@@ -82,10 +82,10 @@ export function NavMain({
                           <SidebarMenuSubButton
                             asChild
                             isActive={subIsActive}
-                            className="h-8 hover:bg-muted"
+                            className="h-8 hover:bg-slate-100 dark:hover:bg-slate-800"
                           >
                             <Link href={subItem.url}>
-                              <span className="text-sm">{subItem.title}</span>
+                              <span className="text-sm text-slate-900 dark:text-white">{subItem.title}</span>
                             </Link>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>

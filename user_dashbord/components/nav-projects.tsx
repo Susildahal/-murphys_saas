@@ -27,9 +27,9 @@ export function NavProjects({
   const pathnameNormalized = pathname ? pathname.replace(/\/+$|(?<!^)\/$/, '') : ''
 
   return (
-    <SidebarGroup>
-      <SidebarGroupLabel className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-2 mb-2">
-        Platform
+    <SidebarGroup className=" ">
+      <SidebarGroupLabel className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider px-2 mb-2">
+        MENU
       </SidebarGroupLabel>
       <SidebarMenu>
         {projects.map((item) => {
@@ -42,11 +42,11 @@ export function NavProjects({
                 asChild
                 tooltip={item.name}
                 isActive={isActive as any}
-                className="h-9 transition-colors hover:bg-muted"
+                className="h-9 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
               >
                 <Link href={item.url} className="flex items-center gap-3">
-                  <item.icon className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">{item.name}</span>
+                  <item.icon className="h-4 w-4 text-slate-600 dark:text-slate-300" />
+                  <span className="font-medium text-slate-900 dark:text-white">{item.name}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

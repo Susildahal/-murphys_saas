@@ -37,7 +37,7 @@ function Header({
   total,
 }: HeaderProps) {
   return (
-    <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+    <div className="mb-4  mt-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       
       {/* LEFT */}
       <div className="flex min-w-0 items-start gap-3">

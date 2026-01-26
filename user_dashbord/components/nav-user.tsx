@@ -59,7 +59,7 @@ import { getMee } from "@/lib/redux/slices/meeSlice"
 export function NavUser() {
   const { isMobile } = useSidebar()
   const router = useRouter()
-  const profileState = useAppSelector((state) => state.profile)
+  const profileState = useAppSelector((state) => state.profile) as { profile: any; loading: boolean; error: string | null }
   const dispatch = useAppDispatch()
   const profile = Array.isArray(profileState.profile) ? profileState.profile[0] : profileState.profile
   const meeState = useAppSelector((state) => state.mee)
