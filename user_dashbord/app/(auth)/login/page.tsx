@@ -214,7 +214,7 @@ export default function AdminLoginPage() {
                   id="email"
                   name="email"
                   type="email"
-                  className={`h-11 rounded border-neutral-300 shadow-none focus-visible:ring-purple-500 ${
+                  className={`h-11 rounded border-neutral-300  bg-white text-black shadow-none focus-visible:ring-purple-500 ${
                     touched.email && errors.email ? "border-red-400" : ""
                   }`}
                 />
@@ -234,7 +234,7 @@ export default function AdminLoginPage() {
                     id="password"
                     name="password"
                     type={passwordClick ? "text" : "password"}
-                    className={`h-11 pr-10 rounded border-neutral-300 shadow-none focus-visible:ring-purple-500 ${
+                    className={`h-11 pr-10 rounded border-neutral-300 shadow-none bg-white text-black focus-visible:ring-purple-500 ${
                       touched.password && errors.password ? "border-red-400" : ""
                     }`}
                   />
