@@ -50,22 +50,25 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { useEffect, useState } from "react"
-import { fetchProfile } from "@/lib/redux/slices/profileSlice"
+import { fetchProfileByEmail } from "@/lib/redux/slices/profileSlice"
+import { getMee } from "@/lib/redux/slices/meeSlice"
 import Link from "next/link"
 
 export function NavUser() {
   const { isMobile } = useSidebar()
   const router = useRouter()
   const profileState = useAppSelector((state) => state.profile)
+  const meeState = useAppSelector((state) => state.mee)
   const dispatch = useAppDispatch()
   const profile = Array.isArray(profileState.profile) ? profileState.profile[0] : profileState.profile
+  const currentUserEmail = meeState.data?.email || getAuth().currentUser?.email
 
   const [showLogoutDialog, setShowLogoutDialog] = useState(false)
 
-  const userName = profile?.name || profile?.firstName && profile?.lastName
+  const userName = profile?.firstName && profile?.lastName
     ? `${profile.firstName} ${profile.lastName}`.trim()
-    : "User"
-  const userEmail = profile?.email || getAuth().currentUser?.email || "Not available"
+    : profile?.name || "User"
+  const userEmail = profile?.email || currentUserEmail || "Not available"
   const userAvatar = profile?.profile_image || ""
   const userRole = profile?.role_type || "User"
 
@@ -87,16 +90,20 @@ export function NavUser() {
       console.error('Logout error:', error)
     }
   }
-  const getProfile = async () => {
-    // Dispatch an action to fetch the profile data
-    await dispatch(fetchProfile({ page: 1, limit: 1 })).unwrap()
-  }
 
   useEffect(() => {
-    if (!profile) {
-      getProfile()
+    // First get the current user info from Firebase
+    if (!meeState.data) {
+      dispatch(getMee())
     }
-  }, [])
+  }, [dispatch, meeState.data])
+
+  useEffect(() => {
+    // Then fetch profile by email when we have the email
+    if (currentUserEmail && !profile) {
+      dispatch(fetchProfileByEmail(currentUserEmail))
+    }
+  }, [currentUserEmail, dispatch, profile])
 
   return (
     <>

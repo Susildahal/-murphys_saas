@@ -22,6 +22,16 @@ const Page = () => {
             })
             console.log('Profile data:', response.data)
 
+            const roleType = response.data?.data?.role_type
+            console.log('User role type:', roleType)
+            
+            // Check if user has admin user role
+            if (roleType !== 'admin user') {
+                console.log('Access denied: User is not an admin user')
+                router.push('/login') // Redirect non-admin users to login
+                return
+            }
+
             const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
             // Only navigate to /admin/dashboard when not already under any /admin route
             if (!currentPath.startsWith('/admin')) {
