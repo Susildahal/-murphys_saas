@@ -98,16 +98,16 @@ export function NavUser() {
       console.error('Logout error:', error)
     }
   }
-  const getProfile = async () => {
-    // Dispatch an action to fetch the profile data
-    await dispatch(fetchProfileByEmail(userEmail)).unwrap()
-  }
+  // const getProfile = async () => {
+  //   // Dispatch an action to fetch the profile data
+  //   await dispatch(fetchProfileByEmail(userEmail)).unwrap()
+  // }
 
-  useEffect(() => {
-    if (!profile) {
-      getProfile()
-    }
-  }, [])
+  // useEffect(() => {
+  //   if (!profile) {
+  //     getProfile()
+  //   }
+  // }, [])
 
   return (
     <>
