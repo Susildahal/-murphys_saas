@@ -117,18 +117,10 @@ const InvoicesPage = () => {
   return (
     <div className="space-y-6">
       {loading && <SpinnerComponent />}
-      <Header title="Invoices" description="View and pay your invoice" />
-
-      <div className="flex items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input 
-            value={search} 
-            onChange={(e) => setSearch(e.target.value)} 
-            placeholder="Search invoices..." 
-            className="pl-9"
-          />
-        </div>
+      <Header title="Invoices" description="View and pay your invoice" 
+      extra={
+          <div className="flex items-center justify-between gap-4">
+     
         <div className="flex items-center gap-2">
           <Button 
             variant={status === 'all' ? 'default' : 'outline'}
@@ -160,6 +152,11 @@ const InvoicesPage = () => {
           </Button>
         </div>
       </div>
+
+      }
+      />
+
+    
 
       <div className="bg-white dark:bg-zinc-900 rounded-lg border">
         <table className="w-full text-left">
