@@ -88,9 +88,27 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401) {
       console.error('Unauthorized - token might be expired');
       showErrorToast('Your session has expired. Please login again.', 'Authentication Error');
-      // You could trigger a logout here if needed
+      // Sign out the user and redirect to login
+      try {
+        auth.signOut().catch(() => {});
+      } finally {
+        if (typeof window !== 'undefined') {
+          const currentPath = window.location.pathname || '';
+          if (currentPath !== '/login') window.location.href = '/login';
+        }
+      }
     } else if (error.response?.status === 403) {
-      showErrorToast('You do not have permission to perform this action.', 'Access Denied');
+      console.error('Forbidden - user does not have required permissions');
+      showErrorToast('You do not have permission to perform this action. Please login with an account that has access.', 'Access Denied');
+      // Sign out the user and redirect to login to ensure they re-authenticate
+      try {
+        auth.signOut().catch(() => {});
+      } finally {
+        if (typeof window !== 'undefined') {
+          const currentPath = window.location.pathname || '';
+          if (currentPath !== '/login') window.location.href = '/login';
+        }
+      }
     } 
      else if (error.response?.status === 500) {
       showErrorToast('Something went wrong on the server. Please try again later.', 'Server Error');

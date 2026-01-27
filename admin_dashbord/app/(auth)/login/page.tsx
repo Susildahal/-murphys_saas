@@ -34,7 +34,7 @@ export default function AdminLoginPage() {
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
-      // if (user) router.replace("/admin/dashboard");
+      if (user) router.replace("/admin/dashboard");
     });
     return () => unsub();
   }, [auth, router]);

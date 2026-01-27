@@ -19,6 +19,7 @@ const Page = () => {
         try {
             const response = await axiosInstance.get(`/profiles/`, {
                 params: { email },
+            
             })
             console.log('Profile data:', response.data)
 
