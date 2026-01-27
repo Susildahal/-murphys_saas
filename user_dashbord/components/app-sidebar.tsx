@@ -116,7 +116,7 @@ const data = {
       icon: Bot,
     },
     {
-      name: "invoices",
+      name: "Invoices",
       url: "/admin/invoices",
       icon: Bot,
     }

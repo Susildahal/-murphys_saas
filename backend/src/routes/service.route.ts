@@ -10,6 +10,8 @@ import {
 } from '../conttrolers/service.conttolers';
 // import { verifyFirebaseToken } from '../middleware/auth';
 import { checkPermission, Permission } from '../middleware/rbac';
+import { isAdmin } from '../middleware/rbac';
+import { verifyFirebaseToken } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -17,18 +19,17 @@ const router = express.Router();
 // router.use(verifyFirebaseToken);
 
 // List services
-router.get('/services', getServices);
+router.get('/services', verifyFirebaseToken, getServices);
 
 // Get single service
-router.get('/services/:id', getServiceById);
+router.get('/services/:id', verifyFirebaseToken, getServiceById);
 
 // Create service (supports multipart form with field 'image')
-router.post('/services', upload.single('image'), cloudinaryUpload, createService);
+router.post('/services', verifyFirebaseToken, isAdmin, upload.single('image'), cloudinaryUpload, createService);
 
 // Update service (supports new image upload)
-router.put('/services/:id', upload.single('image'), cloudinaryUpload, updateService);
+router.put('/services/:id', verifyFirebaseToken, isAdmin, upload.single('image'), cloudinaryUpload, updateService);
 
 // Delete service
-router.delete('/services/:id', deleteService);
-
+router.delete('/services/:id', verifyFirebaseToken, isAdmin, deleteService);
 export default router;

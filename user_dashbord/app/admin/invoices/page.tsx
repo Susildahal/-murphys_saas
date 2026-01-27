@@ -220,12 +220,7 @@ const InvoicesPage = () => {
                 </td>
                 <td className="p-4 text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <button 
-                      title="Download" 
-                      className="inline-flex items-center justify-center p-2 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 transition-colors"
-                    >
-                      <Download className="h-4 w-4"/>
-                    </button>
+                 
                     <button 
                       title="View" 
                       onClick={() => openInvoice(row)} 

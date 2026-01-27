@@ -282,7 +282,6 @@ function Page() {
                         </SelectTrigger>
 
                         <SelectContent>
-                          <SelectItem value="admin user">Admin User</SelectItem>
                           <SelectItem value="client user">Client User</SelectItem>
                         </SelectContent>
                       </Select>
