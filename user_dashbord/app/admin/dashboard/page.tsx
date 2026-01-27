@@ -138,7 +138,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {statsCards.map((card, index) => (
             <Link href={card.link} key={index}>
-              <Card className={`border-l-4 ${card.borderColor} hover:shadow-lg transition-shadow cursor-pointer bg-white dark:bg-slate-800`}>
+              <Card className={`border-l-4 ${card.borderColor} hover:shadow-lg transition-shadow cursor-pointer `}>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <card.icon className={`h-8 w-8 ${card.color}`} />
@@ -168,7 +168,7 @@ export default function DashboardPage() {
               <div className="space-y-3">
                 {resentInvoices && resentInvoices.length > 0 ? (
                   resentInvoices.map((invoice: any) => (
-                    <div key={invoice._id || invoice.invoice_id} className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                    <div key={invoice._id || invoice.invoice_id} className="flex items-center justify-between p-3 rounded-lg transition-colors">
                       <div className="flex-1">
                         <p className="font-medium text-slate-900 dark:text-slate-100">#{invoice.invoice_id}</p>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -209,7 +209,7 @@ export default function DashboardPage() {
               <div className="space-y-3">
                 {recentServices && recentServices.length > 0 ? (
                   recentServices.map((service: any) => (
-                    <div key={service._id} className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                    <div key={service._id} className="flex items-center justify-between p-3 rounded-lg transition-colors">
                       <div className="flex-1">
                         <p className="font-medium text-slate-900 dark:text-slate-100">{service.service_name}</p>
                         <p className="text-xs text-slate-500 dark:text-slate-400">

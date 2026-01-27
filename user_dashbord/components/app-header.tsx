@@ -87,7 +87,7 @@ export function AppHeader({ onSearchChange, searchValue }: AppHeaderProps) {
             <Input
               type="search"
               placeholder="Search or type command..."
-              className="w-full h-11 lg:pl-12 pl-2 pr-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 "
+              className="w-full h-11 lg:pl-12 pl-2 pr-4 bg-white  border border-slate-200 dark:border-slate-700 "
               value={searchValue}
               onChange={(e) => onSearchChange?.(e.target.value)}
             />
