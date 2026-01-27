@@ -5,20 +5,15 @@ import {
   AudioWaveform,
   BookOpen,
   Bot,
-
   Settings2,
-
   LayoutDashboard,
   Briefcase,
-  Grid3x3,
   CreditCard,
   Search,
   ShoppingCart,
-  Bell,
   Ticket
 } from "lucide-react"
 import { motion, AnimatePresence } from "motion/react"
-
 import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
@@ -30,7 +25,6 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { Input } from "@/components/ui/input"
 import Image from "next/image"
 
 // This is sample data.

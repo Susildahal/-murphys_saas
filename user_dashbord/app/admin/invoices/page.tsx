@@ -229,7 +229,7 @@ const InvoicesPage = () => {
                       <Eye className="h-4 w-4"/>
                     </button>
                     {!row.paid && (
-                        <Link href='/billing'>
+                        <Link href='/admin/billing'>
                       <Button 
 
                         className="bg-blue-600 hover:bg-blue-700 text-white"

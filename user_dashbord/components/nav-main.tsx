@@ -37,6 +37,8 @@ export function NavMain({
   const pathname = usePathname();
   const normalize = (u?: string) => (u || '').replace(/\/+$|(?<!^)\/$/, '')
   const pathnameNormalized = pathname ? pathname.replace(/\/+$|(?<!^)\/$/, '') : ''
+  // detect dark mode to avoid overriding dark styles with inline styles
+  const isDark = typeof window !== 'undefined' && document.documentElement.classList.contains('dark')
 
   return (
     <SidebarGroup className="">
@@ -65,11 +67,21 @@ export function NavMain({
                   <SidebarMenuButton
                     tooltip={item.title}
                     isActive={itemIsActive}
-                    className="h-9 transition-colors hover:bg-muted"
+                    // inline style for light mode active visibility
+                    style={itemIsActive && !isDark ? { backgroundColor: '#eff6ff', color: '#1e40af' } : undefined}
+                    className={`h-9 transition-all ${
+                      itemIsActive 
+                        ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-primary/10 dark:text-primary dark:hover:bg-primary/20 font-semibold' 
+                        : 'hover:bg-muted'
+                    }`}
                   >
-                    {item.icon && <item.icon className="h-4 w-4 text-muted-foreground" />}
+                    {item.icon && <item.icon className={`h-4 w-4 ${
+                      itemIsActive ? 'text-blue-600 dark:text-primary' : 'text-muted-foreground'
+                    }`} />}
                     <span className="flex-1">{item.title}</span>
-                    <ChevronRight className="ml-auto h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                    <ChevronRight className={`ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 ${
+                      itemIsActive ? 'text-blue-600 dark:text-primary' : 'text-muted-foreground'
+                    }`} />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
@@ -82,10 +94,20 @@ export function NavMain({
                           <SidebarMenuSubButton
                             asChild
                             isActive={subIsActive}
-                            className="h-8 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            // inline style ensures sub-item active is visible in light mode
+                            style={subIsActive && !isDark ? { backgroundColor: '#3b82f6', color: '#ffffff' } : undefined}
+                            className={`h-8 transition-all ${
+                              subIsActive 
+                                ? 'bg-blue-500 text-white hover:bg-blue-600 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/90 font-semibold' 
+                                : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+                            }`}
                           >
                             <Link href={subItem.url}>
-                              <span className="text-sm text-slate-900 dark:text-white">{subItem.title}</span>
+                              <span className={`text-sm ${
+                                subIsActive 
+                                  ? 'text-white dark:text-primary-foreground font-medium' 
+                                  : 'text-slate-900 dark:text-white'
+                              }`}>{subItem.title}</span>
                             </Link>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>

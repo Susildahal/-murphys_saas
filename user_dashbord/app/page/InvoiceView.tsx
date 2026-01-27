@@ -236,10 +236,11 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
                 borderRadius: '6px',
                 cursor: 'pointer',
                 display: 'flex',
-                alignItems: 'center'
+                alignItems: 'center',
+                color: '#374151'
               }}
             >
-              <X size={16} />
+              <X size={16} color="#374151" />
             </button>
           </div>
         </div>
