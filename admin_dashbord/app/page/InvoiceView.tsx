@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { Download, X } from 'lucide-react'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
@@ -16,6 +16,20 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
   const invoiceRef = useRef<HTMLDivElement | null>(null)
   const { settings } = useAppSelector((state) => state.siteSettings)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return
+    const m = window.matchMedia('(prefers-color-scheme: dark)')
+    const update = () => setIsDarkMode(m.matches)
+    update()
+    if (m.addEventListener) m.addEventListener('change', update)
+    else m.addListener(update)
+    return () => {
+      if (m.removeEventListener) m.removeEventListener('change', update)
+      else m.removeListener(update)
+    }
+  }, [])
 
   const handleDownloadPDF = async () => {
     if (!invoiceRef.current) {
@@ -207,7 +221,7 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
           zIndex: 10
         }}>
           <h2 style={{ fontSize: '20px', fontWeight: '600', margin: '0', color: '#111827' }}>Invoice</h2>
-          <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '8px' }}>
             <button
               onClick={handleDownloadPDF}
               disabled={isGenerating}
@@ -232,15 +246,16 @@ const InvoiceView: React.FC<InvoiceViewProps> = ({ assignmentData, onClose }) =>
               onClick={onClose}
               style={{
                 backgroundColor: 'transparent',
-                border: '1px solid #e5e7eb',
+                border: `1px solid ${isDarkMode ? '#374151' : '#e5e7eb'}`,
                 padding: '8px',
                 borderRadius: '6px',
                 cursor: 'pointer',
                 display: 'flex',
-                alignItems: 'center'
+                alignItems: 'center',
+                color: isDarkMode ? '#ffffff' : '#111827'
               }}
             >
-              <X size={16} />
+              <X size={16} color={isDarkMode ? '#ffffff' : '#111827'} />
             </button>
           </div>
         </div>
