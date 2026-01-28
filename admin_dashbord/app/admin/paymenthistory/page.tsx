@@ -476,12 +476,15 @@ function BillingHistoryPage() {
         title="Billing History"
         description="View and manage all your payment transactions"
         total={billingHistory.length}
-        extra={
-              <div>
-          
-          <CardContent>
-            <div className="flex flex-col gap-3 md:flex-row md:gap-4">
-              <div className="w-full md:w-1/5">
+      />
+
+      <div className="space-y-6 ">
+        {/* Filters Section */}
+        <div>
+          <div className="">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+              <div className="w-full">
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Client</label>
                 <Select value={clientFilter} onValueChange={setClientFilter}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="All Clients" />
@@ -497,7 +500,8 @@ function BillingHistoryPage() {
                 </Select>
               </div>
           
-              <div className="w-full md:w-1/5">
+              <div className="w-full">
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Status</label>
                 <Select value={filter} onValueChange={setFilter}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="All Statuses" />
@@ -512,7 +516,8 @@ function BillingHistoryPage() {
                 </Select>
               </div>
           
-              <div className="w-full md:w-1/5">
+              <div className="w-full">
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Start Date</label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -520,7 +525,7 @@ function BillingHistoryPage() {
                       className={`w-full justify-start text-left font-normal ${!calendarStartDate && 'text-muted-foreground'}`}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {calendarStartDate ? format(calendarStartDate, 'PPP') : 'Pick a date'}
+                      {calendarStartDate ? format(calendarStartDate, 'MMM dd, yyyy') : 'Pick a date'}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -537,7 +542,8 @@ function BillingHistoryPage() {
                 </Popover>
               </div>
           
-              <div className="w-full md:w-1/5">
+              <div className="w-full">
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">End Date</label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -545,7 +551,7 @@ function BillingHistoryPage() {
                       className={`w-full justify-start text-left font-normal ${!calendarEndDate && 'text-muted-foreground'}`}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {calendarEndDate ? format(calendarEndDate, 'PPP') : 'Pick a date'}
+                      {calendarEndDate ? format(calendarEndDate, 'MMM dd, yyyy') : 'Pick a date'}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -563,7 +569,7 @@ function BillingHistoryPage() {
                 </Popover>
               </div>
           
-              <div className="w-full md:w-1/5 flex items-end">
+              <div className="w-full flex items-end">
                 <Button
                   variant="outline"
                   onClick={() => {
@@ -581,15 +587,10 @@ function BillingHistoryPage() {
                 </Button>
               </div>
             </div>
-          </CardContent>
+          </div>
         </div>
-
-        }
-      />
-
-      <div className="space-y-6 p-6">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">

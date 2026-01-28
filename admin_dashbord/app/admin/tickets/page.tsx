@@ -168,7 +168,7 @@ export default function AdminTicketsPage() {
         />
       <div>
 
-        <CardContent>
+        <div>
           {/* Filters */}
         
 
@@ -182,7 +182,7 @@ export default function AdminTicketsPage() {
               <p>No tickets found</p>
             </div>
           ) : (
-            <div className="rounded-md ">
+            <div className=" ">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -191,6 +191,7 @@ export default function AdminTicketsPage() {
                     <TableHead>Problem Type</TableHead>
                     <TableHead>Priority</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>View</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -251,6 +252,8 @@ export default function AdminTicketsPage() {
                           </SelectContent>
                         </Select>
                       </TableCell>
+                      <TableCell><Button variant={'outline'} onClick={() => router.push(`/admin/tickets/${ticket._id}`)}> View  </Button></TableCell>
+
                       <TableCell>
                         {format(new Date(ticket.createdAt), 'MMM d, yyyy')}
                       </TableCell>
@@ -326,7 +329,7 @@ export default function AdminTicketsPage() {
               </div>
             </div>
           )}
-        </CardContent>
+        </div>
       </div>
 
       {/* Delete Confirmation Dialog */}
