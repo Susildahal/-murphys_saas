@@ -26,7 +26,7 @@ import { Switch } from '@/components/ui/switch';
 import SpinnerComponent from '@/app/page/common/Spinner';
 
 import { assignServiceToClient, fetchServices } from '@/lib/redux/slices/serviceSlice';
-import { ArrowBigLeft, ArrowLeftIcon } from 'lucide-react';
+import {  ArrowLeftIcon } from 'lucide-react';
 
 
 
@@ -91,7 +91,6 @@ function page() {
   const [assignStatus, setAssignStatus] = React.useState<'active' | 'paused' | 'cancelled'>('active');
   const [assignCycle, setAssignCycle] = React.useState<'monthly' | 'annual' | 'none'>('monthly');
   const [assignStartDate, setAssignStartDate] = React.useState<string>('');
-  const [assignRenewalDate, setAssignRenewalDate] = React.useState<string | null>(null);
   const [assignPrice, setAssignPrice] = React.useState<number | undefined>(undefined);
   const [assignAutoInvoice, setAssignAutoInvoice] = React.useState<boolean>(false);
   const [assignNotes, setAssignNotes] = React.useState<string>('');
