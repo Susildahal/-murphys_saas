@@ -1,5 +1,6 @@
 import React from 'react'
 import { Button } from '@/components/ui/button'
+import { ChevronLeft, ChevronRight, MoreHorizontal } from 'lucide-react'
 
 interface PaginationProps {
   page: number
@@ -11,47 +12,92 @@ const Pagination: React.FC<PaginationProps> = ({ page, totalPages, onPageChange 
   if (totalPages <= 1) return null
 
   const pages = [] as number[]
-  const start = Math.max(1, page - 2)
-  const end = Math.min(totalPages, page + 2)
+  // Adjust range based on how many numbers you want to show
+  const start = Math.max(1, page - 1)
+  const end = Math.min(totalPages, page + 1)
 
   for (let i = start; i <= end; i++) pages.push(i)
 
   return (
-    <div className="flex items-center justify-between space-x-4 mt-4">
+    <div className="flex items-center justify-center space-x-2 mt-8">
+      {/* Previous Button */}
       <Button
-        className="px-3 py-1 rounded border"
+        variant="outline"
+        size="icon"
+        className="h-9 w-9"
         onClick={() => onPageChange(Math.max(1, page - 1))}
         disabled={page === 1}
+        aria-label="Go to previous page"
       >
-        Prev
+        <ChevronLeft className="h-4 w-4" />
       </Button>
 
-      <div className="flex gap-2">
+      <div className="flex items-center gap-2">
+        {/* First Page */}
         {start > 1 && (
-          <Button className="px-3 py-1 rounded border" onClick={() => onPageChange(1)}>1</Button>
+          <>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-9 w-9"
+              onClick={() => onPageChange(1)}
+            >
+              1
+            </Button>
+            {start > 2 && (
+              <span className="flex h-9 w-9 items-center justify-center text-muted-foreground">
+                <MoreHorizontal className="h-4 w-4" />
+              </span>
+            )}
+          </>
         )}
-        {start > 2 && <span className="px-2">...</span>}
+
+        {/* Page Numbers */}
         {pages.map((p) => (
           <Button
             key={p}
-            className={`px-3 py-1 rounded border  ${p === page ? 'bg-black cursor-not-allowed disabled' : ''}`}
+            size="sm"
+            variant={p === page ? 'default' : 'outline'}
+            className={`h-9 w-9 transition-all ${
+              p === page ? 'pointer-events-none shadow-sm' : 'hover:bg-accent'
+            }`}
             onClick={() => onPageChange(p)}
+            aria-current={p === page ? 'page' : undefined}
           >
             {p}
           </Button>
         ))}
-        {end < totalPages - 1 && <span className="px-2">...</span>}
+
+        {/* Last Page */}
         {end < totalPages && (
-          <Button className="px-3 py-1 rounded border" onClick={() => onPageChange(totalPages)}>{totalPages}</Button>
+          <>
+            {end < totalPages - 1 && (
+              <span className="flex h-9 w-9 items-center justify-center text-muted-foreground">
+                <MoreHorizontal className="h-4 w-4" />
+              </span>
+            )}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-9 w-9"
+              onClick={() => onPageChange(totalPages)}
+            >
+              {totalPages}
+            </Button>
+          </>
         )}
       </div>
 
+      {/* Next Button */}
       <Button
-        className="px-3 py-1 rounded border"
+        variant="outline"
+        size="icon"
+        className="h-9 w-9"
         onClick={() => onPageChange(Math.min(totalPages, page + 1))}
         disabled={page === totalPages}
+        aria-label="Go to next page"
       >
-        Next
+        <ChevronRight className="h-4 w-4" />
       </Button>
     </div>
   )
