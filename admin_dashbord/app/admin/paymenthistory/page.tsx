@@ -480,10 +480,10 @@ function BillingHistoryPage() {
               <div>
           
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              <div>
+            <div className="flex flex-col gap-3 md:flex-row md:gap-4">
+              <div className="w-full md:w-1/5">
                 <Select value={clientFilter} onValueChange={setClientFilter}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="All Clients" />
                   </SelectTrigger>
                   <SelectContent>
@@ -496,10 +496,10 @@ function BillingHistoryPage() {
                   </SelectContent>
                 </Select>
               </div>
-
-              <div>
+          
+              <div className="w-full md:w-1/5">
                 <Select value={filter} onValueChange={setFilter}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="All Statuses" />
                   </SelectTrigger>
                   <SelectContent>
@@ -511,8 +511,8 @@ function BillingHistoryPage() {
                   </SelectContent>
                 </Select>
               </div>
-
-              <div>
+          
+              <div className="w-full md:w-1/5">
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -536,8 +536,8 @@ function BillingHistoryPage() {
                   </PopoverContent>
                 </Popover>
               </div>
-
-              <div>
+          
+              <div className="w-full md:w-1/5">
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
@@ -562,8 +562,8 @@ function BillingHistoryPage() {
                   </PopoverContent>
                 </Popover>
               </div>
-
-              <div className="flex items-end">
+          
+              <div className="w-full md:w-1/5 flex items-end">
                 <Button
                   variant="outline"
                   onClick={() => {

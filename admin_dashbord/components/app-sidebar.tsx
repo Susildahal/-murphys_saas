@@ -130,11 +130,11 @@ const data = {
       url: "/admin/view_assign_service",
       icon: AudioWaveform,
     },
-    {
-      name: "Role and Permission",
-      url: "/admin/roles",
-      icon: Map,
-    },
+    // {
+    //   name: "Role and Permission",
+    //   url: "/admin/roles",
+    //   icon: Map,
+    // },
     {
       name: "Cart",
       url: "/admin/cart",
@@ -147,8 +147,9 @@ const data = {
     },
     {
       name: "Open Tickets",
+
+        icon: BookOpen,
       url: "/admin/tickets",
-      icon: GalleryVerticalEnd,
     }
   ],
 }

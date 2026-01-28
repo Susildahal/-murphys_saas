@@ -23,7 +23,6 @@ const waitForAuthReady = () => {
       });
     });
   }
-  
   return authReadyPromise;
 };
 
