@@ -52,17 +52,13 @@ function page() {
 
   console.log('Services from Redux:', services);
   
-  // FIX: Handle the nested array structure
-  // Access the actual services array - it could be services[0] or services.services
   const servicesList = React.useMemo(() => {
     if (!services) return [];
     
-    // If services is an array with nested array structure
     if (Array.isArray(services) && services.length > 0 && Array.isArray(services[0])) {
       return services[0];
     }
     
-    // If services is an object wrapping the array (e.g. { services: [...] })
     if (
       services &&
       typeof services === 'object' &&

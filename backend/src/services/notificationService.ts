@@ -28,9 +28,7 @@ export class NotificationService {
       // Determine WhatsApp 'from' number. Prefer TWILIO_WHATSAPP_NUMBER, fall back to TWILIO_PHONE_NUMBER if available.
       const fromEnv = process.env.TWILIO_WHATSAPP_NUMBER || process.env.TWILIO_PHONE_NUMBER;
       if (!fromEnv) {
-        console.error('Missing TWILIO_WHATSAPP_NUMBER and TWILIO_PHONE_NUMBER in environment; cannot send WhatsApp message');
-        console.error('💡 For testing, add to .env: TWILIO_WHATSAPP_NUMBER=whatsapp:+14155238886');
-        console.error('   Then join sandbox at: https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn');
+      
         return false;
       }
       if (!process.env.TWILIO_WHATSAPP_NUMBER && process.env.TWILIO_PHONE_NUMBER) {
