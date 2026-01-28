@@ -13,7 +13,6 @@ import { Label } from '@/components/ui/label';
 import { AppDispatch } from '@/lib/redux/store';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { fetchCategories } from '@/lib/redux/slices/categorySlice';
-import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -27,6 +26,7 @@ import { Switch } from '@/components/ui/switch';
 import SpinnerComponent from '@/app/page/common/Spinner';
 
 import { assignServiceToClient, fetchServices } from '@/lib/redux/slices/serviceSlice';
+import { ArrowBigLeft, ArrowLeftIcon } from 'lucide-react';
 
 
 
@@ -293,10 +293,20 @@ function page() {
             <Label className=' pb-2'>Notes (internal)</Label>
             <Textarea value={assignNotes} onChange={(e) => setAssignNotes(e.target.value)} />
           </div>
+          <div className=' flex  gap-4 justify-between mt-6 '>
+            <div>
+              <Button  variant="outline" onClick={() => router.back()}>
+              <ArrowLeftIcon className="h-4 w-4 mr-2" />
+                Back
+              </Button>
+            </div>
 
+        
           <div className="flex items-center justify-end gap-2">
             <Button onClick={handleAssignSubmit}>Assign</Button>
           </div>
+            </div>
+
         </div>
           </div>
         </>

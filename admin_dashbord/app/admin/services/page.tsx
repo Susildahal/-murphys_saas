@@ -40,7 +40,6 @@ export default function Page() {
 
   useEffect(() => {
     dispatch(fetchCategories({ page: 1, limit:100 }));
-    dispatch(fetchServices({ page: 1, limit: 10 }));
   }, [dispatch]);
 
   const handleCreateNew = () => {
@@ -63,9 +62,6 @@ export default function Page() {
   const handleRefresh = () => {
     dispatch(fetchServices({ page: 1, limit: 10 }));
   };
-  if (loading) {
-     <SpinnerComponent />;
-  }
 
   return (
     <>
@@ -115,6 +111,11 @@ export default function Page() {
         </div>
 
         <div className="pt-4">
+          {loading && (
+            <div className="mb-2">
+              <SpinnerComponent />
+            </div>
+          )}
           <ServiceTable onEdit={handleEdit} categoryFilter={categoryFilter} />
         </div>
       </div>

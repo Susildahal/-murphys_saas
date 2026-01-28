@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { deleteService, toggleServiceStatus, setSelectedService, fetchServices, assignServiceToClient } from '@/lib/redux/slices/serviceSlice';
-import { fetchProfile } from '@/lib/redux/slices/profileSlice';
+import { getadminProfile } from '@/lib/redux/slices/profileSlice';
 import { Service } from '@/types/service';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -79,6 +79,7 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
   const [assigningService, setAssigningService] = useState<Service | null>(null);
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
   const [assignStatus, setAssignStatus] = useState<'active' | 'paused' | 'cancelled'>('active');
+  const [assignSubmitting, setAssignSubmitting] = useState(false);
   const [assignStartDate, setAssignStartDate] = useState<string>('');
   const [assignRenewalDate, setAssignRenewalDate] = useState<string | null>(null);
   const [assignCycle, setAssignCycle] = useState<'monthly' | 'annual' | 'none'>('monthly');
@@ -138,10 +139,7 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
     dispatch(fetchServices({ page: currentPage, limit: ITEMS_PER_PAGE, category: categoryFilter === 'all' ? undefined : categoryFilter } as any));
   }, [dispatch, currentPage, categoryFilter]);
 
-  // ensure user list is available
-  useEffect(() => {
-    dispatch(fetchProfile({}));
-  }, [dispatch]);
+
 
   const formatBillingType = (type: string) => {
     const formats: Record<string, string> = {
@@ -185,6 +183,9 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
   };
 
   const openAssignDialog = (service: Service) => {
+    // Always fetch client users when opening assign dialog to ensure we have latest client list
+    dispatch(getadminProfile({ page: 1, limit: 1000, role_type: 'client user' } as any));
+
     setAssigningService(service);
     // prefill start date to today
     setAssignStartDate(new Date().toISOString().slice(0, 10));
@@ -203,6 +204,7 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
       toast({ title: 'Error', description: 'Please select a client', variant: 'destructive' });
       return;
     }
+    setAssignSubmitting(true);
     const payload = {
       id: typeof crypto !== 'undefined' && (crypto as any).randomUUID ? (crypto as any).randomUUID() : `${Date.now()}-${Math.random()}`,
       client_id: selectedClient,
@@ -223,6 +225,8 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
     } catch (err) {
       toast({ title: 'Error', description: 'Failed to assign service', variant: 'destructive' });
       console.error('assign error', err);
+    } finally {
+      setAssignSubmitting(false);
     }
   };
 
@@ -735,9 +739,15 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
                   <SelectValue placeholder="Select client " />
                 </SelectTrigger>
                 <SelectContent>
-                  {profiles.map((u: any) => (
-                    <SelectItem key={u._id || u.email} value={u._id}>{`${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email}</SelectItem>
-                  ))}
+                  {profileState.loading ? (
+                    <SelectItem value="__loading__" disabled>Loading clients...</SelectItem>
+                  ) : (Array.isArray(profiles) && profiles.length === 0) ? (
+                    <SelectItem value="__no_clients__" disabled>No clients found</SelectItem>
+                  ) : (
+                    profiles.map((u: any) => (
+                      <SelectItem key={u._id || u.id || u.email} value={u._id || u.id || u.email}>{`${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email}</SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -802,8 +812,10 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
             </div>
 
             <div className="flex items-center justify-end gap-2">
-              <Button variant="outline" onClick={() => setAssignDialogOpen(false)}>Cancel</Button>
-              <Button onClick={handleAssignSubmit}>Assign</Button>
+              <Button variant="outline" onClick={() => setAssignDialogOpen(false)} disabled={assignSubmitting}>Cancel</Button>
+              <Button onClick={handleAssignSubmit} disabled={!selectedClient || assignSubmitting}>
+                {assignSubmitting ? 'Assigning...' : 'Assign'}
+              </Button>
             </div>
           </div>
         </DialogContent>
