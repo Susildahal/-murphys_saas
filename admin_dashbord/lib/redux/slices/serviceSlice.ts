@@ -79,6 +79,47 @@ export const fetchServices = createAsyncThunk(
   }
 );
 
+// Async thunk to fetch a single service by ID
+export const fetchServiceById = createAsyncThunk(
+  'services/fetchServiceById',
+  async (serviceId: string, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get(`/services/${serviceId}`);
+      const service: any = response.data?.data || {};
+      service.id = service.id || service._id;
+      
+      // Parse arrays using same logic as fetchServices
+      const parseToArray = (val: any): string[] => {
+        let v = val;
+        let attempts = 0;
+        while (typeof v === 'string' && attempts < 5) {
+          try {
+            v = JSON.parse(v);
+          } catch (_err) {
+            break;
+          }
+          attempts++;
+        }
+        if (Array.isArray(v)) {
+          if (v.length === 1 && typeof v[0] === 'string' && v[0].trim().startsWith('[')) {
+            return parseToArray(v[0]);
+          }
+          return v.map((x: any) => (typeof x === 'string' ? x : String(x)));
+        }
+        if (v == null) return [];
+        return [String(v)];
+      };
+      
+      service.tags = parseToArray(service.tags);
+      service.features = parseToArray(service.features);
+      
+      return service;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to fetch service');
+    }
+  }
+);
+
 // Async thunk to create a service
 export const createService = createAsyncThunk(
   'services/createService',
@@ -228,6 +269,20 @@ const serviceSlice = createSlice({
         state.totalPages = Math.ceil((pagination.total || state.total) / (pagination.limit || state.limit));
       })
       .addCase(fetchServices.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      
+      // Fetch service by ID
+      .addCase(fetchServiceById.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchServiceById.fulfilled, (state, action: PayloadAction<Service>) => {
+        state.loading = false;
+        state.selectedService = action.payload;
+      })
+      .addCase(fetchServiceById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })

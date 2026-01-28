@@ -108,8 +108,8 @@ export default function ServiceForm({ service, onSuccess }: ServiceFormProps) {
           discountType: service.discountType ?? 'percentage',
           discountValue: service.discountValue ?? 0,
           discountReason: service.discountReason ?? '',
-          discountStartDate: service.discountStartDate ?? '',
-          discountEndDate: service.discountEndDate ?? '',
+          discountStartDate: service.discountStartDate ? new Date(service.discountStartDate).toISOString().split('T')[0] : '',
+          discountEndDate: service.discountEndDate ? new Date(service.discountEndDate).toISOString().split('T')[0] : '',
           tags: service.tags ?? [],
           features: service.features ?? [],
           isFeatured: service.isFeatured ?? false,
@@ -168,6 +168,32 @@ export default function ServiceForm({ service, onSuccess }: ServiceFormProps) {
       }
     }
   }, [service]);
+
+  // Reset form when service prop changes (for editing)
+  useEffect(() => {
+    if (service) {
+      form.reset({
+        name: service.name,
+        description: service.description,
+        price: service.price,
+        currency: service.currency ?? 'AUD',
+        billingType: service.billingType,
+        categoryId: service.categoryId,
+        categoryName: service.categoryName,
+        hasDiscount: service.hasDiscount ?? false,
+        discountType: service.discountType ?? 'percentage',
+        discountValue: service.discountValue ?? 0,
+        discountReason: service.discountReason ?? '',
+        discountStartDate: service.discountStartDate ? new Date(service.discountStartDate).toISOString().split('T')[0] : '',
+        discountEndDate: service.discountEndDate ? new Date(service.discountEndDate).toISOString().split('T')[0] : '',
+        tags: service.tags ?? [],
+        features: service.features ?? [],
+        isFeatured: service.isFeatured ?? false,
+        durationInDays: service.durationInDays,
+        notes: service.notes ?? '',
+      });
+    }
+  }, [service, form]);
 
   
 

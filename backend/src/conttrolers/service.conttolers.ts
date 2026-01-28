@@ -3,6 +3,7 @@ import Category from "../models/category.model";
 import { Request, Response } from "express";
 import cloudinary from '../config/cloudinary';
 import AssignService from '../models/assignService.routes';
+import cron from 'node-cron';
 
 
 // Create a new service. Expects optional image upload middleware to set
@@ -174,3 +175,32 @@ export const deleteService = async (req: Request, res: Response) => {
     return res.status(500).json({ success: false, message: 'Failed to delete service' });
   }
 };
+
+
+
+const cronSchedule = '31 13 * * *'; // every day at 13:31
+console.log(`Scheduling remove expired discounts cron job with schedule: "${cronSchedule}"`);
+if (cron.validate(cronSchedule)) {
+  cron.schedule(cronSchedule, async () => {
+    try {
+      console.log('Remove the discount when the end date is reached cron job started');
+      // Find all services
+      const allServices = await Service.find({hasDiscount: true, discountEndDate: { $lte: new Date() }});
+      console.log(`Found ${allServices.length} services with expired discounts to update`);
+      for (const service of allServices) {
+        service.hasDiscount = false;
+        service.discountType = undefined;
+        service.discountValue = undefined;
+        service.discountReason = undefined;
+        service.discountStartDate = undefined;
+        service.discountEndDate = undefined;
+        await service.save();
+        console.log(`Updated service ${service._id} - ${service.name} to remove expired discount`);
+      }
+    } catch (error) {
+      console.error('Error in remove expired discounts cron job:', error);
+    }
+  });
+} else {
+  console.error(`Invalid cron expression for service discount cleanup: "${cronSchedule}". Cron job will not be started.`);
+}

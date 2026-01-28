@@ -6,17 +6,9 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { fetchServices } from '@/lib/redux/slices/serviceSlice';
 import { Service } from '@/types/service';
 import dynamic from 'next/dynamic';
-const ServiceForm = dynamic(() => import('@/app/page/service-form'), { ssr: false });
 const ServiceTable = dynamic(() => import('@/app/page/service-table'), { ssr: false });
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { CardDescription, CardTitle } from '@/components/ui/card';
 import { Plus ,ArrowLeft ,RefreshCcw} from 'lucide-react';
 import { 
   Select,
@@ -31,8 +23,6 @@ import SpinnerComponent from '@/app/page/common/Spinner';
 export default function Page() {
   const dispatch = useAppDispatch();
   const { loading ,total} = useAppSelector((state) => state.services);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const { categories } = useAppSelector((state) => state.categories);
 
@@ -48,15 +38,8 @@ export default function Page() {
   };
 
   const handleEdit = (service: Service) => {
-    setSelectedService(service);
-    setDialogOpen(true);
-  };
-
-  const handleSuccess = () => {
-    setDialogOpen(false);
-    setSelectedService(null);
-    dispatch(fetchServices({ page: 1, limit: 10 }));
-    
+    const serviceId = (service as any)._id || (service as any).id;
+    router.push(`/admin/services/create?edit=${serviceId}`);
   };
 
   const handleRefresh = () => {
@@ -64,80 +47,52 @@ export default function Page() {
   };
 
   return (
-    <>
-      <div className="  bg-none   ">
-        <div className="">
-        <div className="">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className=' flex gap-2 justify-center items-center '>
-              <Button variant="ghost" className=" cursor-pointer hover:bg-transparent">
-<ArrowLeft className="h-6 w-6 inline-block mr-2  text-blue-600 cursor-pointer" onClick={() => router.push('/admin/dashboard')} />
-  </Button>
-  <div className=' flex flex-col'>             
-     <CardTitle className="text- ">Service Management {  total === 0 ? "" : "Total:"+ `_${total}` }</CardTitle>
-              <CardDescription className="text-base "> 
-                Manage your services, pricing, and categories
-              </CardDescription>
-              </div>
-
-            </div>
-            <div className="flex gap-2">
-              <RefreshCcw className="h-6 w-6 text-gray-500 inline-block mr-2 cursor-pointer" onClick={handleRefresh} />
-
-              
-                <div>
-                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Filter by Category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Categories</SelectItem>
-                            {categories.filter(cat => cat.status === 'active').map((category) => (
-                              <SelectItem key={category._id} value={category._id}>
-                                {category.name}
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-                        
-           
-              <Button onClick={handleCreateNew} size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Service
-              </Button>
-            </div>
+    <div className="bg-none">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className='flex gap-2 justify-center items-center'>
+          <Button variant="ghost" className="cursor-pointer hover:bg-transparent">
+            <ArrowLeft className="h-6 w-6 inline-block mr-2 text-blue-600 cursor-pointer" onClick={() => router.push('/admin/dashboard')} />
+          </Button>
+          <div className='flex flex-col'>             
+            <CardTitle className="text-">Service Management {total === 0 ? "" : "Total:" + `_${total}`}</CardTitle>
+            <CardDescription className="text-base"> 
+              Manage your services, pricing, and categories
+            </CardDescription>
           </div>
         </div>
-
-        <div className="pt-4">
-          {loading && (
-            <div className="mb-2">
-              <SpinnerComponent />
-            </div>
-          )}
-          <ServiceTable onEdit={handleEdit} categoryFilter={categoryFilter} />
+        
+        <div className="flex gap-2">
+          <RefreshCcw className="h-6 w-6 text-gray-500 inline-block mr-2 cursor-pointer" onClick={handleRefresh} />
+          <div>
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.filter(cat => cat.status === 'active').map((category) => (
+                  <SelectItem key={category._id} value={category._id}>
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button onClick={handleCreateNew} size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Create Service
+          </Button>
         </div>
       </div>
- 
-      <Dialog  open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="  max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">
-              {selectedService ? 'Edit Service' : 'Create New Service'}
-            </DialogTitle>
-            <DialogDescription>
-              {selectedService
-                ? 'Update the service details below'
-                : 'Fill in the details to create a new service'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="mt-4">
-            <ServiceForm service={selectedService} onSuccess={handleSuccess} />
+
+      <div className="pt-4">
+        {loading && (
+          <div className="mb-2">
+            <SpinnerComponent />
           </div>
-        </DialogContent>
-      </Dialog>
+        )}
+        <ServiceTable onEdit={handleEdit} categoryFilter={categoryFilter} />
       </div>
-    </>
+    </div>
   );
 }
