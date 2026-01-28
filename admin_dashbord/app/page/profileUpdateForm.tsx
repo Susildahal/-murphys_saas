@@ -14,11 +14,8 @@ import {
   MapPin,
   Info,
   CheckCircle2,
-  Github,
-  Twitter,
-  Linkedin
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion,  } from 'framer-motion';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { updateProfile, clearUpdateSuccess, fetchProfileByEmail, createProfile } from '@/lib/redux/slices/profileSlice';
 import { useToast } from '@/hooks/use-toast';
@@ -87,7 +84,8 @@ export default function ProfileUpdateForm() {
   const [dojDate, setDojDate] = useState<Date | undefined>(undefined);
 
   useEffect(() => {
-    if (meeData?.email) dispatch(fetchProfileByEmail(meeData.email));
+    if (meeData?.email)
+       dispatch(fetchProfileByEmail(meeData.email));
   }, [dispatch, meeData?.email]);
 
   useEffect(() => {

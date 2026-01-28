@@ -268,17 +268,7 @@ export const getProfileByEmail = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Profile not found" });
     }
 
-
-    const token = Jwt.sign(
-      {
-        id: profile._id,
-        email: profile.email,
-      },
-      process.env.JWT_SECRET_KEY ||
-      "default_jwt_secret_key",
-      { expiresIn: "7d" } 
-    );
-    res.status(200).json({ data: profile, message: "Profile retrieved successfully", token });
+    res.status(200).json({ data: profile, message: "Profile retrieved successfully"});
   }
   catch (error) {
     res.status(400).json({ message: (error as Error).message });
