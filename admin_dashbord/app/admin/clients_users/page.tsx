@@ -28,22 +28,43 @@ import SpinnerComponent from '@/app/page/common/Spinner'
 import { Input } from '@/components/ui/input'
 import axiosInstance from '@/lib/axios'
 import { useRouter } from 'next/navigation'
+import { fetchServices, assignServiceToClient } from '@/lib/redux/slices/serviceSlice'
+import { useToast } from '@/hooks/use-toast'
+import DateRangePicker from '@/components/ui/date-range-picker'
+import { Textarea } from '@/components/ui/textarea'
+import { Switch } from '@/components/ui/switch'
 function ClientsUsersPage() {
   const dispatch = useAppDispatch()
   const [searchTerm, setSearchTerm] = React.useState('')
   const { profile, loading, error, page, totalPages } = useAppSelector((state) => state.profile as any)
   const { roles } = useAppSelector((state: any) => state.role)
+  const { services } = useAppSelector((state) => state.services)
   const { user: currentUser } = useAuth()
   const router = useRouter();
+  const { toast } = useToast();
 
   const profiles = Array.isArray(profile) ? profile : profile ? [profile] : []
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
   const [selectedUserDetails, setSelectedUserDetails] = useState<any>(null)
+  
+  // Assign dialog states
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false)
+  const [assigningClient, setAssigningClient] = useState<any>(null)
+  const [selectedService, setSelectedService] = useState<string | null>(null)
+  const [assignStatus, setAssignStatus] = useState<'active' | 'paused' | 'cancelled'>('active')
+  const [assignSubmitting, setAssignSubmitting] = useState(false)
+  const [assignStartDate, setAssignStartDate] = useState<string>('')
+  const [assignRenewalDate, setAssignRenewalDate] = useState<string | null>(null)
+  const [assignCycle, setAssignCycle] = useState<'monthly' | 'annual' | 'none'>('monthly')
+  const [assignPrice, setAssignPrice] = useState<number | undefined>(undefined)
+  const [assignAutoInvoice, setAssignAutoInvoice] = useState<boolean>(false)
+  const [assignNotes, setAssignNotes] = useState<string>('')
 
   // initial load
   useEffect(() => {
     dispatch(getadminProfile({ role_type: 'client user', page: 1, limit: 10, search: '' } as any))
     dispatch(fetchRoles({} as any))
+    dispatch(fetchServices({ page: 1, limit: 1000 } as any)) // Fetch all services for dropdown
   }, [dispatch])
 
   // debounced search: when searchTerm changes, wait 500ms before dispatching
@@ -58,6 +79,50 @@ function ClientsUsersPage() {
 
   const handlePageChange = (p: number) => {
     dispatch(getadminProfile({ role_type: 'client user', page: p, limit: 10, search: searchTerm } as any))
+  }
+
+  const openAssignDialog = (client: any) => {
+    setAssigningClient(client)
+    setAssignStartDate(new Date().toISOString().slice(0, 10))
+    setAssignRenewalDate(null)
+    setSelectedService(null)
+    setAssignPrice(undefined)
+    setAssignNotes('')
+    setAssignCycle('monthly')
+    setAssignAutoInvoice(false)
+    setAssignStatus('active')
+    setAssignDialogOpen(true)
+  }
+
+  const handleAssignSubmit = async () => {
+    if (!assigningClient || !selectedService) {
+      toast({ title: 'Error', description: 'Please select a service', variant: 'destructive' })
+      return
+    }
+    setAssignSubmitting(true)
+    const payload = {
+      id: typeof crypto !== 'undefined' && (crypto as any).randomUUID ? (crypto as any).randomUUID() : `${Date.now()}-${Math.random()}`,
+      client_id: assigningClient._id || assigningClient.id,
+      service_catalog_id: selectedService,
+      status: assignStatus,
+      start_date: assignStartDate,
+      end_date: assignRenewalDate || null,
+      cycle: assignCycle,
+      price: assignPrice,
+      auto_invoice: assignAutoInvoice,
+      notes: assignNotes,
+    } as any
+    try {
+      await dispatch(assignServiceToClient(payload)).unwrap()
+      toast({ title: 'Success', description: 'Service assigned to client' })
+      setAssignDialogOpen(false)
+      setAssigningClient(null)
+    } catch (err) {
+      toast({ title: 'Error', description: 'Failed to assign service', variant: 'destructive' })
+      console.error('assign error', err)
+    } finally {
+      setAssignSubmitting(false)
+    }
   }
 
   return (
@@ -88,7 +153,8 @@ function ClientsUsersPage() {
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Role Type</TableHead>
-                <TableHead>Role</TableHead>
+                {/* <TableHead>Role</TableHead> */}
+                <TableHead>Assign Service</TableHead>
                 <TableHead>Country</TableHead>
                 <TableHead> Phone</TableHead>
                 <TableHead>Status</TableHead>
@@ -113,7 +179,7 @@ function ClientsUsersPage() {
                     <TableCell>{admin.firstName} {admin.lastName}</TableCell>
                     <TableCell>{admin.email}</TableCell>
                     <TableCell>{admin.role_type || '-'}</TableCell>
-                    <TableCell>
+                    {/* <TableCell>
                       <Select
                         value={admin.role || ''}
                         onValueChange={async (value) => {
@@ -142,6 +208,15 @@ function ClientsUsersPage() {
                           ))}
                         </SelectContent>
                       </Select>
+                    </TableCell> */}
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openAssignDialog(admin)}
+                      >
+                        Assign Service  
+                      </Button>
                     </TableCell>
                        <TableCell>{admin.country || '-'}</TableCell>
                     <TableCell>{admin.phone || '-'}</TableCell>
@@ -264,6 +339,109 @@ function ClientsUsersPage() {
           <div className="mt-4">
             <Pagination page={page || 1} totalPages={totalPages || 1} onPageChange={handlePageChange} />
           </div>
+
+          {/* Assign Service Dialog */}
+          <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Assign Service to Client</DialogTitle>
+                <DialogDescription>
+                  Assign a service to {assigningClient?.firstName} {assigningClient?.lastName}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4 mt-4">
+                <div>
+                  <Label className="pb-2">Service</Label>
+                  <Select value={selectedService || ''} onValueChange={(v) => {
+                    setSelectedService(v || null)
+                    const service = services.find((s: any) => (s._id || s.id) === v)
+                    if (service) {
+                      setAssignPrice(service.price)
+                      setAssignCycle(service.billingType === 'monthly' ? 'monthly' : 'none')
+                    }
+                  }}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select service" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {services.map((service: any) => (
+                        <SelectItem key={service._id || service.id} value={service._id || service.id}>
+                          {service.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="pb-2">Status</Label>
+                    <Select value={assignStatus} onValueChange={(v) => setAssignStatus(v as any)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="paused">Paused</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="pb-2">Cycle</Label>
+                    <Select value={assignCycle} onValueChange={(v) => setAssignCycle(v as any)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="monthly">Monthly</SelectItem>
+                        <SelectItem value="annual">Annual</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="pb-2">Start / Complete date</Label>
+                  <DateRangePicker
+                    value={{ from: assignStartDate || null, to: assignRenewalDate || null }}
+                    onChange={(v) => {
+                      setAssignStartDate(v.from || '')
+                      setAssignRenewalDate(v.to || null)
+                    }}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="pb-2">Price (override)</Label>
+                    <Input type="number" value={assignPrice ?? ''} onChange={(e) => setAssignPrice(e.target.value ? Number(e.target.value) : undefined)} />
+                  </div>
+                  <div className="flex flex-col">
+                    <Label className="pb-2">Auto invoice</Label>
+                    <div className="mt-2">
+                      <Switch checked={assignAutoInvoice} onCheckedChange={(v) => setAssignAutoInvoice(Boolean(v))} />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="pb-2">Notes (internal)</Label>
+                  <Textarea value={assignNotes} onChange={(e) => setAssignNotes(e.target.value)} />
+                </div>
+
+                <div className="flex items-center justify-end gap-2">
+                  <Button variant="outline" onClick={() => setAssignDialogOpen(false)} disabled={assignSubmitting}>Cancel</Button>
+                  <Button onClick={handleAssignSubmit} disabled={!selectedService || assignSubmitting}>
+                    {assignSubmitting ? 'Assigning...' : 'Assign'}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
         }
     </div>
