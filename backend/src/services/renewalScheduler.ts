@@ -9,7 +9,7 @@ import NotificationService from './notificationService';
  * Check renewals and send reminders at 7, 3, and 1 day before due date
  */
 export const startRenewalReminderScheduler = () => {
-  const cronSchedule = process.env.RENEWAL_CRON || '55 11 * * *'; // default daily at 11:55 am
+  const cronSchedule = process.env.RENEWAL_CRON || '05 12 * * *'; // default daily at 11:55 am
 
   const job = async () => {
     console.log('Running renewal reminder scheduler...');
