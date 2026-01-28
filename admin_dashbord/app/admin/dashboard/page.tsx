@@ -134,6 +134,19 @@ export default function DashboardPage() {
           title="Dashboard"
           description="Welcome back. Here's what's happening with your projects today."
           extra={
+<>
+              <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center gap-2"
+      >
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
+            Showing data for: <span className="font-bold">{filterOptions.find(f => f.value === selectedFilter)?.label}</span>
+          </span>
+        </div>
+      </motion.div>
                <div className="flex gap-2">
           <Select value={selectedFilter} onValueChange={handleFilterChange}>
             <SelectTrigger className="w-[180px] border-2">
@@ -151,7 +164,7 @@ export default function DashboardPage() {
             </SelectContent>
           </Select>
         </div>
-
+</>
           }
         />
         
@@ -160,18 +173,7 @@ export default function DashboardPage() {
  
 
       {/* Current Filter Badge */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-2"
-      >
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
-          <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-          <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
-            Showing data for: <span className="font-bold">{filterOptions.find(f => f.value === selectedFilter)?.label}</span>
-          </span>
-        </div>
-      </motion.div>
+    
 
       {/* Loading State */}
       {loading && (
