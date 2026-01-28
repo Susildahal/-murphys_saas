@@ -9,7 +9,19 @@ import NotificationService from './notificationService';
  * Check renewals and send reminders at 7, 3, and 1 day before due date
  */
 export const startRenewalReminderScheduler = () => {
-  const cronSchedule = process.env.RENEWAL_CRON || '05 12 * * *'; // default daily at 11:55 am
+  const envSchedule = (process.env.RENEWAL_CRON || '05 12 * * *').toString(); // default daily at 12:05
+  // sanitize schedule: remove block comments, inline comments (//, #, ;) and trailing text
+  let cronSchedule = envSchedule
+    .replace(/\/\*[\s\S]*?\*\//g, '') // remove /* ... */
+    .split('//')[0]
+    .split('#')[0]
+    .split(';')[0]
+    .trim();
+
+  if (!cronSchedule) {
+    console.warn(`RENEWAL_CRON was provided but became empty after stripping comments: "${envSchedule}"`);
+    cronSchedule = envSchedule.trim();
+  }
 
   const job = async () => {
     console.log('Running renewal reminder scheduler...');
@@ -77,8 +89,22 @@ export const startRenewalReminderScheduler = () => {
     }
   };
 
-  // Schedule the cron job using configured schedule
-  cron.schedule(cronSchedule, job);
+  // Schedule the cron job using configured schedule (validate first to avoid passing invalid values to node-cron)
+  try {
+    if (!cron.validate(cronSchedule)) {
+      console.error(`Invalid cron expression for RENEWAL_CRON: "${cronSchedule}". Scheduler will not be started.`);
+      // allow immediate run for testing even if the cron expression is invalid
+      if (process.env.RUN_RENEWAL_NOW === 'true') {
+        console.log('RUN_RENEWAL_NOW detected — executing renewal reminders immediately despite invalid schedule');
+        job().catch(err => console.error('Immediate renewal job error:', err));
+      }
+      return;
+    }
+
+    cron.schedule(cronSchedule, job);
+  } catch (err) {
+    console.error('Failed to start renewal cron job:', err);
+  }
 
   // If RUN_RENEWAL_NOW is set, run job immediately for testing
   if (process.env.RUN_RENEWAL_NOW === 'true') {
