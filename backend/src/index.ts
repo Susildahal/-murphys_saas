@@ -77,21 +77,6 @@ app.use("/api/invoices", invoiceRouter);
 app.use("/api", privacyPolicyRouter);
 app.use("/api", ticketRouter);
 
-
-
-// Protected route example
-// app.get("/api/mee", verifyFirebaseToken, (req: AuthenticatedRequest, res) => {
-//   res.json({
-//     message: "Access granted to protected route",
-//     user: {
-//       uid: req.user?.uid,
-//       email: req.user?.email,
-//       name: req.user?.name
-//     }
-//   });
-// });
-
-
 export default app;
 
 
