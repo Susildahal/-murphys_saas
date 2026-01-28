@@ -105,24 +105,24 @@ export default function DashboardPage() {
       title: "Total Services",
       value: totalServices?.toString() || "0",
       icon: Package,
-      color: "text-indigo-500",
-      bg: "bg-indigo-500/10",
+      color: "text-blue-600",
+      bg: "bg-blue-600/10",
       trend: "+8%"
     },
     {
       title: "Assigned Services",
       value: totalAssigned?.toString() || "0",
       icon: CheckCircle2,
-      color: "text-emerald-500",
-      bg: "bg-emerald-500/10",
+      color: "text-blue-700",
+      bg: "bg-blue-700/10",
       trend: "+23%"
     },
     {
       title: "Unread Notices",
       value: unreadNotices?.toString() || "0",
       icon: Bell,
-      color: "text-amber-500",
-      bg: "bg-amber-500/10",
+      color: "text-blue-800",
+      bg: "bg-blue-800/10",
       trend: `${totalNotices || 0} total`
     }
   ];
@@ -165,9 +165,9 @@ export default function DashboardPage() {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center gap-2"
       >
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 rounded-lg">
-          <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-          <span className="text-sm font-medium text-purple-900 dark:text-purple-100">
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          <span className="text-sm font-medium text-blue-900 dark:text-blue-100">
             Showing data for: <span className="font-bold">{filterOptions.find(f => f.value === selectedFilter)?.label}</span>
           </span>
         </div>
@@ -177,7 +177,7 @@ export default function DashboardPage() {
       {loading && (
         <div className="flex items-center justify-center py-20">
           <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+            <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
             <p className="text-muted-foreground">Loading dashboard...</p>
           </div>
         </div>
@@ -208,7 +208,7 @@ export default function DashboardPage() {
                       <div className={`p-3 rounded-xl ${stat.bg} transition-transform group-hover:scale-110`}>
                         <stat.icon className={`h-6 w-6 ${stat.color}`} />
                       </div>
-                      <div className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                      <div className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 font-medium">
                         <TrendingUp className="w-3 h-3" />
                         {stat.trend}
                       </div>
@@ -231,7 +231,7 @@ export default function DashboardPage() {
             <Card className="border shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Activity className="h-5 w-5 text-purple-500" />
+                  <Activity className="h-5 w-5 text-blue-500" />
                   Services Status
                 </CardTitle>
                 <CardDescription>Active vs Inactive breakdown</CardDescription>
@@ -244,8 +244,8 @@ export default function DashboardPage() {
                       <PieChart>
                         <Pie
                           data={[
-                            { name: 'Active', value: Number(activeService) || 0, color: '#10b981' },
-                            { name: 'Inactive', value: Number(inactiveService) || 0, color: '#f43f5e' }
+                            { name: 'Active', value: Number(activeService) || 0, color: '#3b82f6' },
+                            { name: 'Inactive', value: Number(inactiveService) || 0, color: '#93c5fd' }
                           ]}
                           cx="50%"
                           cy="50%"
@@ -281,8 +281,8 @@ export default function DashboardPage() {
                           dataKey="value"
                         >
                           {[
-                            { name: 'Active', value: Number(activeService) || 0, color: '#10b981' },
-                            { name: 'Inactive', value: Number(inactiveService) || 0, color: '#f43f5e' }
+                            { name: 'Active', value: Number(activeService) || 0, color: '#3b82f6' },
+                            { name: 'Inactive', value: Number(inactiveService) || 0, color: '#93c5fd' }
                           ].map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
@@ -305,20 +305,20 @@ export default function DashboardPage() {
                   <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                     <div className="space-y-1">
                       <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                        <div className="w-2 h-2 rounded-full bg-blue-500" />
                         Active
                       </p>
-                      <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{activeService}</p>
+                      <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{activeService}</p>
                       <p className="text-xs">
                         {totalServices > 0 ? `${Math.round((activeService / totalServices) * 100)}%` : '0%'}
                       </p>
                     </div>
                     <div className="space-y-1">
                       <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-rose-500" />
+                        <div className="w-2 h-2 rounded-full bg-blue-300" />
                         Inactive
                       </p>
-                      <p className="text-2xl font-bold text-rose-600 dark:text-rose-400">{inactiveService}</p>
+                      <p className="text-2xl font-bold text-blue-400 dark:text-blue-300">{inactiveService}</p>
                       <p className="text-xs text-white">
                         {totalServices > 0 ? `${Math.round((inactiveService / totalServices) * 100)}%` : '0%'}
                       </p>
@@ -332,7 +332,7 @@ export default function DashboardPage() {
             <Card className="border shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Bell className="h-5 w-5 text-amber-500" />
+                  <Bell className="h-5 w-5 text-blue-500" />
                   Notices Status
                 </CardTitle>
                 <CardDescription>Read vs Unread breakdown</CardDescription>
@@ -346,7 +346,7 @@ export default function DashboardPage() {
                         <Pie
                           data={[
                             { name: 'Read', value: Math.max((Number(totalNotices) || 0) - (Number(unreadNotices) || 0), 0), color: '#3b82f6' },
-                            { name: 'Unread', value: Number(unreadNotices) || 0, color: '#f59e0b' }
+                            { name: 'Unread', value: Number(unreadNotices) || 0, color: '#60a5fa' }
                           ]}
                           cx="50%"
                           cy="50%"
@@ -382,7 +382,7 @@ export default function DashboardPage() {
                         >
                           {[
                             { name: 'Read', value: Math.max((Number(totalNotices) || 0) - (Number(unreadNotices) || 0), 0), color: '#3b82f6' },
-                            { name: 'Unread', value: Number(unreadNotices) || 0, color: '#f59e0b' }
+                            { name: 'Unread', value: Number(unreadNotices) || 0, color: '#60a5fa' }
                           ].map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
@@ -415,10 +415,10 @@ export default function DashboardPage() {
                     </div>
                     <div className="space-y-1">
                       <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-amber-500" />
+                        <div className="w-2 h-2 rounded-full bg-blue-400" />
                         Unread
                       </p>
-                      <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{Number(unreadNotices || 0)}</p>
+                      <p className="text-2xl font-bold text-blue-500 dark:text-blue-400">{Number(unreadNotices || 0)}</p>
                       <p className="text-xs text-muted-foreground">
                         {Number(totalNotices || 0) > 0 ? `${Math.round((Number(unreadNotices || 0) / Number(totalNotices || 0)) * 100)}%` : '0%'}
                       </p>
@@ -429,7 +429,7 @@ export default function DashboardPage() {
             </Card>
 
             {/* Categories Overview */}
-            <Card className="border shadow-sm bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30">
+            <Card className="border shadow-sm bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/30">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Layers className="h-5 w-5 text-blue-500" />
@@ -452,30 +452,30 @@ export default function DashboardPage() {
                     <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{totalCategories}</p>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-purple-200 dark:border-purple-800">
+                  <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-blue-300 dark:border-blue-700">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                        <Users className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                      <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                        <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-foreground">Total Profiles</p>
                         <p className="text-xs text-muted-foreground">User accounts</p>
                       </div>
                     </div>
-                    <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{totalProfiles}</p>
+                    <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{totalProfiles}</p>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-indigo-200 dark:border-indigo-800">
+                  <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-blue-400 dark:border-blue-600">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-indigo-500/20 flex items-center justify-center">
-                        <Package className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                      <div className="w-12 h-12 rounded-xl bg-blue-600/20 flex items-center justify-center">
+                        <Package className="w-6 h-6 text-blue-700 dark:text-blue-500" />
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-foreground">Total Services</p>
                         <p className="text-xs text-muted-foreground">All services</p>
                       </div>
                     </div>
-                    <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{totalServices}</p>
+                    <p className="text-3xl font-bold text-blue-700 dark:text-blue-500">{totalServices}</p>
                   </div>
                 </div>
               </CardContent>
@@ -483,13 +483,13 @@ export default function DashboardPage() {
           </div>
 
           {/* Quick Actions Section */}
-          <Card className="border-none shadow-sm bg-gradient-to-br from-purple-600 to-indigo-600 text-white overflow-hidden relative">
+          <Card className="border-none shadow-sm bg-gradient-to-br from-blue-600 to-blue-800 text-white overflow-hidden relative">
             <div className="absolute top-0 right-0 p-4 opacity-10">
               <Package size={120} />
             </div>
             <CardHeader>
               <CardTitle className="text-lg font-bold">Quick Actions</CardTitle>
-              <CardDescription className="text-purple-100">Common tasks</CardDescription>
+              <CardDescription className="text-blue-100">Common tasks</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               <Link href="/admin/services/create" className="flex items-center justify-between p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all cursor-pointer group backdrop-blur-sm">
@@ -524,7 +524,7 @@ export default function DashboardPage() {
                 <CardDescription>Latest services assigned to clients</CardDescription>
               </div>
               <Link href="/admin/view_assign_service">
-                <Button variant="ghost" size="sm" className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300">
+                <Button variant="ghost" size="sm" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">
                   View All <ArrowUpRight className="ml-1 h-4 w-4" />
                 </Button>
               </Link>
