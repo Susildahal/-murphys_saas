@@ -167,14 +167,6 @@ export default function DashboardPage() {
 </>
           }
         />
-        
-        {/* Filter Dropdown */}
-     
- 
-
-      {/* Current Filter Badge */}
-    
-
       {/* Loading State */}
       {loading && (
         <div className="flex items-center justify-center py-20">

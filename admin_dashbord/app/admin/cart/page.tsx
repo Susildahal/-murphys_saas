@@ -30,7 +30,7 @@ import { useEffect } from 'react'
 import { useToast } from '@/hooks/use-toast'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import axiosInstance from '@/lib/axios'
+import SpinnerComponent from "@/app/page/common/Spinner"
 
 function Page() {
     const dispatch = useAppDispatch();
@@ -209,14 +209,11 @@ function Page() {
     };
 
     if (loading && carts.length === 0) {
-        return (
-            <div>
-                <Header title="Cart Management" description="Manage user carts and their services" />
-                <div className="p-4 flex justify-center items-center h-64">
-                    <div className="text-muted-foreground">Loading carts...</div>
-                </div>
-            </div>
-        );
+      return (
+        <div>
+          <SpinnerComponent />
+        </div>
+      );
     }
 
   return (
