@@ -20,7 +20,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { EmailModal } from "@/app/page/email-model";
 import Image from "next/image";
 import axiosInstance from "@/lib/axios";
-export default function AdminLoginPage() {
+export default function UserLoginPage() {
   const auth = getAuth(app);
   const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
@@ -31,7 +31,7 @@ export default function AdminLoginPage() {
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
-      // if (user) router.replace("/admin/dashboard");
+      if (user) router.replace("/admin/dashboard");
     });
     return () => unsub();
   }, [auth, router]);
@@ -101,21 +101,21 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-100 to-neutral-200 p-6">
 
       {/* Login Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="w-full max-w-sm bg-white rounded-lg shadow-sm border border-slate-200 p-8"
+        className="w-full max-w-sm bg-white/95 backdrop-blur-sm rounded-2xl border border-neutral-200 shadow-lg shadow-black/5 p-8"
       >
         <div className="mb-8 text-center">
-          <h2 className="text-2xl font-semibold text-slate-900 mb-2">
-            Welcome back — great to see you
+          <h2 className="text-2xl font-semibold text-neutral-900 mb-2">
+            Welcome back to your space
           </h2>
-          <p className="text-slate-500 text-sm">
-            Sign in to securely manage your projects, teams, and account settings.
+          <p className="text-neutral-500 text-sm">
+            Sign in to continue using your account and pick up right where you left off.
           </p>
         </div>
 
@@ -128,7 +128,7 @@ export default function AdminLoginPage() {
             <Form className="space-y-4">
               {/* Email Field */}
               <div className="space-y-1.5">
-                <label htmlFor="email" className="block text-sm font-medium text-slate-700">
+                <label htmlFor="email" className="block text-sm font-medium text-neutral-700">
                   Email
                 </label>
                 <Field
@@ -136,8 +136,8 @@ export default function AdminLoginPage() {
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="admin@company.com"
-                  className={`block w-full px-3 py-2 h-12 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500 transition-all duration-200 ${
+                  placeholder="you@example.com"
+                  className={`block w-full px-3 py-2 h-12 bg-white border border-neutral-200 rounded-lg text-sm placeholder-neutral-400 focus:outline-none focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200 transition-all duration-150 ${
                     touched.email && errors.email ? "border-red-400" : ""
                   }`}
                 />
@@ -148,7 +148,7 @@ export default function AdminLoginPage() {
 
               {/* Password Field */}
               <div className="space-y-1.5">
-                <label htmlFor="password" className="block text-sm font-medium text-slate-700">
+                <label htmlFor="password" className="block text-sm font-medium text-neutral-700">
                   Password
                 </label>
                 <div className="relative">
@@ -158,14 +158,14 @@ export default function AdminLoginPage() {
                     name="password"
                     type={passwordClick ? "text" : "password"}
                     placeholder="••••••••"
-                    className={`block w-full px-3 py-2 pr-10 h-12 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500 transition-all duration-200 ${
+                    className={`block w-full px-3 py-2 pr-10 h-12 bg-white border border-neutral-200 rounded-lg text-sm placeholder-neutral-400 focus:outline-none focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200 transition-all duration-150 ${
                       touched.password && errors.password ? "border-red-400" : ""
                     }`}
                   />
                   <button
                     type="button"
                     onClick={() => setPasswordClick(!passwordClick)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 focus:outline-none transition-colors"
                     aria-label={passwordClick ? "Hide password" : "Show password"}
                   >
                     {passwordClick ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -183,11 +183,11 @@ export default function AdminLoginPage() {
                     id="remember"
                     checked={rememberMe}
                     onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                    className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900 cursor-pointer"
+                    className="h-4 w-4 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-800 cursor-pointer"
                   />
                   <label
                     htmlFor="remember"
-                    className="ml-2 block text-sm text-slate-600 cursor-pointer select-none"
+                    className="ml-2 block text-sm text-neutral-600 cursor-pointer select-none"
                   >
                     Remember me
                   </label>
@@ -195,7 +195,7 @@ export default function AdminLoginPage() {
                 <button
                   type="button"
                   onClick={() => router.push("/forgot-password")}
-                  className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                  className="text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors"
                 >
                   Forgot password?
                 </button>
@@ -222,7 +222,7 @@ export default function AdminLoginPage() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed mt-6"
+                className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-neutral-900 hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-900 transition-all duration-150 disabled:opacity-70 disabled:cursor-not-allowed mt-6"
               >
                 {isSubmitting ? (
                   <span className="flex items-center gap-2">
@@ -242,7 +242,7 @@ export default function AdminLoginPage() {
                 type="button"
                 onClick={() => setModalOpen(true)}
                 variant="outline"
-                className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-slate-200 rounded-md text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-200 transition-all duration-200"
+                className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-neutral-200 rounded-lg text-sm font-medium text-neutral-800 bg-white hover:bg-neutral-50 hover:text-neutral-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-200 transition-all duration-150"
               >
                 <Mail className="h-4 w-4" />
                 Log in with Magic Link
@@ -253,12 +253,12 @@ export default function AdminLoginPage() {
         
         {/* Sign Up Link */}
         <div className="mt-6 text-center">
-          <p className="text-sm text-slate-500">
+            <p className="text-sm text-neutral-500">
             Don't have an account?{' '}
             <button
               type="button"
               onClick={() => router.push('/register')}
-              className="font-medium text-slate-900 hover:text-slate-700 transition-colors"
+                className="font-medium text-neutral-900 hover:text-neutral-700 transition-colors"
             >
               Sign Up
             </button>
