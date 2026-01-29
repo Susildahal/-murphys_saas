@@ -20,8 +20,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { EmailModal } from "@/app/page/email-model";
 import Image from "next/image";
 import axiosInstance from "@/lib/axios";
-
-
 export default function AdminLoginPage() {
   const auth = getAuth(app);
   const router = useRouter();
@@ -44,11 +42,11 @@ export default function AdminLoginPage() {
   };
 
   const validationSchema = Yup.object({
-    email: Yup.string().email("Invalid email").required("Required"),
+    email: Yup.string().email("Invalid email").required(" Email is Required"),
     password: Yup.string()
       .min(6, "Password too short")
      
-      .required("Required"),
+      .required(" Email is Required"),
   });
 
   const handleLogin = async (
@@ -103,98 +101,22 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black p-4 relative overflow-hidden">
-      {/* Geometric Background Pattern */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Top Right Lines */}
-        <div className="absolute top-0 right-0 w-1/3 h-1/3">
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={`tr-${i}`}
-              className="absolute border-l border-t border-blue-500"
-              style={{
-                width: `${100 + i * 30}px`,
-                height: `${100 + i * 30}px`,
-                right: `${i * 20}px`,
-                top: `${i * 20}px`,
-                transform: 'rotate(45deg)',
-              }}
-            />
-          ))}
-        </div>
-        {/* Top Left Lines */}
-        <div className="absolute top-0 left-0 w-1/4 h-1/4">
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={`tl-${i}`}
-              className="absolute border-l border-t border-blue-500"
-              style={{
-                width: `${60 + i * 20}px`,
-                height: `${60 + i * 20}px`,
-                left: `${i * 15}px`,
-                top: `${i * 15}px`,
-                transform: 'rotate(45deg)',
-              }}
-            />
-          ))}
-        </div>
-        {/* Bottom Left Lines */}
-        <div className="absolute bottom-0 left-0 w-1/4 h-1/4">
-          {[...Array(3)].map((_, i) => (
-            <div
-              key={`bl-${i}`}
-              className="absolute border-l border-b border-blue-500"
-              style={{
-                width: `${80 + i * 25}px`,
-                height: `${80 + i * 25}px`,
-                left: `${i * 18}px`,
-                bottom: `${i * 18}px`,
-                transform: 'rotate(45deg)',
-              }}
-            />
-          ))}
-        </div>
-         <div className="absolute bottom-0 right-0 w-1/4 h-1/4">
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={`bl-${i}`}
-              className="absolute border-l border-b border-blue-500"
-              style={{
-                width: `${100 + i * 25}px`,
-                height: `${100 + i * 25}px`,
-                left: `${i * 18}px`,
-                bottom: `${i * 18}px`,
-                transform: 'rotate(45deg)',
-              }}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Brand Badge with Magic Link */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="absolute top-8 left-1/2 -translate-x-1/2"
-      >
-        <Image
-          src="/logo.png"
-          alt="Brand Logo"
-          width={150}
-          height={50}
-        />
-      </motion.div>
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
 
       {/* Login Card */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.1 }}
-        className="relative w-full max-w-md bg-white rounded-lg shadow-2xl p-8 mt-16"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-sm bg-white rounded-lg shadow-sm border border-slate-200 p-8"
       >
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold text-neutral-900 mb-2">Admin Log In</h2>
-          <p className="text-sm text-neutral-600">Please enter your details</p>
+        <div className="mb-8 text-center">
+          <h2 className="text-2xl font-semibold text-slate-900 mb-2">
+            Welcome back — great to see you
+          </h2>
+          <p className="text-slate-500 text-sm">
+            Sign in to securely manage your projects, teams, and account settings.
+          </p>
         </div>
 
         <Formik
@@ -203,18 +125,19 @@ export default function AdminLoginPage() {
           onSubmit={handleLogin}
         >
           {({ isSubmitting, status, touched, errors }) => (
-            <Form className="space-y-3">
+            <Form className="space-y-4">
               {/* Email Field */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-neutral-700">
+              <div className="space-y-1.5">
+                <label htmlFor="email" className="block text-sm font-medium text-slate-700">
                   Email
-                </Label>
+                </label>
                 <Field
                   as={Input}
                   id="email"
                   name="email"
                   type="email"
-                  className={`h-11 rounded border-neutral-300  bg-white text-black shadow-none focus-visible:ring-purple-500 ${
+                  placeholder="admin@company.com"
+                  className={`block w-full px-3 py-2 h-12 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500 transition-all duration-200 ${
                     touched.email && errors.email ? "border-red-400" : ""
                   }`}
                 />
@@ -224,26 +147,28 @@ export default function AdminLoginPage() {
               </div>
 
               {/* Password Field */}
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium text-neutral-700">
+              <div className="space-y-1.5">
+                <label htmlFor="password" className="block text-sm font-medium text-slate-700">
                   Password
-                </Label>
+                </label>
                 <div className="relative">
                   <Field
                     as={Input}
                     id="password"
                     name="password"
                     type={passwordClick ? "text" : "password"}
-                    className={`h-11 pr-10 rounded border-neutral-300 shadow-none bg-white text-black focus-visible:ring-purple-500 ${
+                    placeholder="••••••••"
+                    className={`block w-full px-3 py-2 pr-10 h-12 bg-white border border-slate-300 rounded-md text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-slate-500 focus:ring-1 focus:ring-slate-500 transition-all duration-200 ${
                       touched.password && errors.password ? "border-red-400" : ""
                     }`}
                   />
                   <button
                     type="button"
                     onClick={() => setPasswordClick(!passwordClick)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"
+                    aria-label={passwordClick ? "Hide password" : "Show password"}
                   >
-                    {passwordClick ? <EyeOff className="w-4 h-4 text-blue-700" /> : <Eye className="w-4 h-4 text-blue-600" />}
+                    {passwordClick ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
                 {touched.password && errors.password && (
@@ -252,17 +177,17 @@ export default function AdminLoginPage() {
               </div>
 
               {/* Remember Me & Forgot Password */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-1">
+              <div className="flex items-center justify-between pt-1">
+                <div className="flex items-center">
                   <Checkbox
                     id="remember"
                     checked={rememberMe}
                     onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                    className="border-purple-600 data-[state=checked]:bg-purple-600"
+                    className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900 cursor-pointer"
                   />
                   <label
                     htmlFor="remember"
-                    className="text-sm text-neutral-700 cursor-pointer select-none"
+                    className="ml-2 block text-sm text-slate-600 cursor-pointer select-none"
                   >
                     Remember me
                   </label>
@@ -270,9 +195,9 @@ export default function AdminLoginPage() {
                 <button
                   type="button"
                   onClick={() => router.push("/forgot-password")}
-                  className="text-sm text-neutral-700 cursor-pointer hover:text-purple-600 transition"
+                  className="text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
                 >
-                  Forgot Password?
+                  Forgot password?
                 </button>
               </div>
 
@@ -283,9 +208,12 @@ export default function AdminLoginPage() {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
-                    className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg border border-red-200"
+                    className="rounded-md bg-red-50 p-3 flex items-start gap-2"
                   >
-                    {status.error}
+                    <svg className="h-4 w-4 text-red-600 mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                    <p className="text-sm text-red-600">{status.error}</p>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -294,41 +222,48 @@ export default function AdminLoginPage() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full h-11 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium rounded-lg transition-all disabled:opacity-50"
+                className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-slate-900 hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-900 transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed mt-6"
               >
                 {isSubmitting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Logging in...
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Authenticating...
                   </span>
                 ) : (
                   "Log In"
                 )}
               </Button>
-              <div className="flex flex-col items-center gap-3">
-                <Button
-                  variant="ghost"
-                  onClick={() => setModalOpen(true)}
-                  className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-purple-600 transition"
-                >
-                  <Mail className="w-4 h-4" />
-                  Log in with Magic Link
-                </Button>
 
-                <p className="text-sm text-neutral-600">
-                  Don't have an account?{' '}
-                  <button
-                    type="button"
-                    onClick={() => router.push('/register')}
-                    className="text-purple-600 hover:text-purple-700 font-medium transition"
-                  >
-                    Sign up
-                  </button>
-                </p>
-              </div>
+              {/* Magic Link Button */}
+              <Button
+                type="button"
+                onClick={() => setModalOpen(true)}
+                variant="outline"
+                className="w-full flex justify-center items-center gap-2 py-2.5 px-4 border border-slate-200 rounded-md text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-200 transition-all duration-200"
+              >
+                <Mail className="h-4 w-4" />
+                Log in with Magic Link
+              </Button>
             </Form>
           )}
         </Formik>
+        
+        {/* Sign Up Link */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-slate-500">
+            Don't have an account?{' '}
+            <button
+              type="button"
+              onClick={() => router.push('/register')}
+              className="font-medium text-slate-900 hover:text-slate-700 transition-colors"
+            >
+              Sign Up
+            </button>
+          </p>
+        </div>
            
       </motion.div>
 
@@ -355,6 +290,12 @@ export default function AdminLoginPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Test Inputs component */}
+      {/* <Inputs
+        type="text"
+        placeholder="Test Input Component"
+      /> */}
     </div>
   );
 }
