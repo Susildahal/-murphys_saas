@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useState, useMemo } from 'react'
+import React, { useEffect, useState, useMemo, Suspense } from 'react'
 import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { fetchTicketById, updateTicket } from '@/lib/redux/slices/ticketSlice'
@@ -46,7 +46,7 @@ const priorities = [
   { value: 'urgent', label: 'Urgent' }
 ]
 
-export default function TicketDetailsPage() {
+function TicketDetailsContent() {
   const router = useRouter()
   const params = useParams()
   const searchParams = useSearchParams()
@@ -492,5 +492,19 @@ export default function TicketDetailsPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function TicketDetailsPage() {
+  return (
+    <Suspense fallback={
+      <div className="p-6">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    }>
+      <TicketDetailsContent />
+    </Suspense>
   )
 }

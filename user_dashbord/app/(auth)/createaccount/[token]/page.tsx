@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Mail, Lock, UserPlus, CheckCircle, AlertCircle } from "lucide-react";
 import axiosInstance from "@/lib/axios";
@@ -28,7 +28,7 @@ interface CreateAccountPageProps {
   email?: string;
 }
 
-const CreateAccountPage = () => {
+const CreateAccountContent = () => {
   const params = useParams();
   const searchParams = useSearchParams();
   const pathToken = (params as { token?: string })?.token;
@@ -444,4 +444,4 @@ const CreateAccountPage = () => {
   );
 };
 
-export default CreateAccountPage;
+export default CreateAccountContent;
