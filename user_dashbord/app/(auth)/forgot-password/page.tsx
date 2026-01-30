@@ -117,8 +117,10 @@ export default function ForgotPasswordPage() {
               </div>
 
               <Button
+             
+                type="submit"
                 onClick={handleReset}
-                className="w-full h-12 text-base font-semibold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
+                className="w-full bg-black h-12 text-base font-semibold shadow transition-all duration-300"
                 disabled={loading || !email}
               >
                 {loading ? (
