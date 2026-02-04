@@ -169,82 +169,96 @@ const page = () => {
 
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 ">
             {loading && <SpinnerComponent />}
             <Header
                 title="Assigned Services"
-                description="Manage and view assigned services"
-
+                description="Manage and track all client service assignments"
                 total={total}
-                extraInfo={
-                    <div className="flex flex-wrap items-center gap-3">
-                        <div className="relative">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                type='text'
-                                placeholder='Search...'
-                                className='pl-9 w-[200px]'
-                                value={searchTerm}
-                                onChange={(e) => {
-                                    setSearchTerm(e.target.value);
-                                    setPageNumber(1);
-                                }}
-                            />
-                        </div>
-                        <Select value={selectedClient} onValueChange={(val) => { setSelectedClient(val); setPageNumber(1); }}>
-                            <SelectTrigger className="w-[180px]">
-                                <User className="h-4 w-4 mr-2" />
-                                <SelectValue placeholder="All Clients" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Clients</SelectItem>
-                                {clientsList.map((client) => {
-                                    const label = [client.firstName, client.lastName].filter(Boolean).join(' ') || client.name || client.email || client._id || client.id;
-                                    const value = client._id || client.id;
-                                    return (
-                                        <SelectItem key={value} value={String(value)}>
-                                            {label}
+                extra={
+                     <div className="flex flex-col gap-4   ">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    type='text'
+                                    placeholder='Search clients or services...'
+                                    className='pl-9 w-[280px] h-10'
+                                    value={searchTerm}
+                                    onChange={(e) => {
+                                        setSearchTerm(e.target.value);
+                                        setPageNumber(1);
+                                    }}
+                                />
+                            </div>
+                            <Select value={selectedClient} onValueChange={(val) => { setSelectedClient(val); setPageNumber(1); }}>
+                                <SelectTrigger className="w-[200px] h-10">
+                                    <div className="flex items-center gap-2">
+                                        <User className="h-4 w-4 text-muted-foreground" />
+                                        <SelectValue placeholder="All Clients" />
+                                    </div>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Clients</SelectItem>
+                                    {clientsList.map((client) => {
+                                        const label = [client.firstName, client.lastName].filter(Boolean).join(' ') || client.name || client.email || client._id || client.id;
+                                        const value = client._id || client.id;
+                                        return (
+                                            <SelectItem key={value} value={String(value)}>
+                                                {label}
+                                            </SelectItem>
+                                        )
+                                    })}
+                                </SelectContent>
+                            </Select>
+                            <Select value={selectedService} onValueChange={(val) => { setSelectedService(val); setPageNumber(1); }}>
+                                <SelectTrigger className="w-[200px] h-10">
+                                    <div className="flex items-center gap-2">
+                                        <Briefcase className="h-4 w-4 text-muted-foreground" />
+                                        <SelectValue placeholder="All Services" />
+                                    </div>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Services</SelectItem>
+                                    {servicesList.map((service) => (
+                                        <SelectItem key={service.id || service._id} value={service.id || service._id}>
+                                            {service.name}
                                         </SelectItem>
-                                    )
-                                })}
-                            </SelectContent>
-                        </Select>
-                        <Select value={selectedService} onValueChange={(val) => { setSelectedService(val); setPageNumber(1); }}>
-                            <SelectTrigger className="w-[180px]">
-                                <Briefcase className="h-4 w-4 mr-2" />
-                                <SelectValue placeholder="All Services" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Services</SelectItem>
-                                {servicesList.map((service) => (
-                                    <SelectItem key={service.id || service._id} value={service.id || service._id}>
-                                        {service.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
+                </div>
+
                 }
             />
+            
+            {/* Header Section */}
+            <div className="space-y-4">
 
-            <div className="border-none bg-none overflow-hidden">
+                {/* Filters and Search Bar */}
+               
+            </div>
 
-                <div className="p-0">
-                    <div className="overflow-x-auto">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>#</TableHead>
-                                    <TableHead>Client Name</TableHead>
-                                    <TableHead>Service Name</TableHead>
-                                    <TableHead>Assigned Date</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Price</TableHead>
-                                    <TableHead>End Date</TableHead>
-                                    <TableHead>Renewal Dates</TableHead>
-                                    <TableHead>Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
+            {/* Table Card */}
+            <div className="overflow-hidden">
+                <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="bg-muted/50 hover:bg-muted/50">
+                                <TableHead className="font-semibold">#</TableHead>
+                                <TableHead className="font-semibold">Client</TableHead>
+                                <TableHead className="font-semibold">Service</TableHead>
+                                <TableHead className="font-semibold">Assigned</TableHead>
+                                <TableHead className="font-semibold">Status</TableHead>
+                                <TableHead className="font-semibold">Pricing</TableHead>
+                                <TableHead className="font-semibold">End Date</TableHead>
+                                <TableHead className="font-semibold">Renewals</TableHead>
+                                <TableHead className="font-semibold text-center">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
                             <TableBody>
                                 {rows && rows.length > 0 ? (
                                     rows.map((service: any, index) => {
@@ -254,86 +268,111 @@ const page = () => {
                                         const remainingPrice = Number(service.price || 0) - totalRenewalPrice;
 
                                         return (
-                                            <TableRow key={service._id ?? service.id}>
-                                                <TableCell>{pageNumber + index}</TableCell>
-                                                <TableCell>{service.client_name || (service.userProfile ? `${service.userProfile.firstName || ''} ${service.userProfile.lastName || ''}`.trim() : (service.userName || service.clientName || service.email || '-'))}</TableCell>
-                                                <TableCell>{service.service_name || service.serviceName || service.service_catalog_id || '-'}</TableCell>
+                                            <TableRow key={service._id ?? service.id} className="hover:bg-muted/50 transition-colors">
+                                                <TableCell className="font-medium">{((pageNumber - 1) * limitNumber) + index + 1}</TableCell>
                                                 <TableCell>
-                                                    <div className="flex flex-col gap-1">
-                                                        <span>{assignedDate ? new Date(String(assignedDate)).toLocaleDateString() : '-'}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <User className="h-4 w-4 text-muted-foreground" />
+                                                        <span className="font-medium">
+                                                            {service.client_name || (service.userProfile ? `${service.userProfile.firstName || ''} ${service.userProfile.lastName || ''}`.trim() : (service.userName || service.clientName || service.email || '-'))}
+                                                        </span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex items-center gap-2">
+                                                        <Briefcase className="h-4 w-4 text-muted-foreground" />
+                                                        <span className="font-medium">{service.service_name || service.serviceName || service.service_catalog_id || '-'}</span>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex flex-col gap-1.5">
+                                                        <div className="flex items-center gap-2">
+                                                            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                                                            <span className="text-sm">{assignedDate ? new Date(String(assignedDate)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-'}</span>
+                                                        </div>
                                                         {daysAgo && <Badge variant="secondary" className="w-fit text-xs">{daysAgo}</Badge>}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge variant={service.isaccepted === 'accepted' ? 'default' : service.isaccepted === 'pending' ? 'outline' : 'destructive'}>
+                                                    <Badge 
+                                                        variant={service.isaccepted === 'accepted' ? 'default' : service.isaccepted === 'pending' ? 'outline' : 'destructive'}
+                                                        className="capitalize font-medium"
+                                                    >
                                                         {service.isaccepted ?? service.status ?? '-'}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="flex flex-col gap-1">
-                                                        <span className="font-semibold">${service.price ?? '-'}</span>
+                                                    <div className="space-y-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <DollarSign className="h-4 w-4 text-green-600" />
+                                                            <span className="font-semibold text-lg">${service.price ?? '-'}</span>
+                                                        </div>
                                                         {totalRenewalPrice > 0 && (
-                                                            <div className="flex flex-col gap-1">
-                                                                <Badge variant="secondary" className="w-fit text-xs">
-                                                                    Allocated: ${totalRenewalPrice}
+                                                            <div className="flex flex-col gap-1.5">
+                                                                <Badge variant="secondary" className="w-fit text-xs font-medium">
+                                                                    Allocated: ${totalRenewalPrice.toFixed(2)}
                                                                 </Badge>
-                                                                <Badge variant={remainingPrice > 0 ? "outline" : "default"} className="w-fit text-xs">
-                                                                    Remaining: ${remainingPrice}
+                                                                <Badge variant={remainingPrice > 0 ? "outline" : "default"} className="w-fit text-xs font-medium">
+                                                                    Remaining: ${remainingPrice.toFixed(2)}
                                                                 </Badge>
                                                             </div>
                                                         )}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="flex flex-col gap-1">
-                                                        <span>
-                                                            {service.end_date ? new Date(String(service.end_date)).toLocaleDateString() : '-'}
+                                                    <div className="flex items-center gap-2">
+                                                        <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                                                        <span className="text-sm">
+                                                            {service.end_date ? new Date(String(service.end_date)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-'}
                                                         </span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <div className="flex items-center gap-2">
-                                                        {service.renewal_dates && service.renewal_dates.length > 0 ? (
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                onClick={() => {
-                                                                    setRenewalDialogData(service);
-                                                                    resetRenewalForm();
-                                                                    setRenewalDialogOpen(true);
-                                                                }}
-                                                            >
-                                                                <CalendarIcon className="h-4 w-4 mr-2" />
-                                                                View {service.renewal_dates.length} Renewal{service.renewal_dates.length > 1 ? 's' : ''}
-                                                            </Button>
-                                                        ) : (
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                onClick={() => {
-                                                                    setRenewalDialogData(service);
-                                                                    resetRenewalForm();
-                                                                    setRenewalDialogOpen(true);
-                                                                }}
-                                                            >
-                                                                <Plus className="h-4 w-4 mr-2" />
-                                                                Add Renewal
-                                                            </Button>
-                                                        )}
-                                                    </div>
+                                                    {service.renewal_dates && service.renewal_dates.length > 0 ? (
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                setRenewalDialogData(service);
+                                                                resetRenewalForm();
+                                                                setRenewalDialogOpen(true);
+                                                            }}
+                                                            className="gap-2"
+                                                        >
+                                                            <CalendarIcon className="h-4 w-4" />
+                                                            {service.renewal_dates.length} Renewal{service.renewal_dates.length > 1 ? 's' : ''}
+                                                        </Button>
+                                                    ) : (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                setRenewalDialogData(service);
+                                                                resetRenewalForm();
+                                                                setRenewalDialogOpen(true);
+                                                            }}
+                                                            className="gap-2 text-muted-foreground hover:text-foreground"
+                                                        >
+                                                            <Plus className="h-4 w-4" />
+                                                            Add
+                                                        </Button>
+                                                    )}
                                                 </TableCell>
                                                 <TableCell>
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" className="h-8 w-8 cursor-pointer p-0">
+                                                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                                                                 <MoreVertical className="h-4 w-4 rotate-90" />
                                                             </Button>
                                                         </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
+                                                        <DropdownMenuContent align="end" className="w-48">
                                                             <DropdownMenuItem onClick={() => {
                                                                 setEditData(service);
                                                                 setEditOpen(true);
-                                                            }}>Edit Service</DropdownMenuItem>
+                                                            }} className="gap-2">
+                                                                <Edit2 className="h-4 w-4" />
+                                                                Edit Service
+                                                            </DropdownMenuItem>
                                                             <DropdownMenuItem onClick={() => {
                                                                 dispatch(getAssignDetails({ client_id: service.client_id, service_catalog_id: service.service_catalog_id }))
                                                                     .then((res: any) => {
@@ -345,19 +384,28 @@ const page = () => {
                                                                     .catch(() => {
                                                                         toast({
                                                                             title: 'Error',
-                                                                            description: 'Failed to fetch assigned service details.',
+                                                                            description: 'Failed to fetch details.',
                                                                             variant: 'destructive',
                                                                         });
                                                                     })
-                                                            }}>
+                                                            }} className="gap-2">
+                                                                <FileText className="h-4 w-4" />
                                                                 View Details
                                                             </DropdownMenuItem>
                                                             <DropdownMenuItem onClick={() => {
                                                                 setInvoiceData(service);
                                                                 setInvoiceOpen(true);
-                                                            }}>View Invoice</DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => { setDeleteOpen(true); setDeleteid(service._id); }}>Delete</DropdownMenuItem>
-
+                                                            }} className="gap-2">
+                                                                <DollarSign className="h-4 w-4" />
+                                                                View Invoice
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem 
+                                                                onClick={() => { setDeleteOpen(true); setDeleteid(service._id); }}
+                                                                className="gap-2 text-destructive focus:text-destructive"
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                                Delete
+                                                            </DropdownMenuItem>
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
                                                 </TableCell>
@@ -366,20 +414,66 @@ const page = () => {
                                     })
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={8} className="text-center">
-                                            No assigned services found {searchTerm === '' ? '' : <span className='font-bold '>{`for "${searchTerm}"   `} <RefreshCcw className="inline-block ml-2 cursor-pointer hover:animate-spin" onClick={handelreset} /></span>}.
+                                        <TableCell colSpan={9} className="h-32 text-center">
+                                            <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                                                <Briefcase className="h-10 w-10 opacity-50" />
+                                                <p className="text-sm">
+                                                    No assigned services found
+                                                    {searchTerm && (
+                                                        <span className="font-semibold text-foreground"> for "{searchTerm}"</span>
+                                                    )}
+                                                </p>
+                                                {searchTerm && (
+                                                    <Button variant="outline" size="sm" onClick={handelreset} className="gap-2">
+                                                        <RefreshCcw className="h-4 w-4" />
+                                                        Clear Search
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 )}
                             </TableBody>
                         </Table>
                     </div>
-                </div>
+
+                {/* Pagination Footer */}
+                {rows && rows.length > 0 && (
+                    <div className="flex items-center justify-between border-t bg-muted/20 px-6 py-4">
+                        <div className="flex items-center gap-2">
+                            <p className="text-sm text-muted-foreground">
+                                Showing <span className="font-medium text-foreground">{((pageNumber - 1) * limitNumber) + 1}</span> to <span className="font-medium text-foreground">{Math.min(pageNumber * limitNumber, total || 0)}</span> of <span className="font-medium text-foreground">{total || 0}</span> results
+                            </p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                                <label className="text-sm text-muted-foreground">Per page:</label>
+                                <Select value={String(limitNumber)} onValueChange={(value) => setLimitNumber(Number(value))}>
+                                    <SelectTrigger className="w-[80px] h-9">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            <SelectItem value={"5"}>5</SelectItem>
+                                            <SelectItem value={"10"}>10</SelectItem>
+                                            <SelectItem value={"25"}>25</SelectItem>
+                                            <SelectItem value={"50"}>50</SelectItem>
+                                            <SelectItem value={"100"}>100</SelectItem>
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <Pagination page={pageNumber} totalPages={totalPages || 1} onPageChange={(p) => setPageNumber(p)} />
+                        </div>
+                    </div>
+                )}
             </div>
+
+
 
             {/* Edit Service Dialog */}
             <Dialog open={editOpen} onOpenChange={setEditOpen}>
-                <DialogContent>
+                <DialogContent className="sm:max-w-[500px]">
                     <DialogHeader>
                         <DialogTitle>Edit Assigned Service</DialogTitle>
                         <DialogDescription>Update details for the assigned service</DialogDescription>
@@ -474,29 +568,6 @@ const page = () => {
                     </div>
                 </DialogContent>
             </Dialog>
-
-
-            <div className="mt-4 flex items-center justify-between">
-                <div>
-                    <Pagination page={pageNumber} totalPages={totalPages || 1} onPageChange={(p) => setPageNumber(p)} />
-                </div>
-                <div>
-                    <Select value={String(limitNumber)} onValueChange={(value) => setLimitNumber(Number(value))}>
-                        <SelectTrigger className="w-[100px]">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectGroup>
-                                <SelectItem value={"5"}>5</SelectItem>
-                                <SelectItem value={"10"}>10</SelectItem>
-                                <SelectItem value={"25"}>25</SelectItem>
-                                <SelectItem value={"50"}>50</SelectItem>
-                                <SelectItem value={"100"}>100</SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
 
             {/* Details Dialog */}
             <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
@@ -847,7 +918,9 @@ const page = () => {
                     }}
                 />
             )}
+        
         </div>
+        
     )
 }
 

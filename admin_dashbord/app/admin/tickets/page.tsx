@@ -106,21 +106,21 @@ export default function AdminTicketsPage() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'bg-red-500/10 text-red-600 border-red-200'
-      case 'high': return 'bg-orange-500/10 text-orange-600 border-orange-200'
-      case 'medium': return 'bg-yellow-500/10 text-yellow-600 border-yellow-200'
-      case 'low': return 'bg-green-500/10 text-green-600 border-green-200'
-      default: return 'bg-gray-500/10 text-gray-600 border-gray-200'
+      case 'urgent': return ''
+      case 'high': return ''
+      case 'medium': return ''
+      case 'low': return ""
+      default: return ''
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'open': return 'bg-blue-500/10 text-blue-600 border-blue-200'
-      case 'in-progress': return 'bg-purple-500/10 text-purple-600 border-purple-200'
-      case 'resolved': return 'bg-green-500/10 text-green-600 border-green-200'
-      case 'closed': return 'bg-gray-500/10 text-gray-600 border-gray-200'
-      default: return 'bg-gray-500/10 text-gray-600 border-gray-200'
+      case 'open': return ''
+      case 'in-progress': return ''
+      case 'resolved': return ''
+      case 'closed': return ''
+      default: return ''
     }
   }
 
@@ -227,32 +227,32 @@ export default function AdminTicketsPage() {
                           <SelectContent>
                             <SelectItem value="open">
                               <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-blue-600"></div>
+                                <div className="w-2 h-2 rounded-full "></div>
                                 Open
                               </div>
                             </SelectItem>
                             <SelectItem value="in-progress">
                               <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-purple-600"></div>
+                                <div className="w-2 h-2 rounded-full "></div>
                                 In Progress
                               </div>
                             </SelectItem>
                             <SelectItem value="resolved">
                               <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-green-600"></div>
+                                <div className="w-2 h-2 rounded-full "></div>
                                 Resolved
                               </div>
                             </SelectItem>
                             <SelectItem value="closed">
                               <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-gray-600"></div>
+                                <div className="w-2 h-2 rounded-full "></div>
                                 Closed
                               </div>
                             </SelectItem>
                           </SelectContent>
                         </Select>
                       </TableCell>
-                      <TableCell><Button variant={'outline'} onClick={() => router.push(`/admin/tickets/${ticket._id}`)}> View  </Button></TableCell>
+                      <TableCell><Button className='bg-none cursor-pointer ' variant="link" size="sm" onClick={() => router.push(`/admin/tickets/${ticket._id}`)}> View  </Button></TableCell>
 
                       <TableCell>
                         {format(new Date(ticket.createdAt), 'MMM d, yyyy')}

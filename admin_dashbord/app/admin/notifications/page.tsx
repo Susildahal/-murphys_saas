@@ -189,6 +189,7 @@ const NotificationsPage = () => {
                                     <TableHead className="w-[180px]">Contact Info</TableHead>
                                     <TableHead className="min-w-[200px]">Message</TableHead>
                                     <TableHead className="w-[100px]">Status</TableHead>
+                                    <TableHead> Mark as Read    </TableHead>
                                     <TableHead className="w-[150px]">Date</TableHead>
                                     <TableHead className="w-[70px] text-right">Actions</TableHead>
                                 </TableRow>

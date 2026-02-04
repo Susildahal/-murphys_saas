@@ -476,40 +476,6 @@ export default function DashboardPage() {
             </Card>
           </div>
 
-          {/* Quick Actions Section */}
-          <Card className="border-none shadow-sm bg-gradient-to-br from-blue-600 to-blue-800 text-white overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-              <Package size={120} />
-            </div>
-            <CardHeader>
-              <CardTitle className="text-lg font-bold">Quick Actions</CardTitle>
-              <CardDescription className="text-blue-100">Common tasks</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Link href="/admin/services/create" className="flex items-center justify-between p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all cursor-pointer group backdrop-blur-sm">
-                <div className="flex items-center gap-3">
-                  <PlusCircle size={18} />
-                  <span className="text-sm font-medium">Create Service</span>
-                </div>
-                <ArrowUpRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-              </Link>
-              <Link href="/admin/invte_users" className="flex items-center justify-between p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all cursor-pointer group backdrop-blur-sm">
-                <div className="flex items-center gap-3">
-                  <Send size={18} />
-                  <span className="text-sm font-medium">Invite User</span>
-                </div>
-                <ArrowUpRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-              </Link>
-              <Link href="/admin/clients_users" className="flex items-center justify-between p-3 rounded-xl bg-white/10 hover:bg-white/20 transition-all cursor-pointer group backdrop-blur-sm">
-                <div className="flex items-center gap-3">
-                  <UserPlus size={18} />
-                  <span className="text-sm font-medium">Add Client</span>
-                </div>
-                <ArrowUpRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-              </Link>
-            </CardContent>
-          </Card>
-
           {/* Recent Assignments Table */}
           <Card className="border shadow-sm">
             <CardHeader className="flex flex-row items-center justify-between">

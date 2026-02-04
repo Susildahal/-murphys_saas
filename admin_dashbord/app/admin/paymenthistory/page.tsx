@@ -3,6 +3,14 @@ import React, { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { 
   Receipt, 
   CheckCircle2, 
@@ -12,7 +20,9 @@ import {
   Calendar as CalendarIcon,
   Download,
   FileText,
-  Trash2
+  Trash2,
+  User,
+  MoreVertical
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { useToast } from '@/hooks/use-toast'
@@ -646,7 +656,8 @@ function BillingHistoryPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <div>
+            <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-950 flex items-center justify-center">
@@ -663,17 +674,16 @@ function BillingHistoryPage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+            </Card>
+          </div>
         </div>
 
         {/* Filters */}
     
 
         {/* Transaction History */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Transaction History</CardTitle>
+        <div>
+            <div className="  flex items-end justify-end mb-4">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm">
@@ -693,105 +703,155 @@ function BillingHistoryPage() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {billingHistory.length === 0 ? (
-                <div className="text-center py-12">
-                  <Receipt className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Transactions Found</h3>
-                  <p className="text-muted-foreground">
-                    {filter !== 'all' ? 'Try changing your filters' : 'No payment history available'}
-                  </p>
+          <div className="rounded-lg  overflow-hidden">
+            {billingHistory.length === 0 ? (
+              <div className="text-center py-12">
+                <Receipt className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No Transactions Found</h3>
+                <p className="text-muted-foreground">
+                  {filter !== 'all' ? 'Try changing your filters' : 'No payment history available'}
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-muted/50 hover:bg-muted/50">
+                        <TableHead className="font-semibold">#</TableHead>
+                        <TableHead className="font-semibold">Invoice ID</TableHead>
+                        <TableHead className="font-semibold">Service</TableHead>
+                        <TableHead className="font-semibold">Client</TableHead>
+                        <TableHead className="font-semibold">Amount</TableHead>
+                        <TableHead className="font-semibold">Status</TableHead>
+                        <TableHead className="font-semibold">Payment Date</TableHead>
+                        <TableHead className="font-semibold">Created</TableHead>
+                        <TableHead className="font-semibold text-center">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {billingHistory.map((item, index) => (
+                        <TableRow key={item._id} className="hover:bg-muted/50 transition-colors">
+                          <TableCell className="font-medium">
+                            {((page - 1) * 10) + index + 1}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Receipt className="h-4 w-4 text-muted-foreground" />
+                              <div>
+                                <p className="font-mono text-sm">{item.invoice_id}</p>
+                                {item.stripe_payment_intent_id && (
+                                  <p className="text-xs text-muted-foreground">
+                                    {item.stripe_payment_intent_id.substring(0, 20)}...
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <p className="font-medium">{item.service_name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {item.payment_method}
+                            </p>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <User className="h-4 w-4 text-muted-foreground" />
+                              <button
+                                onClick={() => fetchUserDetails(item.user_id, item.user_email)}
+                                className="text-sm text-blue-600 hover:underline text-left"
+                              >
+                                {item.user_email}
+                              </button>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="font-bold text-base">${item.amount}</p>
+                              <p className="text-xs text-muted-foreground uppercase">{item.currency}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              {getStatusIcon(item.payment_status)}
+                              {getStatusBadge(item.payment_status)}
+                            </div>
+                            {item.failure_reason && (
+                              <p className="text-xs text-red-600 mt-1 max-w-[200px] truncate" title={item.failure_reason}>
+                                {item.failure_reason}
+                              </p>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {item.payment_date ? (
+                              <div className="flex items-center gap-1">
+                                <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                                <span className="text-sm">
+                                  {format(new Date(item.payment_date), 'MMM dd, yyyy')}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground text-sm">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <CalendarIcon className="h-3 w-3 text-muted-foreground" />
+                              <span className="text-sm">
+                                {format(new Date(item.createdAt), 'MMM dd, yyyy')}
+                              </span>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {format(new Date(item.createdAt), 'HH:mm')}
+                            </p>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center justify-center gap-2">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreVertical className="h-4 w-4 rotate-90" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => fetchUserDetails(item.user_id, item.user_email)}>
+                                    <User className="h-4 w-4 mr-2" />
+                                    View User
+                                  </DropdownMenuItem>
+                                  {item.payment_status === 'failed' && (
+                                    <DropdownMenuItem 
+                                      onClick={() => openDeleteDialog(item._id)}
+                                      className="text-destructive focus:text-destructive"
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-2" />
+                                      Delete
+                                    </DropdownMenuItem>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
-              ) : (
-                billingHistory.map((item) => (
-                  <div 
-                    key={item._id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-4 flex-1">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center bg-muted">
-                        {getStatusIcon(item.payment_status)}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium">{item.service_name}</p>
-                          {getStatusBadge(item.payment_status)}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Invoice: {item.invoice_id}
-                        </p>
-                        <p className="text-sm text-blue-600 hover:underline cursor-pointer" onClick={() => fetchUserDetails(item.user_id, item.user_email)}>
-                          User: {item.user_email}
-                        </p>
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
-                          <span className="flex items-center gap-1">
-                            <CalendarIcon className="h-3 w-3" />
-                            {format(new Date(item.createdAt), 'MMM dd, yyyy HH:mm')}
-                          </span>
-                          {item.payment_date && (
-                            <span className="flex items-center gap-1">
-                              <CheckCircle2 className="h-3 w-3" />
-                              Paid: {format(new Date(item.payment_date), 'MMM dd, yyyy')}
-                            </span>
-                          )}
-                        </div>
-                        {item.failure_reason && (
-                          <p className="text-xs text-red-600 mt-1">
-                            Reason: {item.failure_reason}
-                          </p>
-                        )}
-                      </div>
-                    </div>
 
-                    <div className="text-right flex flex-col items-end gap-2">
-                      <div>
-                        <p className="text-lg font-bold">
-                          ${item.amount}
-                        </p>
-                        <p className="text-xs text-muted-foreground uppercase">
-                          {item.currency}
-                        </p>
-                        {item.stripe_payment_intent_id && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {item.stripe_payment_intent_id.substring(0, 20)}...
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => fetchUserDetails(item.user_id, item.user_email)}
-                        >
-                          View User
-                        </Button>
-                        {item.payment_status === 'failed' && (
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => openDeleteDialog(item._id)}
-                          >
-                            <Trash2 className="h-3 w-3 mr-1" />
-                            Delete
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* Pagination */}
-            <Pagination 
-              page={page} 
-              totalPages={totalPages} 
-              onPageChange={setPage} 
-            />
-          </CardContent>
-        </Card>
+                {/* Pagination Footer */}
+                <div className="flex items-center justify-between border-t bg-muted/20 px-6 py-4">
+                  <p className="text-sm text-muted-foreground">
+                    Showing <span className="font-medium text-foreground">{((page - 1) * 10) + 1}</span> to <span className="font-medium text-foreground">{Math.min(page * 10, billingHistory.length + ((page - 1) * 10))}</span> of <span className="font-medium text-foreground">{totalPages * 10}</span> results
+                  </p>
+                  <Pagination 
+                    page={page} 
+                    totalPages={totalPages} 
+                    onPageChange={setPage} 
+                  />
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Delete Confirmation Dialog */}
