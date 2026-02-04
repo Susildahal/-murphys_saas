@@ -97,7 +97,7 @@ export default function DashboardPage() {
       icon: Clock,
       color: 'text-blue-500',
       borderColor: 'border-l-blue-500',
-      link: '/services/view_assign_service'
+      link: '/admin/view_assign_service'
     },
     {
       title: "Unpaid Invoices",
@@ -115,7 +115,7 @@ export default function DashboardPage() {
       <Header 
     title='Dashboard'  
     />
-      <div className="p-6 space-y-6">
+      <div className="p-2 space-y-6">
         {/* Payment Overdue Alert */}
         {unpaidInvoices > 0 && (
           <Alert className="bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-700">
@@ -138,16 +138,17 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {statsCards.map((card, index) => (
             <Link href={card.link} key={index}>
-              <Card className={`border-l-4 ${card.borderColor} hover:shadow-lg transition-shadow cursor-pointer `}>
-                <CardContent className="p-6">
+              <Card className={`border-l-4 ${card.borderColor}  transition-shadow cursor-pointer `}>
+                <CardContent className="p-2">
                   <div className="flex items-center justify-between mb-4">
                     <card.icon className={`h-8 w-8 ${card.color}`} />
                   </div>
                   <p className="text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">{card.title}</p>
-                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{card.value}</h3>
+                  
+                  <div className=' flex gap-2'><h3 className="text-2xl font-bold text-slate-900 dark:text-white">{card.value}</h3>
                   {card.subtitle && (
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{card.subtitle}</p>
-                  )}
+                  )}</div>
                 </CardContent>
               </Card>
             </Link>

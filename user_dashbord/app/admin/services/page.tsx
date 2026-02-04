@@ -6,7 +6,6 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { fetchServices } from '@/lib/redux/slices/serviceSlice';
 import { Service } from '@/types/service';
 import dynamic from 'next/dynamic';
-const ServiceForm = dynamic(() => import('@/app/page/service-form'), { ssr: false });
 const ServiceTable = dynamic(() => import('@/app/page/service-table'), { ssr: false });
 import { Button } from '@/components/ui/button';
 import {
@@ -66,8 +65,8 @@ export default function Page() {
     <>
       <div className="  bg-none   ">
         <Header 
-          title="Service Management"
-          description="Manage your services, pricing, and categories"
+          title=" View Services"
+          description=" services, pricing, and categories"
           total={total}
           extra ={
               <div className="flex gap-2">
@@ -101,24 +100,6 @@ export default function Page() {
             <ServiceTable categoryFilter={categoryFilter} />
           </div>
         </div>
-
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="  max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-2xl">
-                {selectedService ? 'Edit Service' : 'Create New Service'}
-              </DialogTitle>
-              <DialogDescription>
-                {selectedService
-                  ? 'Update the service details below'
-                  : 'Fill in the details to create a new service'}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="mt-4">
-              <ServiceForm service={selectedService} onSuccess={handleSuccess} />
-            </div>
-          </DialogContent>
-        </Dialog>
       </div>
     </>
   );

@@ -135,7 +135,8 @@ const page = () => {
                 <div className="p-0">
                     {rows && rows.length > 0 ? (
                         <div className="space-y-4">
-                            {rows.map((service: any, index) => {
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {rows.map((service: any, index) => {
                                 const assignedDate = service.start_date || service.assignedDate || service.createdAt;
                                 const endDate = service.end_date;
                                 const daysAgo = getDaysAgo(assignedDate);
@@ -152,9 +153,9 @@ const page = () => {
                                 const collectedPercentage = servicePrice > 0 ? (paidAmount / servicePrice) * 100 : 0;
 
                                 return (
-                                    <div key={service._id ?? service.id} className="bg-white dark:bg-zinc-900 rounded-lg shadow hover:shadow-lg transition-shadow duration-200">
+                                    <Card key={service._id ?? service.id} className="rounded-lg shadow hover:shadow-lg transition-shadow duration-200">
                                         {/* Header */}
-                                        <div className="px-6 py-5">
+                                        <CardContent className="px-4 py-4">
                                             <div className="flex items-start gap-4">
                                                 {service.service_image && (
                                                     <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 dark:bg-zinc-800 shrink-0">
@@ -201,122 +202,80 @@ const page = () => {
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </CardContent>
 
                                         {/* Payment Progress */}
                                         {renewalDates.length > 0 && (
-                                            <>
-                                                <div className="border-t border-gray-100 dark:border-zinc-800 px-6 py-5">
-                                                    {/* Progress Section */}
-                                                    <div className="mb-5">
-                                                        <div className="flex items-center justify-between mb-2">
-                                                            <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                                                                Payment progress
-                                                            </span>
-                                                            <span className="text-sm text-gray-900 dark:text-gray-100 font-medium">
-                                                                {collectedPercentage.toFixed(0)}%
-                                                            </span>
-                                                        </div>
-                                                        <div className="h-1 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
-                                                            <div 
-                                                                className="h-full bg-blue-600 dark:bg-blue-500 rounded-full transition-all duration-300"
-                                                                style={{ width: `${Math.min(collectedPercentage, 100)}%` }}
-                                                            />
-                                                        </div>
-                                                        <div className="flex items-center justify-between mt-1.5">
-                                                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                                ${paidAmount.toFixed(2)} collected
-                                                            </span>
-                                                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                                {remainingAmount > 0 ? `$${remainingAmount.toFixed(2)} remaining` : 'Complete'}
-                                                            </span>
-                                                        </div>
+                                            <CardContent className="border-t border-gray-100 dark:border-zinc-800">
+                                                {/* Progress Section */}
+                                                <div className="mb-4">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <span className="text-sm text-gray-700 dark:text-gray-300 font-medium">Payment progress</span>
+                                                        <span className="text-sm text-gray-900 dark:text-gray-100 font-medium">{collectedPercentage.toFixed(0)}%</span>
                                                     </div>
-
-                                                    {/* Stats Grid */}
-                                                    <div className="grid grid-cols-4 gap-4 mb-5">
-                                                        <div className="bg-gray-50 dark:bg-zinc-800/50 rounded-lg px-3 py-3">
-                                                            <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total renewals</div>
-                                                            <div className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                                                ${totalRenewalAmount.toFixed(0)}
-                                                            </div>
-                                                        </div>
-                                                        <div className="bg-gray-50 dark:bg-zinc-800/50 rounded-lg px-3 py-3">
-                                                            <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Items paid</div>
-                                                            <div className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                                                {paidCount}/{renewalDates.length}
-                                                            </div>
-                                                        </div>
-                                                        <div className="bg-green-50 dark:bg-green-950/20 rounded-lg px-3 py-3">
-                                                            <div className="text-xs text-green-700 dark:text-green-400 mb-1">Paid</div>
-                                                            <div className="text-lg font-medium text-green-900 dark:text-green-300">
-                                                                ${paidAmount.toFixed(0)}
-                                                            </div>
-                                                        </div>
-                                                        <div className="bg-amber-50 dark:bg-amber-950/20 rounded-lg px-3 py-3">
-                                                            <div className="text-xs text-amber-700 dark:text-amber-400 mb-1">Pending</div>
-                                                            <div className="text-lg font-medium text-amber-900 dark:text-amber-300">
-                                                                {unpaidCount}
-                                                            </div>
-                                                        </div>
+                                                    <div className="h-1 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                                                        <div className="h-full bg-blue-600 dark:bg-blue-500 rounded-full transition-all duration-300" style={{ width: `${Math.min(collectedPercentage, 100)}%` }} />
                                                     </div>
-
-                                                    {/* Dates */}
-                                                    <div className="flex items-center gap-6 text-sm text-gray-600 dark:text-gray-400">
-                                                        <div className="flex items-center gap-2">
-                                                            <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                                                            <span>
-                                                                {assignedDate ? new Date(String(assignedDate)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-'}
-                                                            </span>
-                                                        </div>
-                                                        {endDate && (
-                                                            <>
-                                                                <span className="text-gray-300 dark:text-gray-600">→</span>
-                                                                <div className="flex items-center gap-2">
-                                                                    <Clock className="h-4 w-4 text-gray-400 dark:text-gray-500" />
-                                                                    <span>
-                                                                        {new Date(String(endDate)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                                                                    </span>
-                                                                </div>
-                                                            </>
-                                                        )}
+                                                    <div className="flex items-center justify-between mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                                                        <span>${paidAmount.toFixed(2)} collected</span>
+                                                        <span>{remainingAmount > 0 ? `$${remainingAmount.toFixed(2)} remaining` : 'Complete'}</span>
                                                     </div>
                                                 </div>
 
-                                                {/* Renewals List */}
-                                                <div className="border-t border-gray-100 dark:border-zinc-800 px-6 py-4">
-                                                    <div className="flex items-center justify-between mb-3">
-                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                            Renewal schedule
-                                                        </span>
-                                                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                            {renewalDates.length} {renewalDates.length === 1 ? 'item' : 'items'}
-                                                        </span>
+                                                {/* Stats Grid */}
+                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                                                    <div className="bg-gray-50 dark:bg-zinc-800/50 rounded-lg px-3 py-2">
+                                                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Total renewals</div>
+                                                        <div className="text-lg font-medium text-gray-900 dark:text-gray-100">${totalRenewalAmount.toFixed(0)}</div>
                                                     </div>
-                                                    
+                                                    <div className="bg-gray-50 dark:bg-zinc-800/50 rounded-lg px-3 py-2">
+                                                        <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Items paid</div>
+                                                        <div className="text-lg font-medium text-gray-900 dark:text-gray-100">{paidCount}/{renewalDates.length}</div>
+                                                    </div>
+                                                    <div className="bg-green-50 dark:bg-green-950/20 rounded-lg px-3 py-2">
+                                                        <div className="text-xs text-green-700 dark:text-green-400 mb-1">Paid</div>
+                                                        <div className="text-lg font-medium text-green-900 dark:text-green-300">${paidAmount.toFixed(0)}</div>
+                                                    </div>
+                                                    <div className="bg-amber-50 dark:bg-amber-950/20 rounded-lg px-3 py-2">
+                                                        <div className="text-xs text-amber-700 dark:text-amber-400 mb-1">Pending</div>
+                                                        <div className="text-lg font-medium text-amber-900 dark:text-amber-300">{unpaidCount}</div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Dates */}
+                                                <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                                                    <div className="flex items-center gap-2">
+                                                        <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                                                        <span>{assignedDate ? new Date(String(assignedDate)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-'}</span>
+                                                    </div>
+                                                    {endDate && (
+                                                        <>
+                                                            <span className="text-gray-300 dark:text-gray-600">→</span>
+                                                            <div className="flex items-center gap-2">
+                                                                <Clock className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                                                                <span>{new Date(String(endDate)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
+
+                                                {/* Renewals List */}
+                                                <div className="mt-3">
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Renewal schedule</span>
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400">{renewalDates.length} {renewalDates.length === 1 ? 'item' : 'items'}</span>
+                                                    </div>
+
                                                     <div className="space-y-2">
                                                         {renewalDates.slice(0, 3).map((renewal: any, idx: number) => (
-                                                            <div 
-                                                                key={renewal._id || idx} 
-                                                                className="flex items-center gap-3 py-2.5 px-3 rounded hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer"
-                                                            >
+                                                            <div key={renewal._id || idx} className="flex items-center gap-3 py-2 px-2 rounded hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors">
                                                                 <div className={`w-2 h-2 rounded-full shrink-0 ${renewal.haspaid ? 'bg-green-500' : 'bg-amber-500'}`} />
                                                                 <div className="flex-1 min-w-0">
-                                                                    <div className="text-sm text-gray-900 dark:text-gray-100 truncate capitalize">
-                                                                        {renewal.label || `Renewal ${idx + 1}`}
-                                                                    </div>
-                                                                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                                        {renewal.date ? new Date(renewal.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
-                                                                    </div>
+                                                                    <div className="text-sm text-gray-900 dark:text-gray-100 truncate capitalize">{renewal.label || `Renewal ${idx + 1}`}</div>
+                                                                    <div className="text-xs text-gray-500 dark:text-gray-400">{renewal.date ? new Date(renewal.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</div>
                                                                 </div>
-                                                                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                                    ${renewal.price || 0}
-                                                                </div>
-                                                                <div className={`text-xs px-2 py-1 rounded ${
-                                                                    renewal.haspaid 
-                                                                        ? 'text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-950/20' 
-                                                                        : 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20'
-                                                                }`}>
+                                                                <div className="text-sm font-medium text-gray-900 dark:text-gray-100">${renewal.price || 0}</div>
+                                                                <div className={`text-xs px-2 py-1 rounded ${renewal.haspaid ? 'text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-950/20' : 'text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20'}`}>
                                                                     {renewal.haspaid ? 'Paid' : 'Due'}
                                                                 </div>
                                                             </div>
@@ -324,32 +283,24 @@ const page = () => {
                                                     </div>
 
                                                     {renewalDates.length > 3 && (
-                                                        <button
-                                                            className="w-full mt-2 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20 rounded transition-colors font-medium"
-                                                            onClick={() => {
-                                                                setSelectedRenewals(renewalDates);
-                                                                setRenewalsModalOpen(true);
-                                                            }}
-                                                        >
+                                                        <button className="w-full mt-2 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20 rounded transition-colors font-medium" onClick={() => { setSelectedRenewals(renewalDates); setRenewalsModalOpen(true); }}>
                                                             Show all {renewalDates.length} renewals
                                                         </button>
                                                     )}
                                                 </div>
-                                            </>
+                                            </CardContent>
                                         )}
 
                                         {/* Footer */}
-                                        <div className="border-t border-gray-100 dark:border-zinc-800 px-6 py-4">
-                                            <button 
-                                                className="w-full py-2.5 px-4 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20 rounded transition-colors"
-                                                onClick={() => viewInvoice(service._id)}
-                                            >
+                                        <CardContent className="border-t border-gray-100 dark:border-zinc-800 p-4">
+                                            <button className="w-full py-2.5 px-4 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/20 rounded transition-colors" onClick={() => viewInvoice(service._id)}>
                                                 View invoice
                                             </button>
-                                        </div>
-                                    </div>
+                                        </CardContent>
+                                    </Card>
                                 );
                             })}
+                            </div>
                         </div>
                     ) : (
                         <Card>

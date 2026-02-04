@@ -211,7 +211,7 @@ export default function CreateTicketPage() {
                       }))
                     }}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className='w-full'>
                       <SelectValue placeholder="Select a service" />
                     </SelectTrigger>
                     <SelectContent>
@@ -233,7 +233,7 @@ export default function CreateTicketPage() {
                     value={formData.problemType}
                     onValueChange={(value) => setFormData(prev => ({ ...prev, problemType: value }))}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className='w-full'>
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -252,7 +252,7 @@ export default function CreateTicketPage() {
                     value={formData.priority}
                     onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value }))}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className='w-full'>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>

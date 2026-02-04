@@ -64,13 +64,14 @@ export function AppHeader({ onSearchChange, searchValue }: AppHeaderProps) {
   }, [dispatch, userEmail, mee])
 
   const unreadCount = noticesState?.unreadCount || 0
+  const [showMobileSearch, setShowMobileSearch] = React.useState(false)
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm">
-      <div className="flex h-16 items-center justify-between gap-4 px-6">
+      <div className="flex h-16 items-center justify-between gap-4 px-4 md:px-6 relative">
 
         {/* Left: hamburger */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
           <button
             className="h-10 w-10 rounded-lg   border-slate-200 dark:border-slate-700 flex items-center justify-center "
             onClick={toggleSidebar}
@@ -78,19 +79,27 @@ export function AppHeader({ onSearchChange, searchValue }: AppHeaderProps) {
           >
             <Menu className="h-5 w-5 text-slate-700 dark:text-slate-200" />
           </button>
-        </div>
+          {/* Mobile: search button (opens overlay) */}
+          <button
+            className="inline-flex md:hidden h-10 w-10 rounded-lg border border-slate-200 dark:border-slate-700 items-center justify-center"
+            onClick={() => setShowMobileSearch(true)}
+            aria-label="Open search"
+          >
+            <Search className="h-4 w-4 text-slate-700 dark:text-slate-200" />
+          </button>
 
-        {/* Center: search */}
-        <div className="flex-1 px-6">
-          <div className="relative max-w-[900px] mx-auto">
-            <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search or type command..."
-              className="w-full h-11 lg:pl-12 pl-2 pr-4 bg-white  border border-slate-200 dark:border-slate-700 "
-              value={searchValue}
-              onChange={(e) => onSearchChange?.(e.target.value)}
-            />
+          {/* Center: search (desktop) */}
+          <div className="hidden md:flex px-2 flex-1">
+            <div className="relative w-full max-w-[500px]  mx-auto">
+              <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search or type command..."
+                className="w-full h-11 pl-12 pr-4 w-[400px] bg-white shadow-none border border-slate-200 dark:border-slate-700"
+                value={searchValue}
+                onChange={(e) => onSearchChange?.(e.target.value)}
+              />
+            </div>
           </div>
         </div>
 
@@ -161,6 +170,31 @@ export function AppHeader({ onSearchChange, searchValue }: AppHeaderProps) {
             </Avatar>
           </Button>
         </div>
+        {/* Mobile search overlay */}
+        {showMobileSearch && (
+          <div className="absolute left-0 right-0 top-full mt-2 px-4 md:hidden z-40">
+            <div className="mx-auto w-full max-w-lg">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search or type command..."
+                  className="w-full h-11 pl-10 pr-12 bg-white shadow-sm border border-slate-200 dark:border-slate-700"
+                  value={searchValue}
+                  onChange={(e) => onSearchChange?.(e.target.value)}
+                  autoFocus
+                />
+                <button
+                  onClick={() => setShowMobileSearch(false)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-slate-600"
+                  aria-label="Close search"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   )

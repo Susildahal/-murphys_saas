@@ -104,7 +104,7 @@ export default function OpenTicketPage() {
         {/* Stats Overview */}
         {tickets.length > 0 && (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="border-l-4 border-l-blue-500 shadow-sm">
+            <Card className="border-l-4 border-l-blue-500 ">
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Open Tickets</CardTitle>
                 <TicketIcon className="h-4 w-4 text-blue-500" />
@@ -115,7 +115,7 @@ export default function OpenTicketPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 border-l-blue-500 shadow-sm">
+            <Card className="border-l-4 border-l-blue-500 ">
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                 <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
                 <Clock className="h-4 w-4 text-blue-500" />
@@ -126,7 +126,7 @@ export default function OpenTicketPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 border-l-blue-500 shadow-sm">
+            <Card className="border-l-4 border-l-blue-500 ">
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Resolved</CardTitle>
                 <CheckCircle2 className="h-4 w-4 text-blue-500" />
@@ -137,7 +137,7 @@ export default function OpenTicketPage() {
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 border-l-blue-500 shadow-sm">
+            <Card className="border-l-4 border-l-blue-500 ">
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Urgent</CardTitle>
                 <AlertCircle className="h-4 w-4 text-blue-500" />

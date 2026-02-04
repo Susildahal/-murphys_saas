@@ -83,8 +83,8 @@ export default function ForgotPasswordPage() {
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
                 className={`p-4 border ${status.type === "success"
-                    ? "bg-green-50 border-green-200"
-                    : "bg-red-50 border-red-200"
+                  ? "bg-green-50 border-green-200"
+                  : "bg-red-50 border-red-200"
                   }`}
               >
                 <p className={`text-sm ${status.type === "success" ? "text-green-800" : "text-red-800"

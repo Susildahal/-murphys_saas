@@ -183,7 +183,7 @@ export default function ServiceTable({ categoryFilter = 'all' }: ServiceTablePro
                     return (
                         <Card 
                             key={(service as any)._id || (service as any).id} 
-                            className="group relative flex flex-col h-full overflow-hidden border-border/60 bg-card hover:shadow-xl hover:border-border/80 transition-all duration-300 rounded-xl"
+                            className="group relative flex p-0 flex-col h-full overflow-hidden border-border/60  hover:shadow-xl hover:border-border/80 transition-all duration-300 rounded-xl"
                         >
                             {/* 1. Full Bleed Image Header */}
                             <div className="relative aspect-[16/10] overflow-hidden bg-muted">
@@ -253,7 +253,7 @@ export default function ServiceTable({ categoryFilter = 'all' }: ServiceTablePro
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button variant="ghost" size="icon" className="h-6 w-6 -mr-2 text-muted-foreground hover:text-foreground">
-                                                    <MoreVertical className="h-4 w-4" />
+                                                    <MoreVertical className="h-4 w-4 rotate-90" />
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">

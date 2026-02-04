@@ -285,7 +285,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
 
 
   return (
-    <div className="w-full max-w-5xl mx-auto pb-20">
+    <div className="w-full max-w-6xl mx-auto pb-20">
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -379,10 +379,10 @@ const formatPhone = (value: string, countryCode = '+61') => {
                         control={form.control}
                         name="firstName"
                         render={({ field }) => (
-                          <FormItem>
+                          <FormItem >
                             <FormLabel>First Name <span className="text-destructive">*</span></FormLabel>
                             <FormControl>
-                              <Input placeholder="John" {...field} className="bg-muted/50 border-none focus:bg-background transition-all" />
+                              <Input placeholder="John" {...field} className="bg-muted/50 border focus:bg-background transition-all" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -392,10 +392,10 @@ const formatPhone = (value: string, countryCode = '+61') => {
                         control={form.control}
                         name="lastName"
                         render={({ field }) => (
-                          <FormItem>
+                          <FormItem >
                             <FormLabel>Last Name <span className="text-destructive">*</span></FormLabel>
                             <FormControl>
-                              <Input placeholder="Doe" {...field} className="bg-muted/50 border-none focus:bg-background transition-all" />
+                              <Input placeholder="Doe" {...field} className="bg-muted/50 border focus:bg-background transition-all" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -408,11 +408,11 @@ const formatPhone = (value: string, countryCode = '+61') => {
                         control={form.control}
                         name="gender"
                         render={({ field }) => (
-                          <FormItem>
+                          <FormItem >
                             <FormLabel>Gender</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl className="w-full">
-                                <SelectTrigger className="bg-muted/50 border-none">
+                                <SelectTrigger className="bg-muted/50 ">
                                   <SelectValue placeholder="Select gender" />
                                 </SelectTrigger>
                               </FormControl>
@@ -436,7 +436,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
                             <Popover open={dobOpen} onOpenChange={setDobOpen}>
                               <PopoverTrigger asChild>
                                 <FormControl>
-                                  <Button variant="outline" className={cn("justify-between font-normal bg-muted/50 border-none", !date && "text-muted-foreground")}>
+                                  <Button variant="outline" className={cn("justify-between font-normal bg-muted/50", !date && "text-muted-foreground")}>
                                     {date ? format(date, "PPP") : "Select date"}
                                     <CalendarIcon className="w-4 h-4 ml-2 opacity-50" />
                                   </Button>
@@ -482,7 +482,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
                           <FormLabel>How did you find our service?</FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl className="w-full">
-                              <SelectTrigger className="bg-muted/50 border-none">
+                              <SelectTrigger className="bg-muted/50 ">
                                 <SelectValue placeholder="Select an option" />
                               </SelectTrigger>
                             </FormControl>
@@ -515,7 +515,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
                           <FormControl>
                             <Textarea
                               placeholder="Tell us a bit about yourself..."
-                              className="bg-muted/50 border-none resize-none min-h-[120px]"
+                              className="bg-muted/50  resize-none min-h-[120px]"
                               {...field}
                             />
                           </FormControl>
@@ -553,7 +553,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
         <div className="flex items-center gap-3">
           <div className="w-36">
             <Select value={form.watch('countryCode') || '+61'} onValueChange={(val) => form.setValue('countryCode', val)}>
-              <SelectTrigger className="w-full bg-muted/50 border-none text-sm pr-4">
+              <SelectTrigger className="w-full bg-muted/50  text-sm pr-4">
                 <SelectValue />
               </SelectTrigger>
               {/* Dropdown with search at top (sticky) */}
@@ -605,7 +605,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
             type="tel"
             placeholder="412 345 678"
             inputMode="numeric"
-            className="flex-1 bg-muted/50 border-none"
+            className="flex-1 bg-muted/50"
             onChange={(e) => {
               const raw = e.target.value || '';
               
@@ -656,7 +656,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
                             <FormControl>
                               <div className="relative">
                                 <Globe className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                <Input placeholder="https://portfolio.com" {...field} className="pl-9 bg-muted/50 border-none" />
+                                <Input placeholder="https://portfolio.com" {...field} className="pl-9 bg-muted/50" />
                               </div>
                             </FormControl>
                             <FormMessage />
@@ -689,7 +689,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
                               value={field.value}
                             >
                               <FormControl className=' w-full'>
-                                <SelectTrigger className="bg-muted/50 border-none">
+                                <SelectTrigger className="bg-muted/50 ">
                                   <SelectValue placeholder="Select Country" />
                                 </SelectTrigger>
                               </FormControl>
@@ -714,7 +714,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
                                 country={form.watch('country') || ''}
                                 value={field.value || ''}
                                 onChange={field.onChange}
-                                className="flex h-10 w-full rounded-md border-none bg-muted/50 px-3 py-2 text-sm focus:outline-none disabled:opacity-50"
+                                className="flex h-10 w-full rounded-md  bg-muted/50 px-3 py-2 text-sm focus:outline-none disabled:opacity-50"
                                 disabled={!form.watch('country')}
                               />
                             </FormControl>
@@ -730,7 +730,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
                         <FormItem>
                           <FormLabel>City</FormLabel>
                           <FormControl>
-                            <Input placeholder="San Francisco" {...field} className="bg-muted/50 border-none" />
+                            <Input placeholder="San Francisco" {...field} className="bg-muted/50 " />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
