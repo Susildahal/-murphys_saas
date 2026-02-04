@@ -73,7 +73,7 @@ export default function LoginPage() {
       );
       const idToken = await userCredential.user.getIdToken();
 
-      const response = await axiosInstance.post("/auth/login", {
+      const response = await axiosInstance.post("/profiles", {
         email: values.email,
         firebaseUid: userCredential.user.uid,
         idToken: idToken,
