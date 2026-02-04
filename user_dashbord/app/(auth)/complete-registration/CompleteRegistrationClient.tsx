@@ -8,9 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import Image from "next/image";
 import axiosInstance from "@/lib/axios";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import app from "@/app/config/firebase";
@@ -25,7 +23,7 @@ const validationSchema = Yup.object({
   phone: Yup.string()
     .matches(/^(\+61|0)?[2-478](?:[ -]?[0-9]){8}$/, "Invalid Australian phone number")
     .required("Phone number is required"),
-  gender: Yup.string().required("Gender is required"),  
+  gender: Yup.string().required("Gender is required"),
 });
 
 export default function CompleteRegistrationClient() {
@@ -52,7 +50,7 @@ export default function CompleteRegistrationClient() {
 
       try {
         const response = await axiosInstance.get(`/auth/verify-token?token=${token}`);
-        
+
         if (response.data.success) {
           setTokenValid(true);
           setUserData(response.data.data);
@@ -116,94 +114,47 @@ export default function CompleteRegistrationClient() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black p-4 relative overflow-hidden">
-      {/* Geometric Background Pattern */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-1/3 h-1/3">
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={`tr-${i}`}
-              className="absolute border-l border-t border-blue-500"
-              style={{
-                width: `${100 + i * 30}px`,
-                height: `${100 + i * 30}px`,
-                right: `${i * 20}px`,
-                top: `${i * 20}px`,
-                transform: 'rotate(45deg)',
-              }}
-            />
-          ))}
-        </div>
-        <div className="absolute bottom-0 left-0 w-1/4 h-1/4">
-          {[...Array(3)].map((_, i) => (
-            <div
-              key={`bl-${i}`}
-              className="absolute border-l border-b border-blue-500"
-              style={{
-                width: `${80 + i * 25}px`,
-                height: `${80 + i * 25}px`,
-                left: `${i * 18}px`,
-                bottom: `${i * 18}px`,
-                transform: 'rotate(45deg)',
-              }}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Brand Logo */}
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="absolute top-8 left-1/2 -translate-x-1/2"
-      >
-        <Image
-          src="/logo.png"
-          alt="Brand Logo"
-          width={150}
-          height={50}
-        />
-      </motion.div>
-
-      {/* Registration Card */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.1 }}
-        className="relative w-full max-w-md bg-white rounded-lg shadow-2xl p-8 mt-16"
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-lg bg-white border border-gray-200 p-10"
       >
         {verifying ? (
-          <div className="text-center py-8">
-            <Loader2 className="w-12 h-12 text-purple-600 animate-spin mx-auto mb-4" />
-            <p className="text-neutral-600">Verifying your email...</p>
+          <div className="text-center py-12">
+            <Loader2 className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
+            <p className="text-gray-600 text-base">Verifying your email...</p>
           </div>
         ) : !tokenValid ? (
-          <div className="text-center py-8">
-            <div className="text-red-500 mb-4">✕</div>
-            <h2 className="text-xl font-semibold text-neutral-900 mb-2">Verification Failed</h2>
-            <p className="text-sm text-neutral-600 mb-6">{error}</p>
+          <div className="text-center py-12">
+            <div className="w-16 h-16 mx-auto mb-6 bg-red-100 flex items-center justify-center text-red-600 text-3xl font-bold">
+              ✕
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">Verification Failed</h2>
+            <p className="text-base text-gray-600 mb-8">{error}</p>
             <Button
               onClick={() => router.push('/register')}
-              className="w-full h-11 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium rounded-lg transition-all"
+              className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white text-base"
             >
               Start Over
             </Button>
           </div>
         ) : success ? (
-          <div className="text-center py-8">
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-semibold text-neutral-900 mb-2">
+          <div className="text-center py-12">
+            <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-6" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">
               Registration Complete!
             </h2>
-            <p className="text-sm text-neutral-600">
+            <p className="text-base text-gray-600">
               Redirecting to login...
             </p>
           </div>
         ) : (
           <>
-            <div className="mb-6">
-              <h2 className="text-2xl font-semibold text-neutral-900 mb-2">Complete Registration</h2>
-              <p className="text-sm text-neutral-600">
+            <div className="mb-10">
+              <h2 className="text-3xl font-bold text-gray-900 mb-3">Complete Registration</h2>
+              <p className="text-base text-gray-500">
                 Email verified for: <strong>{userData?.email}</strong>
               </p>
             </div>
@@ -220,38 +171,31 @@ export default function CompleteRegistrationClient() {
               onSubmit={handleCompleteRegistration}
             >
               {({ isSubmitting, touched, errors, setFieldValue, values }) => (
-                <Form className="space-y-4">
+                <Form className="space-y-5">
                   {/* Phone & Gender */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="phone" className="text-sm font-medium text-neutral-700">
-                        Phone Number <span className="text-red-500">*</span>
-                      </Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
                       <Field
                         as={Input}
                         id="phone"
                         name="phone"
                         type="tel"
-                        placeholder="0412 345 678"
-                        className={`h-11 rounded border-neutral-300 shadow-none focus-visible:ring-purple-500 ${
-                          touched.phone && errors.phone ? "border-red-400" : ""
-                        }`}
+                        placeholder="Phone Number"
+                        className={`h-12 text-base ${touched.phone && errors.phone ? "border-red-500" : ""
+                          }`}
                       />
                       {touched.phone && errors.phone && (
-                        <p className="text-xs text-red-600">{errors.phone}</p>
+                        <p className="text-sm text-red-600 mt-2">{errors.phone}</p>
                       )}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="gender" className="text-sm font-medium text-neutral-700">
-                        Gender <span className="text-red-500">*</span>
-                      </Label>
+                    <div>
                       <Select
                         value={values.gender}
                         onValueChange={(value) => setFieldValue('gender', value)}
                       >
-                        <SelectTrigger className={`h-11 ${touched.gender && errors.gender ? "border-red-400" : ""}`}>
-                          <SelectValue placeholder="Select gender" />
+                        <SelectTrigger className={`h-12 text-base ${touched.gender && errors.gender ? "border-red-500" : ""}`}>
+                          <SelectValue placeholder="Gender" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="male">Male</SelectItem>
@@ -261,82 +205,71 @@ export default function CompleteRegistrationClient() {
                         </SelectContent>
                       </Select>
                       {touched.gender && errors.gender && (
-                        <p className="text-xs text-red-600">{errors.gender}</p>
+                        <p className="text-sm text-red-600 mt-2">{errors.gender}</p>
                       )}
                     </div>
                   </div>
 
                   {/* Password Fields */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="password" className="text-sm font-medium text-neutral-700">
-                        Password <span className="text-red-500">*</span>
-                      </Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
                       <div className="relative">
                         <Field
                           as={Input}
                           id="password"
                           name="password"
                           type={passwordClick ? "text" : "password"}
-                          placeholder="••••••••"
-                          className={`h-11 pr-10 rounded border-neutral-300 shadow-none focus-visible:ring-purple-500 ${
-                            touched.password && errors.password ? "border-red-400" : ""
-                          }`}
+                          placeholder="Password"
+                          className={`h-12 text-base pr-12 ${touched.password && errors.password ? "border-red-500" : ""
+                            }`}
                         />
                         <button
                           type="button"
                           onClick={() => setPasswordClick(!passwordClick)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                         >
-                          {passwordClick ? <EyeOff className="w-4 h-4 text-blue-700" /> : <Eye className="w-4 h-4 text-blue-600" />}
+                          {passwordClick ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                         </button>
                       </div>
                       {touched.password && errors.password && (
-                        <p className="text-xs text-red-600">{errors.password}</p>
+                        <p className="text-sm text-red-600 mt-2">{errors.password}</p>
                       )}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="confirmPassword" className="text-sm font-medium text-neutral-700">
-                        Confirm Password <span className="text-red-500">*</span>
-                      </Label>
+                    <div>
                       <div className="relative">
                         <Field
                           as={Input}
                           id="confirmPassword"
                           name="confirmPassword"
                           type={confirmPasswordClick ? "text" : "password"}
-                          placeholder="••••••••"
-                          className={`h-11 pr-10 rounded border-neutral-300 shadow-none focus-visible:ring-purple-500 ${
-                            touched.confirmPassword && errors.confirmPassword ? "border-red-400" : ""
-                          }`}
+                          placeholder="Confirm Password"
+                          className={`h-12 text-base pr-12 ${touched.confirmPassword && errors.confirmPassword ? "border-red-500" : ""
+                            }`}
                         />
                         <button
                           type="button"
                           onClick={() => setConfirmPasswordClick(!confirmPasswordClick)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                         >
-                          {confirmPasswordClick ? <EyeOff className="w-4 h-4 text-blue-700" /> : <Eye className="w-4 h-4 text-blue-600" />}
+                          {confirmPasswordClick ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                         </button>
                       </div>
                       {touched.confirmPassword && errors.confirmPassword && (
-                        <p className="text-xs text-red-600">{errors.confirmPassword}</p>
+                        <p className="text-sm text-red-600 mt-2">{errors.confirmPassword}</p>
                       )}
                     </div>
                   </div>
 
                   {/* Referral Source */}
-                  <div className="space-y-2">
-                    <Label htmlFor="referralSource" className="text-sm font-medium text-neutral-700">
-                      How did you hear about us? (Optional)
-                    </Label>
+                  <div>
                     <Field
                       as={Input}
                       id="referralSource"
                       name="referralSource"
                       type="text"
-                      placeholder="e.g., Google, friend referral, social media"
-                      className="h-11 rounded border-neutral-300 shadow-none focus-visible:ring-purple-500"
+                      placeholder="How did you hear about us? (Optional)"
+                      className="h-12 text-base"
                     />
                   </div>
 
@@ -344,10 +277,10 @@ export default function CompleteRegistrationClient() {
                   <AnimatePresence>
                     {error && (
                       <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg border border-red-200"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="bg-red-50 text-red-800 text-sm p-4 border border-red-200"
                       >
                         {error}
                       </motion.div>
@@ -358,7 +291,7 @@ export default function CompleteRegistrationClient() {
                   <Button
                     type="submit"
                     disabled={isSubmitting || loading}
-                    className="w-full h-11 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium rounded-lg transition-all disabled:opacity-50"
+                    className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white text-base"
                   >
                     {isSubmitting || loading ? (
                       <span className="flex items-center justify-center gap-2">

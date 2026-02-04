@@ -1,10 +1,11 @@
 'use client';
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail } from "lucide-react";
+import { Mail, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmailModal } from "@/app/page/email-model";
@@ -76,23 +77,20 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-100 to-neutral-200 p-6">
-
-      {/* Registration Card */}
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="w-full max-w-sm bg-white/95 backdrop-blur-sm rounded-2xl border border-neutral-200 shadow-lg shadow-black/5 p-8"
+        className="w-full max-w-lg bg-white border border-gray-200 p-10"
       >
         {!emailSent ? (
           <>
-            <div className="mb-8 text-center">
-              <h2 className="text-2xl font-semibold text-neutral-900 mb-2">
-                Create your account
-              </h2>
-              <p className="text-neutral-500 text-sm">
-                Join us today and start your journey with a verified account.
+            {/* Header */}
+            <div className="text-center mb-10">
+              <h1 className="text-3xl font-bold text-gray-900 mb-3">Create Account</h1>
+              <p className="text-base text-gray-500">
+                Enter your details to create your account
               </p>
             </div>
 
@@ -106,64 +104,59 @@ export default function RegisterPage() {
               onSubmit={handleSendVerification}
             >
               {({ isSubmitting, touched, errors }) => (
-                <Form className="space-y-4">
-                  {/* First Name */}
-                  <div className="space-y-1.5">
-                    <label htmlFor="firstName" className="block text-sm font-medium text-neutral-700">
-                      First Name
-                    </label>
-                    <Field
-                      as={Input}
-                      id="firstName"
-                      name="firstName"
-                      type="text"
-                      placeholder="John"
-                      className={`block w-full px-3 py-2 h-12 bg-white border border-neutral-200 rounded-lg text-sm placeholder-neutral-400 focus:outline-none focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200 transition-all duration-150 ${
-                        touched.firstName && errors.firstName ? "border-red-400" : ""
-                      }`}
-                    />
-                    {touched.firstName && errors.firstName && (
-                      <p className="text-xs text-red-600">{errors.firstName}</p>
-                    )}
-                  </div>
+                <Form className="space-y-5">
+                  {/* Name Fields */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Field
+                        as={Input}
+                        id="firstName"
+                        name="firstName"
+                        type="text"
+                        placeholder="First Name"
+                        className={`h-12 text-base rounded shadow-none ${touched.firstName && errors.firstName
+                            ? "border-red-500"
+                            : ""
+                          }`}
+                      />
+                      {touched.firstName && errors.firstName && (
+                        <p className="text-sm text-red-600 mt-2">{errors.firstName}</p>
+                      )}
+                    </div>
 
-                  {/* Last Name */}
-                  <div className="space-y-1.5">
-                    <label htmlFor="lastName" className="block text-sm font-medium text-neutral-700">
-                      Last Name
-                    </label>
-                    <Field
-                      as={Input}
-                      id="lastName"
-                      name="lastName"
-                      type="text"
-                      placeholder="Smith"
-                      className={`block w-full px-3 py-2 h-12 bg-white border border-neutral-200 rounded-lg text-sm placeholder-neutral-400 focus:outline-none focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200 transition-all duration-150 ${
-                        touched.lastName && errors.lastName ? "border-red-400" : ""
-                      }`}
-                    />
-                    {touched.lastName && errors.lastName && (
-                      <p className="text-xs text-red-600">{errors.lastName}</p>
-                    )}
+                    <div>
+                      <Field
+                        as={Input}
+                        id="lastName"
+                        name="lastName"
+                        type="text"
+                        placeholder="Last Name"
+                        className={`h-12 text-base rounded shadow-none ${touched.lastName && errors.lastName
+                            ? "border-red-500"
+                            : ""
+                          }`}
+                      />
+                      {touched.lastName && errors.lastName && (
+                        <p className="text-sm text-red-600 mt-2">{errors.lastName}</p>
+                      )}
+                    </div>
                   </div>
 
                   {/* Email Field */}
-                  <div className="space-y-1.5">
-                    <label htmlFor="email" className="block text-sm font-medium text-neutral-700">
-                      Email
-                    </label>
+                  <div>
                     <Field
                       as={Input}
                       id="email"
                       name="email"
                       type="email"
-                      placeholder="you@example.com"
-                      className={`block w-full px-3 py-2 h-12 bg-white border border-neutral-200 rounded-lg text-sm placeholder-neutral-400 focus:outline-none focus:border-neutral-500 focus:ring-2 focus:ring-neutral-200 transition-all duration-150 ${
-                        touched.email && errors.email ? "border-red-400" : ""
-                      }`}
+                      placeholder="Email Address"
+                      className={`h-12 text-base rounded shadow-none ${touched.email && errors.email
+                          ? "border-red-500"
+                          : ""
+                        }`}
                     />
                     {touched.email && errors.email && (
-                      <p className="text-xs text-red-600">{errors.email}</p>
+                      <p className="text-sm text-red-600 mt-2">{errors.email}</p>
                     )}
                   </div>
 
@@ -171,15 +164,12 @@ export default function RegisterPage() {
                   <AnimatePresence>
                     {error && (
                       <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        className="rounded-md bg-red-50 p-3 flex items-start gap-2"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="bg-red-50 border border-red-200 p-4"
                       >
-                        <svg className="h-4 w-4 text-red-600 mt-0.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                        </svg>
-                        <p className="text-sm text-red-600">{error}</p>
+                        <p className="text-sm text-red-800">{error}</p>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -188,69 +178,60 @@ export default function RegisterPage() {
                   <Button
                     type="submit"
                     disabled={isSubmitting || loading}
-                    className="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-neutral-900 hover:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-neutral-900 transition-all duration-150 disabled:opacity-70 disabled:cursor-not-allowed mt-6"
+                    className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white text-base"
                   >
                     {isSubmitting || loading ? (
-                      <span className="flex items-center gap-2">
-                        <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Creating Account...
-                      </span>
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Creating account...</span>
+                      </div>
                     ) : (
-                      "Sign Up"
+                      "Create Account"
                     )}
                   </Button>
-
-                  {/* Magic Link Button */}
                 </Form>
               )}
             </Formik>
 
             {/* Login Link */}
-            <div className="mt-6 text-center">
-              <p className="text-sm text-neutral-500">
-                Already have an account?{' '}
-                <button
-                  type="button"
-                  onClick={() => router.push('/login')}
-                  className="font-medium text-neutral-900 hover:text-neutral-700 transition-colors"
-                >
-                  Log In
-                </button>
-              </p>
-            </div>
-          </>
-        ) : (
-          <div className="text-center py-8">
-            <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 rounded-full bg-neutral-100 flex items-center justify-center">
-                <Mail className="w-8 h-8 text-neutral-900" />
-              </div>
-            </div>
-            <h2 className="text-2xl font-semibold text-neutral-900 mb-2">
-              Check Your Email
-            </h2>
-            <p className="text-sm text-neutral-500 mb-6">
-              We've sent a verification link to:
-            </p>
-            <p className="text-base font-medium text-neutral-900 mb-6">
-              {submittedEmail}
-            </p>
-            <p className="text-sm text-neutral-500 mb-4">
-              Click the link in the email to verify your address and complete your registration.
-            </p>
-            <p className="text-xs text-neutral-500">
-              Didn't receive the email? Check your spam folder or{" "}
+            <p className="mt-8 text-center text-base text-gray-600">
+              Already have an account?{" "}
               <button
-                onClick={() => setEmailSent(false)}
-                className="font-medium text-neutral-900 hover:text-neutral-700 transition-colors"
+                onClick={() => router.push('/login')}
+                className="text-blue-600 hover:text-blue-700 font-medium"
               >
-                try again
+                Sign in
               </button>
             </p>
-          </div>
+          </>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-8"
+          >
+            <div className="w-16 h-16 mx-auto mb-6 bg-green-100 flex items-center justify-center">
+              <CheckCircle className="w-8 h-8 text-green-600" />
+            </div>
+
+            <h2 className="text-2xl font-bold text-gray-900 mb-3">
+              Check Your Email
+            </h2>
+            <p className="text-gray-600 mb-6">
+              We've sent a verification link to<br />
+              <span className="font-semibold text-gray-900">{submittedEmail}</span>
+            </p>
+            <p className="text-sm text-gray-500 mb-8">
+              Click the link in the email to verify your address and complete your registration.
+            </p>
+
+            <button
+              onClick={() => setEmailSent(false)}
+              className="text-sm font-medium text-blue-600 hover:text-blue-700"
+            >
+              Didn't receive the email? Try again
+            </button>
+          </motion.div>
         )}
       </motion.div>
 
@@ -269,9 +250,11 @@ export default function RegisterPage() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-neutral-900 text-white px-6 py-3 rounded-lg shadow-lg z-50"
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
           >
-            <span className="text-sm">{modalStatus}</span>
+            <div className="bg-gray-900 text-white px-6 py-3">
+              <p className="text-sm">{modalStatus}</p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
