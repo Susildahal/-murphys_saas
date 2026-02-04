@@ -219,7 +219,7 @@ function Page() {
   return (
     <div>
       <Header title="Cart Management" description="Manage user carts and their services" />
-      <div className="p-4 space-y-6">
+      <div className=" space-y-6">
         {carts.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
@@ -261,6 +261,7 @@ function Page() {
                       <div className="space-y-2 max-w-md">
                         {cart.Services?.map((service: any) => (
                           <div key={service._id} className="flex items-center gap-3 p-2 border rounded-lg">
+                            {process.env.NODE_ENV !== 'production' && console.debug && console.debug('cart service status', service._id, service.status)}
                             {service.serviceId?.image && (
                               <Image
                                 src={service.serviceId.image}
@@ -281,8 +282,16 @@ function Page() {
                                 {service.status}
                               </Badge>
                             </div>
-                            <div className="flex gap-2">
-                              {service.status === 'confirmed' && (
+                              <div className="flex gap-2">
+                              {service.status === 'done' ? (
+                                <Button size="sm" disabled className="bg-gray-400 text-white cursor-not-allowed">
+                                  This service is already accepted
+                                </Button>
+                              ) : service.status === 'cancelled' ? (
+                                <Button size="sm" disabled variant="outline">
+                                  Cancelled
+                                </Button>
+                              ) : (
                                 <Button
                                   size="sm"
                                   onClick={() => handleAcceptService(
@@ -303,7 +312,7 @@ function Page() {
                                 size="sm"
                                 variant="destructive"
                                 onClick={() => handleDeleteService(
-                                  cart.userid,
+                                  cart.user?.user_id,
                                   service.serviceId?._id,
                                   service.serviceId?.name
                                 )}

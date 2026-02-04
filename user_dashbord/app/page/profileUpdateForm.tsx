@@ -299,13 +299,13 @@ const formatPhone = (value: string, countryCode = '+61') => {
             <CardContent className="relative pt-0">
               <div className="flex flex-col items-center -mt-12">
                 <div className="relative group">
-                  <Avatar className="w-32 h-32 border-4 border-background shadow-2xl transition-transform duration-300 group-hover:scale-105">
+                  <Avatar className="w-32 h-32 border-4 border-background  transition-transform duration-300 group-hover:scale-105">
                     <AvatarImage src={imagePreview} className="object-cover" />
                     <AvatarFallback className="text-4xl bg-muted">
                       {form.watch('firstName')?.[0] || <User className="w-12 h-12" />}
                     </AvatarFallback>
                   </Avatar>
-                  <label className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full cursor-pointer shadow-lg hover:bg-primary/90 transition-colors">
+                  <label className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full cursor-pointer  hover:bg-primary/90 transition-colors">
                     <Camera className="w-4 h-4" />
                     <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
                   </label>
@@ -360,7 +360,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
 
         {/* Right Column: Main Form */}
         <div className="lg:col-span-8">
-          <Card className="border-none  bg-card">
+          <div className="border-none  bg-card">
             <CardContent className="p-8">
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
@@ -382,7 +382,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
                           <FormItem >
                             <FormLabel>First Name <span className="text-destructive">*</span></FormLabel>
                             <FormControl>
-                              <Input placeholder="John" {...field} className="bg-muted/50 border focus:bg-background transition-all" />
+                              <Input placeholder="John" {...field} className="bg-muted/50  focus:bg-background transition-all" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -559,7 +559,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
               {/* Dropdown with search at top (sticky) */}
               <SelectContent className="p-0" position="popper" align="start">
                 {/* Sticky search bar at top */}
-                <div className="sticky top-0 z-10 bg-popover border-b border-border p-3">
+                <div className="sticky top-0  bg-popover border-b border-border p-3">
                   <Input
                     placeholder="Search country or code..."
                     value={countrySearch}
@@ -751,7 +751,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
                     <Button
                       type="submit"
                       disabled={loading}
-                      className="min-w-[200px] h-11 bg-[#480082] hover:bg-[#3a006b] shadow-lg shadow-indigo-500/20"
+                      className="min-w-[200px] h-11 bg-[#480082] hover:bg-[#3a006b]"
                     >
                       {loading ? (
                         <>
@@ -772,7 +772,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
                 </form>
               </Form>
             </CardContent>
-          </Card>
+          </div>
         </div>
       </motion.div>
     </div>

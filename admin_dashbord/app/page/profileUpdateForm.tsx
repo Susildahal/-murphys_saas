@@ -182,7 +182,7 @@ export default function ProfileUpdateForm() {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto pb-20">
+    <div className="w-full max-w-6xl mx-auto pb-20">
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -191,7 +191,7 @@ export default function ProfileUpdateForm() {
       >
         {/* Left Column: Avatar & Summary */}
         <div className="lg:col-span-4 space-y-6">
-          <Card className="border-none shadow-xl bg-card overflow-hidden">
+          <Card className="  bg-card overflow-hidden">
             <div className="h-24 " />
             <CardContent className="relative pt-0">
               <div className="flex flex-col items-center -mt-12">
@@ -235,7 +235,7 @@ export default function ProfileUpdateForm() {
             </CardContent>
           </Card>
 
-          <Card className="border-none bg-primary/5 p-6">
+          <Card className=" bg-primary/5 p-6">
             <div className="flex items-center gap-3 mb-2">
               <Info className="w-5 h-5 text-primary" />
               <h4 className="font-semibold text-primary">Profile Completeness</h4>
@@ -255,7 +255,7 @@ export default function ProfileUpdateForm() {
 
         {/* Right Column: Main Form */}
         <div className="lg:col-span-8">
-          <Card className="border-none  bg-card">
+          <Card className="  bg-card">
             <CardContent className="p-8">
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
@@ -277,7 +277,7 @@ export default function ProfileUpdateForm() {
                           <FormItem>
                             <FormLabel>First Name <span className="text-destructive">*</span></FormLabel>
                             <FormControl>
-                              <Input placeholder="John" {...field} className="bg-muted/50 border-none focus:bg-background transition-all" />
+                              <Input placeholder="John" {...field} className="bg-muted/50  focus:bg-background transition-all" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -290,7 +290,7 @@ export default function ProfileUpdateForm() {
                           <FormItem>
                             <FormLabel>Last Name <span className="text-destructive">*</span></FormLabel>
                             <FormControl>
-                              <Input placeholder="Doe" {...field} className="bg-muted/50 border-none focus:bg-background transition-all" />
+                              <Input placeholder="Doe" {...field} className="bg-muted/50  focus:bg-background transition-all" />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -307,7 +307,7 @@ export default function ProfileUpdateForm() {
                             <FormLabel>Gender</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl className="w-full">
-                                <SelectTrigger className="bg-muted/50 border-none">
+                                <SelectTrigger className="bg-muted/50 ">
                                   <SelectValue placeholder="Select gender" />
                                 </SelectTrigger>
                               </FormControl>
@@ -331,7 +331,7 @@ export default function ProfileUpdateForm() {
                             <Popover open={dobOpen} onOpenChange={setDobOpen}>
                               <PopoverTrigger asChild>
                                 <FormControl>
-                                  <Button variant="outline" className={cn("justify-between font-normal bg-muted/50 border-none", !date && "text-muted-foreground")}>
+                                  <Button variant="outline" className={cn("justify-between font-normal bg-muted/50 ", !date && "text-muted-foreground")}>
                                     {date ? format(date, "PPP") : "Select date"}
                                     <CalendarIcon className="w-4 h-4 ml-2 opacity-50" />
                                   </Button>
@@ -377,7 +377,7 @@ export default function ProfileUpdateForm() {
                           <FormItem>
                             <FormLabel>Job Title <span className="text-destructive">*</span></FormLabel>
                             <FormControl>
-                              <Input placeholder="e.g. Creative Director" {...field} className="bg-muted/50 border-none" />
+                              <Input placeholder="e.g. Creative Director" {...field} className="bg-muted/50 " />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -392,7 +392,7 @@ export default function ProfileUpdateForm() {
                             <Popover open={dojOpen} onOpenChange={setDojOpen}>
                               <PopoverTrigger asChild>
                                 <FormControl>
-                                  <Button variant="outline" className={cn("justify-between font-normal bg-muted/50 border-none", !dojDate && "text-muted-foreground")}>
+                                  <Button variant="outline" className={cn("justify-between font-normal bg-muted/50 ", !dojDate && "text-muted-foreground")}>
                                     {dojDate ? format(dojDate, "PPP") : "Select date"}
                                     <CalendarIcon className="w-4 h-4 ml-2 opacity-50" />
                                   </Button>
@@ -427,7 +427,7 @@ export default function ProfileUpdateForm() {
                           <FormControl>
                             <Textarea
                               placeholder="Tell us about your professional journey..."
-                              className="bg-muted/50 border-none resize-none min-h-[120px]"
+                              className="bg-muted/50  resize-none min-h-[120px]"
                               {...field}
                             />
                           </FormControl>
@@ -459,7 +459,7 @@ export default function ProfileUpdateForm() {
                           <FormItem>
                             <FormLabel>Mobile Number</FormLabel>
                             <FormControl>
-                              <Input placeholder="+1 234 567 890" {...field} className="bg-muted/50 border-none" />
+                              <Input placeholder="+1 234 567 890" {...field} className="bg-muted/50 " />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -474,7 +474,7 @@ export default function ProfileUpdateForm() {
                             <FormControl>
                               <div className="relative">
                                 <Globe className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                                <Input placeholder="https://portfolio.com" {...field} className="pl-9 bg-muted/50 border-none" />
+                                <Input placeholder="https://portfolio.com" {...field} className="pl-9 bg-muted/50 " />
                               </div>
                             </FormControl>
                             <FormMessage />
@@ -507,7 +507,7 @@ export default function ProfileUpdateForm() {
                               value={field.value}
                             >
                               <FormControl className=' w-full'>
-                                <SelectTrigger className="bg-muted/50 border-none">
+                                <SelectTrigger className="bg-muted/50 ">
                                   <SelectValue placeholder="Select Country" />
                                 </SelectTrigger>
                               </FormControl>
@@ -532,7 +532,7 @@ export default function ProfileUpdateForm() {
                                 country={form.watch('country') || ''}
                                 value={field.value || ''}
                                 onChange={field.onChange}
-                                className="flex h-10 w-full rounded-md border-none bg-muted/50 px-3 py-2 text-sm focus:outline-none disabled:opacity-50"
+                                className="flex h-10 w-full rounded-md  bg-muted/50 px-3 py-2 text-sm focus:outline-none disabled:opacity-50"
                                 disabled={!form.watch('country')}
                               />
                             </FormControl>
@@ -548,7 +548,7 @@ export default function ProfileUpdateForm() {
                         <FormItem>
                           <FormLabel>City</FormLabel>
                           <FormControl>
-                            <Input placeholder="San Francisco" {...field} className="bg-muted/50 border-none" />
+                            <Input placeholder="San Francisco" {...field} className="bg-muted/50 " />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

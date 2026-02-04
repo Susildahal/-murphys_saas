@@ -179,29 +179,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }, [searchQuery])
 
   return (
-    <Sidebar collapsible="icon" {...props} className="border-r bg-gradient-to-b from-blue-600 via-blue-700 to-blue-800 dark:from-blue-600 dark:via-blue-700 dark:to-blue-800 text-white">
-      <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 3px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.3);
-        }
-        .custom-scrollbar {
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-        }
-      `}</style>
+    <Sidebar collapsible="icon" {...props} className=" text-white">
+  
 
       {/* Fixed Header */}
-      <SidebarHeader className="border-b border-white/10 bg-blue-600/30 backdrop-blur-xl pb-4">
+      <SidebarHeader className=" backdrop-blur-xl pb-4">
         <motion.div
           className="flex h-14 items-center px-4 pt-2"
           animate={{
@@ -244,7 +226,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <Input
                   type="search"
                   placeholder="Search navigation..."
-                  className="h-9 pl-9 bg-white/10 border-white/20 text-slate-900 dark:text-white placeholder:text-slate-700 dark:placeholder:text-white/60 shadow-none hover:bg-white/15 focus-visible:bg-white/20 focus-visible:border-white/30 focus-visible:ring-2 focus-visible:ring-white/20 transition-all rounded-lg text-sm"
+                  className="h-9 pl-9 transition-all  dark:text-white text-slate-900 rounded-lg text-sm"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -300,7 +282,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
 
       {/* Fixed Footer */}
-      <SidebarFooter className="border-t border-white/10 bg-blue-600/30 backdrop-blur supports-[backdrop-filter]:bg-blue-600/20 p-2 mt-auto">
+      <SidebarFooter className=" p-2 mt-auto">
         <NavUser />
       </SidebarFooter>
 
