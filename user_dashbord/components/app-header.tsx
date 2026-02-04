@@ -21,8 +21,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
@@ -73,7 +71,7 @@ export function AppHeader({ onSearchChange, searchValue }: AppHeaderProps) {
         {/* Left: hamburger */}
         <div className="flex items-center gap-2 md:gap-4">
           <button
-            className="h-10 w-10 rounded-lg   border-slate-200 dark:border-slate-700 flex items-center justify-center "
+            className="h-10 w-10 rounded-lg cursor-pointer  border-slate-200 dark:border-slate-700 flex items-center justify-center "
             onClick={toggleSidebar}
             aria-label="Toggle sidebar"
           >
@@ -106,7 +104,7 @@ export function AppHeader({ onSearchChange, searchValue }: AppHeaderProps) {
         {/* Right: icons */}
         <div className="flex items-center gap-3">
           <button
-            className="h-10 w-10 rounded-full  border border-slate-200 dark:border-slate-700 flex items-center justify-center "
+            className="h-10 w-10 cursor-pointer rounded-full  border border-slate-200 dark:border-slate-700 flex items-center justify-center "
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             aria-label="Toggle theme"
           >
@@ -118,7 +116,7 @@ export function AppHeader({ onSearchChange, searchValue }: AppHeaderProps) {
           </button>
 
           <button
-            className="hidden md:inline-flex relative h-10 w-10 rounded-full  border border-slate-200 dark:border-slate-700 flex items-center justify-center "
+            className="hidden md:inline-flex relative h-10 w-10 rounded-full cursor-pointer border border-slate-200 dark:border-slate-700 flex items-center justify-center "
             onClick={() => router.push('/admin/contract_messages')}
             aria-label="Notifications"
           >
@@ -136,7 +134,7 @@ export function AppHeader({ onSearchChange, searchValue }: AppHeaderProps) {
           <DropdownMenuTrigger asChild>
 
           <button
-            className="hidden md:inline-flex h-10 w-10 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center "
+            className="hidden md:inline-flex h-10 w-10  cursor-pointer rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center "
             onClick={() => router.push('/admin/profile')}
             aria-label="Settings"
           >
