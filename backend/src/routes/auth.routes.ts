@@ -3,7 +3,11 @@ import {
   registerUser, 
   getCurrentUser,
   verifyEmail,
-  resendVerificationEmail
+  resendVerificationEmail,
+  refreshToken,
+  login,
+  verifyForgotPasswordToken,
+  forgotPassword
 } from "../conttrolers/auth.controllers";
 import { 
   sendVerificationEmail, 
@@ -19,8 +23,13 @@ authRouter.post("/auth/send-verification", sendVerificationEmail); // Step 1: Se
 authRouter.get("/auth/verify-token", verifyToken); // Step 2: Verify token
 
 // Protected routes (require Firebase authentication)
-authRouter.post("/auth/register", verifyFirebaseToken, registerUser);
+authRouter.post("/auth/register",  registerUser);
 authRouter.get("/auth/me", verifyFirebaseToken, getCurrentUser);
 authRouter.post("/auth/resend-verification", verifyFirebaseToken, resendVerificationEmail);
+authRouter.post("/auth/refresh-token", refreshToken);
+authRouter.post("/auth/login", login);
+authRouter.post("/auth/verify-forgot-password-token", verifyForgotPasswordToken);
+authRouter.post("/auth/forgot-password", forgotPassword);
+
 
 export default authRouter;

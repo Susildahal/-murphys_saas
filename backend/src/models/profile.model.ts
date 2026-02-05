@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 const profileSchema = new mongoose.Schema({ 
-userId:{ type: mongoose.Schema.Types.ObjectId, ref: 'Auth', required: true, unique: true }, // Reference to Auth model
+userId:{ type: mongoose.Schema.Types.ObjectId, ref: 'Auth', unique: true }, // Reference to Auth model
 bio :{type: String },
 city: { type: String },
 country: { type: String },

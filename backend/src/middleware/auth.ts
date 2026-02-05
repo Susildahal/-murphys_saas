@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import admin from '../config/firebaseAdmin';
+import * as jwt from 'jsonwebtoken';
+import Auth from '../models/auth';
 
 export interface AuthenticatedRequest extends Request {
   user?: admin.auth.DecodedIdToken;
@@ -25,12 +27,21 @@ export const verifyFirebaseToken = async (
       return;
     }
 
-    const decodedToken = await admin.auth().verifyIdToken(token, true);
+    const decodedToken = await jwt.verify(token, process.env.JWT_SECRET || "defaultsecret");
+    const id = (decodedToken as any).userId;
+
+    if (!id) {
+      res.status(401).json({ error: 'Unauthorized: Invalid token payload' });
+      return;
+    }
+   const user = await Auth.findById(id);
+   if (!user) {
+      res.status(401).json({ error: 'Unauthorized: User not found' });
+      return;
+   }
 
     // Attach the decoded token (user info) to the request
-    req.user = decodedToken;
-    
-
+    req.user = { uid: user._id.toString() ,email: user.email } as admin.auth.DecodedIdToken;
     next();
   } catch (error: any) {
     console.error('Error verifying Firebase token:', {

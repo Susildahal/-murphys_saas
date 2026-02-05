@@ -47,41 +47,15 @@ export default function LoginPage() {
     handleCodeInApp: true,
   };
 
-  const handleSendEmailLink = async (email: string) => {
-    setModalLoading(true);
-    try {
-      await sendSignInLinkToEmail(auth, email, emailLinkConfig);
-      localStorage.setItem("emailForSignIn", email);
-      setModalStatus("Magic link sent! Check your inbox.");
-      setTimeout(() => setModalStatus(null), 5000);
-    } catch (err) {
-      setModalStatus("Failed to send link.");
-    } finally {
-      setModalLoading(false);
-    }
-  };
-
   const handleLogin = async (
     values: { email: string; password: string },
     { setSubmitting, setStatus }: any
   ) => {
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        values.email,
-        values.password
-      );
-      const idToken = await userCredential.user.getIdToken();
-
-      const response = await axiosInstance.post("/profiles", {
+      const userCredential = await axiosInstance.post("/auth/login", {
         email: values.email,
-        firebaseUid: userCredential.user.uid,
-        idToken: idToken,
+        password: values.password,
       });
-
-      if (response.data.success) {
-        router.push("/");
-      }
     } catch (error: any) {
       setStatus({ error: error.message || "Invalid email or password" });
     } finally {
@@ -229,15 +203,6 @@ export default function LoginPage() {
           </button>
         </p>
       </motion.div>
-
-      {/* Email Modal */}
-      <EmailModal
-        open={modalOpen}
-        loading={modalLoading}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleSendEmailLink}
-      />
-
       {/* Toast Notification */}
       <AnimatePresence>
         {modalStatus && (

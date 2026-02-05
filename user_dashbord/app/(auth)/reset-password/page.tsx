@@ -6,8 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Lock, Eye, EyeOff, CheckCircle2, AlertCircle, KeyRound } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import app from '@/app/config/firebase';
-import { getAuth, confirmPasswordReset, verifyPasswordResetCode } from 'firebase/auth';
+import axiosInstance from "@/lib/axios";
+
 
 function ResetPasswordContent() {
   const searchParams = useSearchParams();
@@ -20,11 +20,11 @@ function ResetPasswordContent() {
   const [loading, setLoading] = useState(false);
   const [verifyingCode, setVerifyingCode] = useState(true);
   const [email, setEmail] = useState("");
-  const [oobCode, setOobCode] = useState<string | null>(null);
+
 
   // Verify the reset code on mount
   useEffect(() => {
-    const code = searchParams.get('oobCode');
+    const code = searchParams.get('token');
     
     if (!code) {
       setStatus({ type: 'error', message: 'Invalid or missing reset code. Please request a new password reset link.' });
@@ -32,14 +32,14 @@ function ResetPasswordContent() {
       return;
     }
 
-    setOobCode(code);
+  
     
     const verifyCode = async () => {
       try {
-        const auth = getAuth(app);
+  
         // Verify the password reset code is valid and get the user's email
-        const userEmail = await verifyPasswordResetCode(auth, code);
-        setEmail(userEmail);
+        const userEmail = await axiosInstance.post('/auth/verify-reset-code', { token: code });
+        setEmail(userEmail.data.email);
         setVerifyingCode(false);
       } catch (err: any) {
         const msg = err?.message || 'Invalid or expired reset code. Please request a new password reset link.';
@@ -65,18 +65,12 @@ function ResetPasswordContent() {
       return;
     }
 
-    if (!oobCode) {
-      setStatus({ type: 'error', message: 'Invalid reset code. Please request a new password reset link.' });
-      return;
-    }
 
     setLoading(true);
     setStatus({ type: null, message: '' });
     
     try {
-      const auth = getAuth(app);
       // Confirm the password reset with the code and new password
-      await confirmPasswordReset(auth, oobCode, password);
       setStatus({ type: 'success', message: 'Password reset successful! Redirecting to login...' });
       
       // Redirect to login after 2 seconds
@@ -147,7 +141,7 @@ function ResetPasswordContent() {
               />
               <p className="text-slate-600 dark:text-slate-400">Verifying reset code...</p>
             </motion.div>
-          ) : status.type === 'error' && !oobCode ? (
+          ) : status.type === 'error'  ? (
             // Show error if code verification failed
             <motion.div
               initial={{ opacity: 0 }}

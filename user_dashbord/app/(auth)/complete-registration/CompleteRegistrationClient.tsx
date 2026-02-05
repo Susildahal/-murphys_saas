@@ -10,8 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import axiosInstance from "@/lib/axios";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import app from "@/app/config/firebase";
+import { Label } from "@/components/ui/label";
 
 const validationSchema = Yup.object({
   password: Yup.string()
@@ -21,7 +20,7 @@ const validationSchema = Yup.object({
     .oneOf([Yup.ref('password')], "Passwords must match")
     .required("Please confirm your password"),
   phone: Yup.string()
-    .matches(/^(\+61|0)?[2-478](?:[ -]?[0-9]){8}$/, "Invalid Australian phone number")
+    // .matches(/^(\+61|0)?[2-478](?:[ -]?[0-9]){8}$/, "Invalid Australian phone number")
     .required("Phone number is required"),
   gender: Yup.string().required("Gender is required"),
 });
@@ -35,6 +34,7 @@ export default function CompleteRegistrationClient() {
   const [tokenValid, setTokenValid] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userData, setUserData] = useState<any>(null);
+  const [verificationMessage, setVerificationMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [passwordClick, setPasswordClick] = useState(false);
@@ -54,6 +54,7 @@ export default function CompleteRegistrationClient() {
         if (response.data.success) {
           setTokenValid(true);
           setUserData(response.data.data);
+          setVerificationMessage(response.data.message || null);
         }
       } catch (err: any) {
         console.error('Token verification error:', err);
@@ -71,17 +72,6 @@ export default function CompleteRegistrationClient() {
     setError(null);
 
     try {
-      const auth = getAuth(app);
-
-      // 1. Create Firebase user
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        userData.email,
-        values.password
-      );
-
-      // 2. Get Firebase ID token
-      const idToken = await userCredential.user.getIdToken();
 
       // 3. Complete registration in backend
       const response = await axiosInstance.post('/auth/register', {
@@ -91,11 +81,8 @@ export default function CompleteRegistrationClient() {
         gender: values.gender,
         phone: values.phone,
         country: "Australia",
+        password : values.password,
         referralSource: values.referralSource || '',
-      }, {
-        headers: {
-          'Authorization': `Bearer ${idToken}`
-        }
       });
 
       if (response.data.success) {
@@ -119,7 +106,7 @@ export default function CompleteRegistrationClient() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="w-full max-w-lg bg-white border border-gray-200 p-10"
+        className="w-full max-w-3xl bg-white border border-gray-200 p-10"
       >
         {verifying ? (
           <div className="text-center py-12">
@@ -160,7 +147,11 @@ export default function CompleteRegistrationClient() {
             </div>
 
             <Formik
+              enableReinitialize
               initialValues={{
+                firstName: userData?.firstName || '',
+                lastName: userData?.lastName || '',
+                email: userData?.email || '',
                 password: "",
                 confirmPassword: "",
                 phone: "",
@@ -172,17 +163,69 @@ export default function CompleteRegistrationClient() {
             >
               {({ isSubmitting, touched, errors, setFieldValue, values }) => (
                 <Form className="space-y-5">
-                  {/* Phone & Gender */}
-                  <div className="grid grid-cols-2 gap-4">
+
+                  {/* Verified info */}
+                  {verificationMessage && (
+                    <div className="mb-4 p-4 border rounded bg-blue-50 text-sm text-blue-800">
+                      <div className="font-semibold mb-1">Verification</div>
+                      <div>{verificationMessage}</div>
+                    </div>
+                  )}
+
+                  {/* Disabled name/email (pre-filled from token) */}
+                  <div className="grid md:grid-cols-2 grid-cols-1 gap-4 mb-4">
+
                     <div>
+                      <Label  className="pb-2 text-muted-foreground"> Name </Label>
+                      <Field
+                        as={Input}
+                        id="firstName"
+                        name="firstName"
+                        type="text"
+                        placeholder="First Name"
+                        disabled
+                        className="h-12 text-base bg-gray-100"
+                      />
+                    </div>
+                    <div>
+                      <Label  className="pb-2 text-muted-foreground">Last Name</Label>
+                      <Field
+                        as={Input}
+                        id="lastName"
+                        name="lastName"
+                        type="text"
+                        placeholder="Last Name"
+                        disabled
+                        className="h-12 text-base bg-gray-100"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <Label  className="pb-2 text-muted-foreground"  >Email Address</Label>
+
+                    <Field
+                      as={Input}
+                      id="email"
+                      name="email"
+                      type="email"
+                      placeholder="Email"
+                      disabled
+                      className="h-12 text-base bg-gray-100"
+                    />
+                  </div>
+
+                  {/* Phone & Gender */}
+                  <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
+                    <div>
+                      <Label  className="pb-2 text-muted-foreground">Phone Number</Label>
                       <Field
                         as={Input}
                         id="phone"
                         name="phone"
                         type="tel"
                         placeholder="Phone Number"
-                        className={`h-12 text-base ${touched.phone && errors.phone ? "border-red-500" : ""
-                          }`}
+                        className={`h-12 text-base ${touched.phone && errors.phone ? "border-red-500" : ""}`}
                       />
                       {touched.phone && errors.phone && (
                         <p className="text-sm text-red-600 mt-2">{errors.phone}</p>
@@ -190,14 +233,15 @@ export default function CompleteRegistrationClient() {
                     </div>
 
                     <div>
+                      <Label  className="pb-2 text-muted-foreground">Gender</Label>
                       <Select
                         value={values.gender}
                         onValueChange={(value) => setFieldValue('gender', value)}
                       >
-                        <SelectTrigger className={`h-12 text-base ${touched.gender && errors.gender ? "border-red-500" : ""}`}>
-                          <SelectValue placeholder="Gender" />
+                        <SelectTrigger className={`h-12 text-base w-full flex items-center px-3 ${touched.gender && errors.gender ? "border-red-500" : ""}`}>
+                          <SelectValue placeholder="Gender" className="flex-1 leading-none" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="max-h-60">
                           <SelectItem value="male">Male</SelectItem>
                           <SelectItem value="female">Female</SelectItem>
                           <SelectItem value="other">Other</SelectItem>
@@ -211,8 +255,9 @@ export default function CompleteRegistrationClient() {
                   </div>
 
                   {/* Password Fields */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
                     <div>
+                      <Label className="pb-2 text-muted-foreground">Password</Label>
                       <div className="relative">
                         <Field
                           as={Input}
@@ -220,13 +265,12 @@ export default function CompleteRegistrationClient() {
                           name="password"
                           type={passwordClick ? "text" : "password"}
                           placeholder="Password"
-                          className={`h-12 text-base pr-12 ${touched.password && errors.password ? "border-red-500" : ""
-                            }`}
+                          className={`h-12 text-base pr-12 ${touched.password && errors.password ? "border-red-500" : ""}`}
                         />
                         <button
                           type="button"
                           onClick={() => setPasswordClick(!passwordClick)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 h-12 w-12 flex items-center justify-center text-gray-400 hover:text-gray-600"
                         >
                           {passwordClick ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                         </button>
@@ -237,6 +281,7 @@ export default function CompleteRegistrationClient() {
                     </div>
 
                     <div>
+                      <Label className="pb-2 text-muted-foreground">Confirm Password</Label>
                       <div className="relative">
                         <Field
                           as={Input}
@@ -244,13 +289,12 @@ export default function CompleteRegistrationClient() {
                           name="confirmPassword"
                           type={confirmPasswordClick ? "text" : "password"}
                           placeholder="Confirm Password"
-                          className={`h-12 text-base pr-12 ${touched.confirmPassword && errors.confirmPassword ? "border-red-500" : ""
-                            }`}
+                          className={`h-12 text-base pr-12 ${touched.confirmPassword && errors.confirmPassword ? "border-red-500" : ""}`}
                         />
                         <button
                           type="button"
                           onClick={() => setConfirmPasswordClick(!confirmPasswordClick)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 h-12 w-12 flex items-center justify-center text-gray-400 hover:text-gray-600"
                         >
                           {confirmPasswordClick ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                         </button>
@@ -263,14 +307,27 @@ export default function CompleteRegistrationClient() {
 
                   {/* Referral Source */}
                   <div>
-                    <Field
-                      as={Input}
-                      id="referralSource"
-                      name="referralSource"
-                      type="text"
-                      placeholder="How did you hear about us? (Optional)"
-                      className="h-12 text-base"
-                    />
+                    <Label className="pb-2 text-muted-foreground">How did you hear about us? (Optional)</Label>
+                    <Select
+                      value={values.referralSource}
+                      onValueChange={(value) => setFieldValue('referralSource', value)}
+                    >
+                      <SelectTrigger className="h-12 text-base w-full flex items-center px-3">
+                        <SelectValue placeholder="How did you hear about us? (Optional)" className="flex-1 leading-none" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-60">
+                        <SelectItem value="search-engine">Search Engine (Google, Bing, etc.)</SelectItem>
+                        <SelectItem value="social-media">Social Media</SelectItem>
+                        <SelectItem value="friend-referral">Friend or Colleague Referral</SelectItem>
+                        <SelectItem value="advertisement">Online Advertisement</SelectItem>
+                        <SelectItem value="blog-article">Blog or Article</SelectItem>
+                        <SelectItem value="youtube">YouTube</SelectItem>
+                        <SelectItem value="email">Email Newsletter</SelectItem>
+                        <SelectItem value="event">Event or Conference</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                        <SelectItem value="email-verification">Verified Email</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   {/* Error Message */}

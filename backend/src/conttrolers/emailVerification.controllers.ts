@@ -32,50 +32,101 @@ export const sendVerificationEmail = async (req: Request, res: Response) => {
     );
 
     // Send verification email
-    const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/complete-registration?token=${verificationToken}`;
+    const verificationUrl = `${process.env.frontendurl || 'http://localhost:3000'}complete-registration?token=${verificationToken}`;
     
     const mailOptions = {
-      from: process.env.SMTP_FROM || process.env.SMTP_USER,
-      to: email,
-      subject: 'Verify Your Email to Complete Registration',
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #9333ea 0%, #4f46e5 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-            .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
-            .button { display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #9333ea 0%, #4f46e5 100%); color: white; text-decoration: none; border-radius: 5px; font-weight: bold; margin: 20px 0; }
-            .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>Verify Your Email</h1>
-            </div>
-            <div class="content">
-              <h2>Hi${firstName ? ` ${firstName}` : ''},</h2>
-              <p>Thank you for starting your registration! Please verify your email address to continue.</p>
-              <p>Click the button below to verify your email and complete your registration:</p>
-              <div style="text-align: center;">
-                <a href="${verificationUrl}" class="button">Verify Email & Continue</a>
-              </div>
-              <p>Or copy and paste this link into your browser:</p>
-              <p style="word-break: break-all; color: #4f46e5;">${verificationUrl}</p>
-              <p><strong>This link will expire in 1 hour.</strong></p>
-              <p>If you didn't request this email, please ignore it.</p>
-            </div>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} Murphy's SaaS. All rights reserved.</p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `
-    };
+  from: process.env.EMAIL_FROM || process.env.SMTP_USER,
+  to: email,
+  subject: "Verify Your Email to Complete Registration",
+  html: `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          background-color: #f3f4f6;
+          margin: 0;
+          padding: 0;
+          color: #111827;
+        }
+        .container {
+          max-width: 600px;
+          margin: 40px auto;
+          background-color: #ffffff;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+        .header {
+          padding: 24px;
+          text-align: center;
+          background-color: #111827;
+          color: #ffffff;
+        }
+        .content {
+          padding: 30px;
+          text-align: center;
+        }
+        .content h2 {
+          margin-bottom: 10px;
+        }
+        .content p {
+          margin: 10px 0;
+          font-size: 14px;
+          color: #374151;
+        }
+        .button {
+          display: inline-block;
+          margin-top: 20px;
+          padding: 12px 28px;
+          background-color: #2563eb;
+          color: #ffffff !important;
+          text-decoration: none;
+          border-radius: 4px;
+          font-size: 14px;
+          font-weight: 600;
+        }
+        .footer {
+          padding: 20px;
+          text-align: center;
+          font-size: 12px;
+          color: #6b7280;
+          background-color: #f9fafb;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Email Verification</h1>
+        </div>
+
+        <div class="content">
+          <h2>Hello${firstName ? ` ${firstName}` : ""},</h2>
+          <p>
+            Thank you for registering. Please verify your email address to
+            complete your registration.
+          </p>
+
+          <a href="${verificationUrl}" class="button">
+            Verify Email
+          </a>
+
+          <p style="margin-top: 20px;">
+            If you did not request this, you can safely ignore this email.
+          </p>
+        </div>
+
+        <div class="footer">
+          <p>&copy; ${new Date().getFullYear()} Murphy's. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `
+};
+
 
     await transporter.sendMail(mailOptions);
 

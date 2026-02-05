@@ -97,19 +97,18 @@ export const login = async (req: Request, res: Response) => {
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
-    // Create JWT token
-    const token = jwt.sign({ userId: user._id,email: user.email }, process.env.JWT_SECRET
-        || "defaultsecret", { 
-      httpsOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: "3600000" // 1 hour in milliseconds
-         });
+    // Create JWT token (use jwt sign options, not cookie options)
+    const token = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET || "defaultsecret",
+      { expiresIn: "1h" }
+    );
 
-
-    const refreshToken = jwt.sign({ userId: user._id }, process.env.JWT_REFRESH_SECRET || "defaultrefreshsecret", { httpsOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: "2592000000" // 30 days in milliseconds
-  });
+    const refreshToken = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET || "defaultrefreshsecret",
+      { expiresIn: "30d" }
+    );
 
     res.status(200).json({ token , refreshToken });
   }
@@ -134,13 +133,16 @@ export const forgotPassword = async (req: Request, res: Response) => {
       { expiresIn: "15m" }
     );
 
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+    const resetUrl = `${process.env.frontendurl}reset-password?token=${token}`;
 
-    await transporter.sendMail({
-      from: `"Support Team" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "Reset Your Password",
-      html: `
+    const fromEmail = process.env.EMAIL_FROM || process.env.SMTP_USER || process.env.EMAIL_USER || `no-reply@${process.env.FRONTEND_HOST || 'example.com'}`;
+
+    try {
+      await transporter.sendMail({
+        from: `"Support Team" <${fromEmail}>`,
+        to: email,
+        subject: "Reset Your Password",
+        html: `
         <div style="font-family: Arial, sans-serif; padding: 20px;">
           <h2>Password Reset</h2>
           <p>Click the button below to reset your password.</p>
@@ -160,19 +162,27 @@ export const forgotPassword = async (req: Request, res: Response) => {
           </a>
         </div>
       `,
-    });
+      });
 
-    user.isEmailSent = true;
-    await user.save();
+      user.isEmailSent = true;
+      await user.save();
 
-    res.status(200).json({ message: "Password reset link sent to email" });
+      res.status(200).json({ message: "Password reset link sent to email" });
+    } catch (mailError: any) {
+      console.error('Email send error:', mailError);
+      // Provide a clearer message for envelope errors
+      if (mailError && mailError.code === 'EENVELOPE') {
+        return res.status(500).json({ message: 'Email sending failed: invalid FROM/TO envelope (check SMTP_FROM/SMTP_USER).' });
+      }
+      return res.status(500).json({ message: 'Email sending failed', error: mailError?.message || mailError });
+    }
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
 };
 
 
-export const verifyResetToken = async (req: Request, res: Response) => {
+export const verifyForgotPasswordToken = async (req: Request, res: Response) => {
   const { token } = req.body;
 
   try {
@@ -292,6 +302,7 @@ export const resendVerificationEmail = async (req: AuthenticatedRequest, res: Re
   try {
     const { email } = req.body;
 
+
     if (!email) {
       return res.status(400).json({ message: "Email is required" });
     }
@@ -325,7 +336,7 @@ export const resendVerificationEmail = async (req: AuthenticatedRequest, res: Re
     const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/verify-email?token=${verificationToken}`;
     
     const mailOptions = {
-      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+      from: process.env.EMAIL_FROM || process.env.SMTP_USER,
       to: email,
       subject: 'Verify Your Email Address',
       html: `
@@ -383,13 +394,13 @@ export const resendVerificationEmail = async (req: AuthenticatedRequest, res: Re
 };
 export const getCurrentUser = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const firebaseUser = req.user;
+    const id = req.user;
 
-    if (!firebaseUser) {
+    if (!id) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const profile = await Profile.findOne({ userId: firebaseUser.uid }).populate('role');
+    const profile = await Profile.findOne({ userId: id }).populate('role');
 
     if (!profile) {
       return res.status(404).json({ 
@@ -404,5 +415,30 @@ export const getCurrentUser = async (req: AuthenticatedRequest, res: Response) =
 
   } catch (error: any) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// Refresh Token Controller
+export const refreshToken = async (req: Request, res: Response) => {
+  const { refreshToken } = req.body;
+    try {
+    if (!refreshToken) {
+      return res.status(400).json({ message: "Refresh token is required" });
+    }
+    const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET || "defaultrefreshsecret") as { userId: string };
+
+    const user = await Auth.findById(decoded.userId);
+    if (!user) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+    const newToken = jwt.sign(
+      { userId: user._id, email: user.email },
+      process.env.JWT_SECRET || "defaultsecret",
+      { expiresIn: "1h" }
+    );
+    res.status(200).json({ token: newToken });
+  }
+    catch (error) {
+    res.status(500).json({ message: "Server error", error });
   }
 };

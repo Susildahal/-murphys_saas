@@ -4,16 +4,27 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import app from '@/app/config/firebase';
-import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
+import axiosInstance from "@/lib/axios";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: '' });
   const [loading, setLoading] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
+  const [sentToEmail, setSentToEmail] = useState("");
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,13 +32,10 @@ export default function ForgotPasswordPage() {
     setStatus({ type: null, message: '' });
 
     try {
-      const auth = getAuth(app);
-      const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL as string) || window.location.origin;
-      const continueUrl = `${siteUrl}/reset-password`;
-      await sendPasswordResetEmail(auth, email, {
-        url: continueUrl,
-      });
+      await axiosInstance.post('/auth/forgot-password', { email });
       setStatus({ type: 'success', message: 'Password reset link sent! Please check your email.' });
+      setSentToEmail(email);
+      setShowDialog(true);
       setEmail('');
     } catch (err: any) {
       const msg = err?.message || 'Something went wrong. Please try again.';
@@ -121,6 +129,29 @@ export default function ForgotPasswordPage() {
             Sign in
           </button>
         </p>
+
+        {/* Mailbox check modal */}
+        <AlertDialog open={showDialog} onOpenChange={setShowDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <div className="flex items-center justify-center mb-3">
+                <CheckCircle className="w-12 h-12 text-green-500" />
+              </div>
+              <AlertDialogTitle>Check your inbox</AlertDialogTitle>
+              <AlertDialogDescription>
+                We've sent a password reset link to <strong>{sentToEmail}</strong>.
+                Please check your mailbox and follow the instructions to reset your password.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <div className="flex items-center gap-2 ml-auto">
+                <AlertDialogAction onClick={() => window.open(`https://mail.google.com/mail/u/0/#search/${encodeURIComponent(sentToEmail)}`, '_blank')}>Open Gmail</AlertDialogAction>
+                <Button variant="outline" onClick={() => window.open('https://outlook.live.com/mail/0/inbox/', '_blank')}>Open Outlook</Button>
+                <AlertDialogCancel onClick={() => setShowDialog(false)}>Close</AlertDialogCancel>
+              </div>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </motion.div>
     </div>
   );
