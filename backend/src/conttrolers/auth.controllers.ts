@@ -3,95 +3,223 @@ import Profile from "../models/profile.model";
 import { AuthenticatedRequest } from "../middleware/auth";
 import jwt from "jsonwebtoken";
 import transporter from "../config/nodemiller";
+import Auth from "../models/auth";
+import bcrypt  from "bcryptjs";
+import mongoose from "mongoose";
 
-/**
- * Register a new user
- * POST /api/auth/register
- */
-export const registerUser = async (req: AuthenticatedRequest, res: Response) => {
+export const registerUser = async (req: Request, res: Response) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
-    const { 
-      firstName, 
-      lastName, 
-      email, 
-      gender, 
-      phone,
-      country,
-      referralSource 
-    } = req.body;
-
-    // Get Firebase user from verified token
-    const firebaseUser = req.user;
-    
-    if (!firebaseUser) {
-      return res.status(401).json({ message: "Unauthorized - Firebase authentication required" });
-    }
-
-    // Validate required fields
-    if (!email || !firstName || !lastName) {
-      return res.status(400).json({ 
-        message: "Required fields missing: firstName, lastName, and email are required" 
-      });
-    }
-
-    // Check if profile already exists
-    const existingProfile = await Profile.findOne({ 
-      $or: [{ email }, { userId: firebaseUser.uid }] 
-    });
-
-    if (existingProfile) {
-      return res.status(409).json({ 
-        message: "User already registered with this email or Firebase account" 
-      });
-    }
-
-    // Create new profile (already verified via email token)
-    const profileData = {
-      userId: firebaseUser.uid,
+    const {
       firstName,
       lastName,
       email,
-      phone: phone || '',
-      gender: gender || '',
-      country: country || 'Australia',
-      referralSource: referralSource || '',
-      role_type: 'client user',
-      status: 'active', // Active immediately since email was verified before registration
-      usertypes: 'client'
-    };
+      gender,
+      phone,
+      country,
+      referralSource,
+      password
+    } = req.body;
 
-    const newProfile = new Profile(profileData);
-    await newProfile.save();
+    if (!email || !firstName || !lastName || !password) {
+      return res.status(400).json({
+        message: "Required fields missing"
+      });
+    }
+
+    const existingAuth = await Auth.findOne({ email });
+    if (existingAuth) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const authUser = await Auth.create(
+      [{ email, password: hashedPassword }],
+      { session }
+    );
+
+    const profile = await Profile.create(
+      [{
+        firstName,
+        lastName,
+        email,
+        phone: phone || "",
+        gender: gender || "",
+        country: country || "Australia",
+        referralSource: referralSource || "",
+        role_type: "client user",
+        status: "active",
+        usertypes: "client"
+      }],
+      { session }
+    );
+
+    await session.commitTransaction();
+    session.endSession();
 
     res.status(201).json({
       success: true,
       message: "User registered successfully",
       data: {
-        id: newProfile._id,
-        userId: newProfile.userId,
-        firstName: newProfile.firstName,
-        lastName: newProfile.lastName,
-        email: newProfile.email,
-        phone: newProfile.phone,
-        gender: newProfile.gender,
-        country: newProfile.country
+        id: profile[0]._id,
+        firstName: profile[0].firstName,
+        lastName: profile[0].lastName,
+        email: profile[0].email
       }
     });
 
   } catch (error: any) {
-    console.error("Registration error:", error);
-    res.status(500).json({ 
+    await session.abortTransaction();
+    session.endSession();
+
+    res.status(500).json({
       success: false,
-      message: "Registration failed", 
-      error: error.message 
+      message: "Registration failed",
+      error: error.message
     });
   }
 };
 
-/**
- * Verify email with JWT token
- * POST /api/auth/verify-email
- */
+
+export const login = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+    try {
+    // Find user by email
+    const user = await Auth.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+    // Compare password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+    // Create JWT token
+    const token = jwt.sign({ userId: user._id,email: user.email }, process.env.JWT_SECRET
+        || "defaultsecret", { 
+      httpsOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: "3600000" // 1 hour in milliseconds
+         });
+
+
+    const refreshToken = jwt.sign({ userId: user._id }, process.env.JWT_REFRESH_SECRET || "defaultrefreshsecret", { httpsOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    maxAge: "2592000000" // 30 days in milliseconds
+  });
+
+    res.status(200).json({ token , refreshToken });
+  }
+    catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+
+export const forgotPassword = async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  try {
+    const user = await Auth.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const token = jwt.sign(
+      { userId: user._id  , email: user.email },
+      process.env.JWT_SECRET!,
+      { expiresIn: "15m" }
+    );
+
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+
+    await transporter.sendMail({
+      from: `"Support Team" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Reset Your Password",
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px;">
+          <h2>Password Reset</h2>
+          <p>Click the button below to reset your password.</p>
+          <a 
+            href="${resetUrl}" 
+            style="
+              display: inline-block;
+              padding: 12px 20px;
+              background-color: #2563eb;
+              color: #ffffff;
+              text-decoration: none;
+              border-radius: 6px;
+              font-weight: bold;
+            "
+          >
+            Reset Password
+          </a>
+        </div>
+      `,
+    });
+
+    user.isEmailSent = true;
+    await user.save();
+
+    res.status(200).json({ message: "Password reset link sent to email" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+
+export const verifyResetToken = async (req: Request, res: Response) => {
+  const { token } = req.body;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!);
+    if (!decoded || typeof decoded === 'string') {
+      return res.status(400).json({ valid: false, message: "Invalid or expired token" });
+    }
+
+    const payload = decoded as { userId?: string; email?: string };
+    if (!payload.userId || !payload.email) {
+      return res.status(400).json({ valid: false, message: "Invalid or expired token" });
+
+    }
+
+    const user = await Auth.findOne({ _id: payload.userId, email: payload.email, isEmailSent: true });
+    if (!user) {
+      return res.status(400).json({ valid: false, message: "Invalid or expired token" });
+    }
+
+    res.status(200).json({ data: { email: payload.email, userId: payload.userId }, valid: true });
+  }
+    catch (error) {
+    res.status(400).json({ valid: false, message: "Invalid or expired token" });
+  }
+};
+
+
+
+export const resetPassword = async (req: Request, res: Response) => {
+  const { id, email, newPassword } = req.body;
+
+    try {
+    const user = await Auth.findOne({ _id: id, email, isEmailSent: true });
+    if (!user) {
+      return res.status(404).json({ message: "User not found or invalid request" });
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    user.isEmailSent = false;
+    await user.save();
+    res.status(200).json({ message: "Password reset successfully" });
+  }
+    catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
 export const verifyEmail = async (req: Request, res: Response) => {
   try {
     const { token } = req.body;
@@ -160,14 +288,9 @@ export const verifyEmail = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Resend verification email
- * POST /api/auth/resend-verification
- */
 export const resendVerificationEmail = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { email } = req.body;
-    const firebaseUser = req.user;
 
     if (!email) {
       return res.status(400).json({ message: "Email is required" });
@@ -191,7 +314,6 @@ export const resendVerificationEmail = async (req: AuthenticatedRequest, res: Re
     // Generate new verification token
     const verificationToken = jwt.sign(
       { 
-        userId: profile.userId, 
         email: profile.email,
         profileId: profile._id 
       },
@@ -259,40 +381,6 @@ export const resendVerificationEmail = async (req: AuthenticatedRequest, res: Re
     });
   }
 };
-
-/**
- * Check if user exists
- * GET /api/auth/check-user?email=...
- */
-export const checkUserExists = async (req: Request, res: Response) => {
-  try {
-    const { email } = req.query;
-
-    if (!email) {
-      return res.status(400).json({ message: "Email parameter required" });
-    }
-
-    const profile = await Profile.findOne({ email: email as string });
-
-    res.status(200).json({
-      exists: !!profile,
-      profile: profile ? {
-        id: profile._id,
-        firstName: profile.firstName,
-        lastName: profile.lastName,
-        email: profile.email
-      } : null
-    });
-
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-/**
- * Get current authenticated user profile
- * GET /api/auth/me
- */
 export const getCurrentUser = async (req: AuthenticatedRequest, res: Response) => {
   try {
     const firebaseUser = req.user;
@@ -305,8 +393,7 @@ export const getCurrentUser = async (req: AuthenticatedRequest, res: Response) =
 
     if (!profile) {
       return res.status(404).json({ 
-        message: "Profile not found",
-        userId: firebaseUser.uid 
+        message: "Profile not found"
       });
     }
 

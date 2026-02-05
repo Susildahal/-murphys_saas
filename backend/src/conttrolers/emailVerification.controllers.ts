@@ -1,12 +1,8 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import transporter from "../config/nodemiller";
-import Profile from "../models/profile.model";
+import Auth from "../models/auth";
 
-/**
- * Step 1: Send verification email (before registration)
- * POST /api/auth/send-verification
- */
 export const sendVerificationEmail = async (req: Request, res: Response) => {
   try {
     const { email, firstName, lastName } = req.body;
@@ -16,8 +12,8 @@ export const sendVerificationEmail = async (req: Request, res: Response) => {
     }
 
     // Check if email already exists
-    const existingProfile = await Profile.findOne({ email });
-    if (existingProfile) {
+    const existingAuth = await Auth.findOne({ email });
+    if (existingAuth) {
       return res.status(409).json({ 
         message: "This email is already registered. Please login instead." 
       });
@@ -39,7 +35,7 @@ export const sendVerificationEmail = async (req: Request, res: Response) => {
     const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3001'}/complete-registration?token=${verificationToken}`;
     
     const mailOptions = {
-      from: process.env.EMAIL_FROM || process.env.SMTP_USER,
+      from: process.env.SMTP_FROM || process.env.SMTP_USER,
       to: email,
       subject: 'Verify Your Email to Complete Registration',
       html: `
@@ -99,10 +95,6 @@ export const sendVerificationEmail = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Step 2: Verify token and check if email is verified
- * GET /api/auth/verify-token?token=...
- */
 export const verifyToken = async (req: Request, res: Response) => {
   try {
     const { token } = req.query;
@@ -118,8 +110,8 @@ export const verifyToken = async (req: Request, res: Response) => {
     ) as { email: string; firstName?: string; lastName?: string; step: string };
 
     // Check if email already registered
-    const existingProfile = await Profile.findOne({ email: decoded.email });
-    if (existingProfile) {
+    const existingAuth = await Auth.findOne({ email: decoded.email });
+    if (existingAuth) {
       return res.status(409).json({ 
         success: false,
         message: "This email is already registered. Please login instead.",

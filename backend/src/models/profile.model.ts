@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 const profileSchema = new mongoose.Schema({ 
-userId:{ type: String, unique: true },  // come from firebase auth uid
+userId:{ type: mongoose.Schema.Types.ObjectId, ref: 'Auth', required: true, unique: true }, // Reference to Auth model
 bio :{type: String },
 city: { type: String },
 country: { type: String },
@@ -25,5 +25,5 @@ permissions: [{ type: String }], // Custom permissions array for granular access
 referralSource: { type: String }, // How did the user hear about us
 }, { timestamps: true });
 
-const Profile = mongoose.model("Profile", profileSchema);
+const Profile = mongoose.model("Profile",profileSchema);
 export default Profile;         

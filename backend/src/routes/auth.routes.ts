@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { 
   registerUser, 
-  checkUserExists, 
   getCurrentUser,
   verifyEmail,
   resendVerificationEmail
@@ -15,7 +14,6 @@ import { verifyFirebaseToken } from "../middleware/auth";
 const authRouter = Router();
 
 // Public routes
-authRouter.get("/auth/check-user", checkUserExists);
 authRouter.post("/auth/verify-email", verifyEmail);
 authRouter.post("/auth/send-verification", sendVerificationEmail); // Step 1: Send email
 authRouter.get("/auth/verify-token", verifyToken); // Step 2: Verify token
