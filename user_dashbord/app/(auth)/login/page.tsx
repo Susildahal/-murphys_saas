@@ -1,22 +1,14 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { useRouter } from "next/navigation";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff } from "lucide-react";
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  sendSignInLinkToEmail,
-  onAuthStateChanged,
-} from "firebase/auth";
-import app from "@/app/config/firebase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { EmailModal } from "@/app/page/email-model";
 import axiosInstance from "@/lib/axios";
 
 const validationSchema = Yup.object({
@@ -25,28 +17,11 @@ const validationSchema = Yup.object({
 });
 
 export default function LoginPage() {
-  const auth = getAuth(app);
+
   const router = useRouter();
   const [passwordClick, setPasswordClick] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalLoading, setModalLoading] = useState(false);
   const [modalStatus, setModalStatus] = useState<string | null>(null);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        router.push("/");
-      }
-    });
-    return () => unsubscribe();
-  }, [auth, router]);
-
-  const emailLinkConfig = {
-    url: `${typeof window !== "undefined" ? window.location.origin : ""}/email-link-callback`,
-    handleCodeInApp: true,
-  };
-
   const handleLogin = async (
     values: { email: string; password: string },
     { setSubmitting, setStatus }: any
@@ -56,8 +31,18 @@ export default function LoginPage() {
         email: values.email,
         password: values.password,
       });
+
+      if (userCredential.data && userCredential.data.token) {
+        localStorage.setItem("token", userCredential.data.token);
+        setModalStatus("Login successful! Redirecting...");
+        setTimeout(() => {
+          setModalStatus(null);
+          router.push("/admin/dashboard");
+        }, 1000);
+      }
+
     } catch (error: any) {
-      setStatus({ error: error.message || "Invalid email or password" });
+      setStatus({ error: error?.response?.data?.message ?? (typeof error?.response?.data === 'string' ? error.response.data : undefined) ?? error?.message ?? "Invalid email or password" });
     } finally {
       setSubmitting(false);
     }

@@ -7,7 +7,9 @@ import {
   refreshToken,
   login,
   verifyForgotPasswordToken,
-  forgotPassword
+  forgotPassword,
+  resetPassword
+
 } from "../conttrolers/auth.controllers";
 import { 
   sendVerificationEmail, 
@@ -30,6 +32,7 @@ authRouter.post("/auth/refresh-token", refreshToken);
 authRouter.post("/auth/login", login);
 authRouter.post("/auth/verify-forgot-password-token", verifyForgotPasswordToken);
 authRouter.post("/auth/forgot-password", forgotPassword);
+authRouter.post("/auth/reset-password", resetPassword);
 
 
 export default authRouter;

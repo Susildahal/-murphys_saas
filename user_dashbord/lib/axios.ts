@@ -1,30 +1,8 @@
 import axios from 'axios';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import app from '@/app/config/firebase';
 import { showErrorToast, showSuccessToast } from './toast-handler';
-
-const auth = getAuth(app);
 
 // Promise to wait for auth state to be ready
 let authStateReady = false;
-let authReadyPromise: Promise<void> | null = null;
-
-const waitForAuthReady = () => {
-  if (authStateReady) {
-    return Promise.resolve();
-  }
-  
-  if (!authReadyPromise) {
-    authReadyPromise = new Promise((resolve) => {
-      const unsubscribe = onAuthStateChanged(auth, () => {
-        authStateReady = true;
-        unsubscribe();
-        resolve();
-      });
-    });
-  }
-  return authReadyPromise;
-};
 
 // Create axios instance
 const axiosInstance = axios.create({
@@ -39,17 +17,11 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   async (config) => {
     try {
-      // Wait for auth state to be ready
-      await waitForAuthReady();
+        const token = localStorage.getItem('token');
+      if (token) {
       
-      const user = auth.currentUser;
-      console.log('Current user:', user?.email || 'No user');
-      
-      if (user) {
-        // Force refresh token to ensure it's valid
-        const token = await user.getIdToken(true);
         config.headers.Authorization = `Bearer ${token}`;
-        console.log('Token added to request');
+        console.log('Token added to request');  
       } else {
         console.warn('No authenticated user found');
       }
@@ -88,26 +60,12 @@ axiosInstance.interceptors.response.use(
       console.error('Unauthorized - token might be expired');
       showErrorToast('Your session has expired. Please login again.', 'Authentication Error');
       // Sign out the user and redirect to login
-      try {
-        auth.signOut().catch(() => {});
-      } finally {
-        if (typeof window !== 'undefined') {
-          const currentPath = window.location.pathname || '';
-          if (currentPath !== '/login') window.location.href = '/login';
-        }
-      }
+
     } else if (error.response?.status === 403) {
       console.error('Forbidden - user does not have required permissions');
       showErrorToast('You do not have permission to perform this action. Please login with an account that has access.', 'Access Denied');
       // Sign out the user and redirect to login to ensure they re-authenticate
-      try {
-        auth.signOut().catch(() => {});
-      } finally {
-        if (typeof window !== 'undefined') {
-          const currentPath = window.location.pathname || '';
-          if (currentPath !== '/login') window.location.href = '/login';
-        }
-      }
+
     } 
      else if (error.response?.status === 500) {
       showErrorToast('Something went wrong on the server. Please try again later.', 'Server Error');

@@ -58,7 +58,7 @@ export default function CompleteRegistrationClient() {
         }
       } catch (err: any) {
         console.error('Token verification error:', err);
-        setError(err.response?.data?.message || 'Invalid or expired token');
+        setError(err?.response?.data?.message ?? (typeof err?.response?.data === 'string' ? err.response.data : undefined) ?? err?.message ?? 'Invalid or expired token');
       } finally {
         setVerifying(false);
       }
@@ -93,7 +93,7 @@ export default function CompleteRegistrationClient() {
       }
     } catch (err: any) {
       console.error('Registration error:', err);
-      setError(err.response?.data?.message || err.message || 'Registration failed');
+      setError(err?.response?.data?.message ?? (typeof err?.response?.data === 'string' ? err.response.data : undefined) ?? err?.message ?? 'Registration failed');
     } finally {
       setLoading(false);
       setSubmitting(false);

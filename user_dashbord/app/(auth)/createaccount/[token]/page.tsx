@@ -86,7 +86,7 @@ const CreateAccountContent = () => {
       setEmail(response.data.data.email);
     } catch (error: any) {
       setMessageType('error');
-      setMessage(error?.response?.data?.message || 'Invalid or expired token.');
+      setMessage(error?.response?.data?.message ?? (typeof error?.response?.data === 'string' ? error.response.data : undefined) ?? error?.message ?? 'Invalid or expired token');
     } finally {
       setIsVerifying(false);
     }
@@ -115,7 +115,7 @@ const CreateAccountContent = () => {
       setMessage('Invite accepted. Please set up your account.');
     } catch (err: any) {
       setMessageType('error');
-      setMessage(err?.message || 'Failed to accept invite. You can still create an account.');
+      setMessage(err?.response?.data?.message ?? (typeof err?.response?.data === 'string' ? err.response.data : undefined) ?? err?.message ?? 'Failed to accept invite. You can still create an account.');
     } finally {
       setLoading(false);
       setShowDialog(false);
@@ -171,7 +171,7 @@ const CreateAccountContent = () => {
       if (err.code === 'auth/email-already-in-use') {
         setMessage('Email is already in use. Please log in instead.');
       } else {
-        setMessage(err?.message || 'Failed to create account.');
+        setMessage(err?.response?.data?.message ?? (typeof err?.response?.data === 'string' ? err.response.data : undefined) ?? err?.message ?? 'Failed to create account.');
       }
       setMessageType('error');
     } finally {

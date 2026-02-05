@@ -43,6 +43,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
     const profile = await Profile.create(
       [{
+        userId: authUser[0]._id,
         firstName,
         lastName,
         email,
@@ -105,12 +106,11 @@ export const login = async (req: Request, res: Response) => {
     );
 
     const refreshToken = jwt.sign(
-      { userId: user._id },
+      { userId: user._id  , email: user.email },
       process.env.JWT_SECRET || "defaultrefreshsecret",
       { expiresIn: "30d" }
     );
-
-    res.status(200).json({ token , refreshToken });
+    res.status(200).json({ token , refreshToken ,  });
   }
     catch (error) {
     res.status(500).json({ message: "Server error", error });
@@ -170,7 +170,6 @@ export const forgotPassword = async (req: Request, res: Response) => {
       res.status(200).json({ message: "Password reset link sent to email" });
     } catch (mailError: any) {
       console.error('Email send error:', mailError);
-      // Provide a clearer message for envelope errors
       if (mailError && mailError.code === 'EENVELOPE') {
         return res.status(500).json({ message: 'Email sending failed: invalid FROM/TO envelope (check SMTP_FROM/SMTP_USER).' });
       }

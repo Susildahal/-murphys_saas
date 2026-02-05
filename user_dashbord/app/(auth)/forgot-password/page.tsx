@@ -38,7 +38,7 @@ export default function ForgotPasswordPage() {
       setShowDialog(true);
       setEmail('');
     } catch (err: any) {
-      const msg = err?.message || 'Something went wrong. Please try again.';
+      const msg = err?.response?.data?.message ?? (typeof err?.response?.data === 'string' ? err.response.data : undefined) ?? err?.message ?? 'Something went wrong. Please try again.';
       setStatus({ type: 'error', message: msg });
     } finally {
       setLoading(false);

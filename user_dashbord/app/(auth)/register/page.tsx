@@ -69,7 +69,7 @@ export default function RegisterPage() {
       }
     } catch (err: any) {
       console.error('Send verification error:', err);
-      setError(err.response?.data?.message || 'Failed to send verification email');
+      setError(err?.response?.data?.message ?? (typeof err?.response?.data === 'string' ? err.response.data : undefined) ?? err?.message ?? 'Failed to send verification email');
     } finally {
       setLoading(false);
       setSubmitting(false);
