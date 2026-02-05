@@ -1,18 +1,18 @@
 import { Router } from 'express';
 import { createCategory , updateCategory ,getCategories ,getCategoryById ,deleteCategory ,updateCategorystatus} from "../conttrolers/category.conttrolers"
 const categoryrouter = Router();
-import { verifyFirebaseToken } from "../middleware/auth";
+import { verifyToken } from "../middleware/auth";
 import {checkPermission, Permission} from "../middleware/rbac";
 import {isAdmin} from "../middleware/rbac";
 
 // All category routes require authentication
-    // categoryrouter.use(verifyFirebaseToken);
+    // categoryrouter.use(verifyToken);
 
-categoryrouter.post("/categories", verifyFirebaseToken, isAdmin, createCategory);
-categoryrouter.get("/categories", verifyFirebaseToken, getCategories);
-categoryrouter.get("/categories/:id", verifyFirebaseToken, getCategoryById);
-categoryrouter.put("/categories/:id", verifyFirebaseToken, isAdmin, updateCategory);
-categoryrouter.delete("/categories/:id", verifyFirebaseToken, isAdmin, deleteCategory);
-categoryrouter.patch("/categories/:id", verifyFirebaseToken, isAdmin, updateCategorystatus);
+categoryrouter.post("/categories", verifyToken, isAdmin, createCategory);
+categoryrouter.get("/categories", verifyToken, getCategories);
+categoryrouter.get("/categories/:id", verifyToken, getCategoryById);
+categoryrouter.put("/categories/:id", verifyToken, isAdmin, updateCategory);
+categoryrouter.delete("/categories/:id", verifyToken, isAdmin, deleteCategory);
+categoryrouter.patch("/categories/:id", verifyToken, isAdmin, updateCategorystatus);
 
 export default categoryrouter;

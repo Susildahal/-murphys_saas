@@ -14,13 +14,10 @@ import {
   MapPin,
   Info,
   CheckCircle2,
-  Github,
-  Twitter,
-  Linkedin
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, } from 'framer-motion';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { updateProfile, clearUpdateSuccess, fetchProfileByEmail, createProfile } from '@/lib/redux/slices/profileSlice';
+import { updateProfile, clearUpdateSuccess, createProfile } from '@/lib/redux/slices/profileSlice';
 import { useToast } from '@/hooks/use-toast';
 import { RegionDropdown } from 'react-country-region-selector';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -36,11 +33,11 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from '@/lib/utils';
 import { getMee } from "@/lib/redux/slices/meeSlice";
-import { ChevronDownIcon } from "lucide-react";
+import {Separator} from "@/components/ui/separator";
 import { format } from 'date-fns';
 import { useRouter, usePathname } from 'next/navigation';
-import { Separator } from '@/components/ui/separator';
 import { COUNTRIES } from '@/lib/countries';
+import { publicDecrypt } from 'node:crypto';
 
 const profileSchema = z.object({
   firstName: z.string().min(2, { message: 'First name must be at least 2 characters' }),
@@ -78,9 +75,13 @@ type ProfileFormData = z.infer<typeof profileSchema>;
 export default function ProfileUpdateForm() {
   const dispatch = useAppDispatch();
   const { toast } = useToast();
-  const { loading, profile: data } = useAppSelector((state) => state.profile);
-  const pd = data as any;
-  const { data: meeData } = useAppSelector((state) => state.mee);
+ 
+  const { data: meeData, loading } = useAppSelector((state) => state.mee);
+
+  // Extract profile data from meeData
+  const pd = meeData ;
+  const userEmail = meeData?.email;
+  console.log('email', userEmail)
   const router = useRouter();
   const pathname = usePathname();
 
@@ -91,16 +92,13 @@ export default function ProfileUpdateForm() {
   const [countryCallingCodes, setCountryCallingCodes] = useState<Array<any>>([]);
   const [countrySearch, setCountrySearch] = useState<string>('');
 
-  
-
-  useEffect(() => {
-    if (meeData?.email) dispatch(fetchProfileByEmail(meeData.email));
-  }, [dispatch, meeData?.email]);
 
   useEffect(() => {
     if (!meeData) dispatch(getMee());
   }, [dispatch, meeData]);
 
+
+  console.log('meeData in profile form:',pd);
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
@@ -122,12 +120,12 @@ export default function ProfileUpdateForm() {
   });
 
   useEffect(() => {
-    if (data) {
+    if (meeData) {
       form.reset({
         firstName: pd.firstName || '',
         middleName: pd.middleName || '',
         lastName: pd.lastName || '',
-        email: meeData?.email || pd.email || '',
+        email: userEmail || '',
         phone: pd.phone || '',
         countryCode: pd.countryCode || '+61',
         gender: pd.gender || '',
@@ -139,10 +137,10 @@ export default function ProfileUpdateForm() {
         state: pd.state || '',
         city: pd.city || '',
       });
-      if (data.profile_image) setImagePreview(data.profile_image);
+      if (pd.profile_image) setImagePreview(pd.profile_image);
       if (pd.dob) setDate(new Date(pd.dob));
     }
-  }, [data, meeData, form]);
+  }, [meeData, pd, userEmail, form]);
 
 
   // Fetch country calling codes from public API (restcountries)
@@ -200,7 +198,7 @@ export default function ProfileUpdateForm() {
 
   const onSubmit = async (formData: ProfileFormData) => {
     try {
-      const email = meeData?.email || formData.email || '';
+      const email = userEmail || formData.email || '';
       // combine country code and phone into a single phone value for backend
       const code = (formData as any).countryCode || form.getValues('countryCode') || '';
       const phoneVal = formData.phone ? `${code} ${formData.phone}`.trim() : undefined;
@@ -325,7 +323,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
                     <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                       <Mail className="w-4 h-4" />
                     </div>
-                    <span className="truncate">{meeData?.email || 'No email set'}</span>
+                    <span className="truncate">{userEmail || 'No email set'}</span>
                   </div>
                   {form.watch('referralSource') && (
                     <div className="flex items-center gap-3 text-sm text-muted-foreground">

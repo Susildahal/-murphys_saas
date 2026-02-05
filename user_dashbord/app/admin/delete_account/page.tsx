@@ -10,10 +10,7 @@ import {
 import { Button } from '@/components/ui/button'
 import StrictDeleteModal from '@/app/page/common/StrictDeleteModal'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
-import { fetchProfileByEmail, deleteProfile } from '@/lib/redux/slices/profileSlice'
-import { getMee, clearMee } from '@/lib/redux/slices/meeSlice'
-import { getAuth, signOut } from 'firebase/auth'
-import app from '@/app/config/firebase'
+import { getMee } from '@/lib/redux/slices/meeSlice'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
 import Header from '@/app/page/common/header'
@@ -26,23 +23,17 @@ const Page = () => {
     const { toast } = useToast()
 
     const { data: mee, loading: meeLoading } = useAppSelector((state) => state.mee)
-    const { profile, loading: profileLoading } = useAppSelector((state) => state.profile)
-
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
 
     useEffect(() => {
-        if (!mee?.email) dispatch(getMee())
-    }, [dispatch, mee])
-
-    useEffect(() => {
-        if (mee?.email && !profile) {
-            dispatch(fetchProfileByEmail(mee.email))
+        if (!mee) {
+            dispatch(getMee())
         }
-    }, [dispatch, mee, profile])
+    }, [dispatch, mee,])
 
     const handleDelete = async () => {
-        const idToDelete = profile?._id || profile?.id
+        const idToDelete = mee?._id || mee?.id
 
         if (!idToDelete) {
             toast({
@@ -58,9 +49,6 @@ const Page = () => {
             const resultAction = await dispatch(deleteProfile(idToDelete))
 
             if (deleteProfile.fulfilled.match(resultAction)) {
-                const auth = getAuth(app)
-                await signOut(auth)
-                dispatch(clearMee())
 
                 toast({
                     title: 'Account deleted',
@@ -84,7 +72,7 @@ const Page = () => {
 
     const confirmString = mee?.email || 'delete my account'
 
-    if (meeLoading || (mee?.email && profileLoading && !profile)) {
+    if (meeLoading) {
         return (
             <div className="flex items-center justify-center h-40 text-muted-foreground">
                 Loading account settings…

@@ -608,8 +608,12 @@ function SidebarMenuSkeleton({
   showIcon?: boolean
 }) {
   // Random width between 50 to 90%.
-  const width = React.useMemo(() => {
-    return `${Math.floor(Math.random() * 40) + 50}%`
+  // Avoid non-deterministic values during SSR to prevent hydration mismatch.
+  // Initialize as null on the server and set a random width on the client after mount.
+  const [width, setWidth] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    setWidth(`${Math.floor(Math.random() * 40) + 50}%`)
   }, [])
 
   return (
@@ -630,7 +634,8 @@ function SidebarMenuSkeleton({
         data-sidebar="menu-skeleton-text"
         style={
           {
-            "--skeleton-width": width,
+            // While width is null (SSR), fall back to a stable placeholder width.
+            "--skeleton-width": width ?? "70%",
           } as React.CSSProperties
         }
       />

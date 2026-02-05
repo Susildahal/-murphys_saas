@@ -4,7 +4,6 @@ import * as React from "react"
 import { Search, Bell, Settings, Moon, Sun, Menu } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks"
-import { getAuth } from "firebase/auth"
 import {
   Avatar,
   AvatarFallback,
@@ -33,9 +32,7 @@ export function AppHeader({ onSearchChange, searchValue }: AppHeaderProps) {
   const { theme, setTheme } = useTheme()
   const router = useRouter()
   const { toggleSidebar } = useSidebar()
-  const profileState = useAppSelector((state) => state.profile) as { profile: any; loading: boolean; error: string | null }
-  const dispatch = useAppDispatch()
-  const profile = Array.isArray(profileState.profile) ? profileState.profile[0] : profileState.profile
+
   const meeState = useAppSelector((state) => state.mee)
   const mee = meeState?.data
   const noticesState = useAppSelector((state) => state.notices)
@@ -49,17 +46,12 @@ export function AppHeader({ onSearchChange, searchValue }: AppHeaderProps) {
       .slice(0, 2) || 'U'
   }
 
-  const userName = profile?.name || profile?.firstName && profile?.lastName
-    ? `${profile.firstName} ${profile.lastName}`.trim()
+  const userName = mee?.name || mee?.firstName && mee ?.lastName
+    ? `${mee.firstName} ${mee.lastName}`.trim()
     : "User"
-  const userEmail = profile?.email || getAuth().currentUser?.email || "Not available"
-  const userAvatar = profile?.profile_image || ""
+  const userAvatar = mee ?.profile_image || ""
 
-  React.useEffect(() => {
-    if (!mee && userEmail !== "Not available") {
-      dispatch(getMee())
-    }
-  }, [dispatch, userEmail, mee])
+ 
 
   const unreadCount = noticesState?.unreadCount || 0
   const [showMobileSearch, setShowMobileSearch] = React.useState(false)

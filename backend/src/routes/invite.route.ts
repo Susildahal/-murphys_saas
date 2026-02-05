@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { sendInvite, getInvites ,changeInviteStatus, deleteInvite ,inviteAgain ,updateInvite ,getinvitebyemail ,verifyInviteToken} from '../conttrolers/inivite.controllers';
-// import { verifyFirebaseToken } from '../middleware/auth';
+// import { verifyToken } from '../middleware/auth';
 import { checkPermission, Permission } from '../middleware/rbac';
 
 const inviterouter = Router();
@@ -9,7 +9,7 @@ const inviterouter = Router();
 inviterouter.post('/invite/verify-token', verifyInviteToken);
 
 // // All other routes require authentication
-// inviterouter.use(verifyFirebaseToken);
+// inviterouter.use(verifyToken);
 
 inviterouter.post('/send-invite',  sendInvite);
 inviterouter.get('/invites', getInvites);

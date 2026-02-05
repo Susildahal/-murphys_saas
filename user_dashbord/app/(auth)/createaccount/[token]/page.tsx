@@ -3,8 +3,6 @@ import React, { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Mail, Lock, UserPlus, CheckCircle, AlertCircle } from "lucide-react";
 import axiosInstance from "@/lib/axios";
-import { registerUser } from "@/lib/registerUser";
-import { createUserInFirestore } from "@/lib/firebaseUser";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -160,13 +158,19 @@ const CreateAccountContent = () => {
     }
     setLoading(true);
     try {
-      await registerUser(email, password);
-      await createUserInFirestore({ email });
+      // Call backend register API directly (no Firebase)
+      const payload: any = {
+        firstName: user?.firstName || '',
+        lastName: user?.lastName || '',
+        email,
+        password,
+      };
+      await axiosInstance.post('/auth/register', payload);
       setMessageType('success');
-      setMessage('Account created successfully.');
+      setMessage('Account created successfully. You can now log in.');
       setTimeout(() => {
-        window.location.href = '/profile';
-      }, 100);
+        window.location.href = '/login';
+      }, 800);
     } catch (err: any) {
       if (err.code === 'auth/email-already-in-use') {
         setMessage('Email is already in use. Please log in instead.');

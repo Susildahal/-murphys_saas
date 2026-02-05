@@ -18,16 +18,13 @@ import { MoreVertical, ChevronLeft, ChevronRight, Eye, CheckCircle2, Info, Shopp
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
 } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card'; // We only need base Card and Content for custom layout
 import Image from 'next/image';
 import SpinnerComponent from './common/Spinner';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
-
+import { getMee } from '@/lib/redux/slices/meeSlice';
 
 interface ServiceTableProps {   
     categoryFilter?: string;
@@ -45,37 +42,8 @@ export default function ServiceTable({ categoryFilter = 'all' }: ServiceTablePro
     const [viewDialogOpen, setViewDialogOpen] = useState(false);
     const [selectedViewService, setSelectedViewService] = useState<Service | null>(null);
     const [clickImage, setClickImage] = useState<string>('');
-    const meeState = useAppSelector((s) => s.mee);
-    const userid = meeState.data?.uid || '';
-
-    // Sorting state
-    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
-
-    // ... (Keep existing sorting logic)
-    const sortedServices = useMemo(() => {
-        let items = [...services];
-        if (sortConfig !== null) {
-            items.sort((a: any, b: any) => {
-                let aValue = a[sortConfig.key];
-                let bValue = b[sortConfig.key];
-                if (sortConfig.key === 'price') {
-                    aValue = Number(a.price);
-                    bValue = Number(b.price);
-                } else if (sortConfig.key === 'createdAt') {
-                    aValue = new Date(a.createdAt).getTime();
-                    bValue = new Date(b.createdAt).getTime();
-                } else if (typeof aValue === 'string') {
-                    aValue = aValue.toLowerCase();
-                    bValue = (bValue || '').toLowerCase();
-                }
-                if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-                if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
-                return 0;
-            });
-        }
-        return items;
-    }, [services, sortConfig]);
-
+    const userid = useAppSelector((s) => s.mee.data?._id) || '';
+    console.log('Services in ServiceTable in card:', userid  );
     useEffect(() => {
         dispatch(fetchServices({ page: currentPage, limit: ITEMS_PER_PAGE, category: categoryFilter === 'all' ? undefined : categoryFilter } as any));
     }, [dispatch, currentPage, categoryFilter]);
@@ -172,7 +140,7 @@ export default function ServiceTable({ categoryFilter = 'all' }: ServiceTablePro
 
             {/* NEW GRID LAYOUT */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-8">
-                {sortedServices.map((service) => {
+                {services.map((service) => {
                     const hasDiscount = service.hasDiscount && service.discountValue;
                     const finalPrice = hasDiscount
                         ? (service.discountType === 'percentage'

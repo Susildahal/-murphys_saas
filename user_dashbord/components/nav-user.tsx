@@ -11,8 +11,6 @@ import {
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks"
-import { getAuth, signOut } from "firebase/auth"
-import { auth } from "@/app/config/firebase"
 
 import {
   Avatar,
@@ -47,20 +45,27 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { useEffect, useState } from "react"
-import {
-  fetchProfileByEmail
-} from "@/lib/redux/slices/profileSlice"
 import Link from "next/link"
 import { getMee } from "@/lib/redux/slices/meeSlice"
 
 export function NavUser() {
   const { isMobile } = useSidebar()
   const router = useRouter()
-  const profileState = useAppSelector((state) => state.profile) as { profile: any; loading: boolean; error: string | null }
   const dispatch = useAppDispatch()
-  const profile = Array.isArray(profileState.profile) ? profileState.profile[0] : profileState.profile
-  const meeState = useAppSelector((state) => state.mee)
-  const mee = meeState?.data
+
+  const mee = useAppSelector((state) => state.mee.data)   
+  useEffect(() => {
+    if (!mee) {
+      dispatch(getMee())
+    }
+  }, [dispatch, mee])
+
+  // Support both response shapes: either mee is the profile object or { profile }
+  const profile = mee?.profile ?? mee
+console.log("Profile data in NavUser:", profile)
+
+
+
 
   const getInitials = (name: string) => {
     return name
@@ -71,10 +76,10 @@ export function NavUser() {
       .slice(0, 2) || 'U'
   }
 
-  const userName = profile?.name || profile?.firstName && profile?.lastName
-    ? `${profile.firstName} ${profile.lastName}`.trim()
-    : "User"
-  const userEmail = profile?.email || getAuth().currentUser?.email || "Not available"
+  const userName = profile?.firstName || profile?.lastName
+    ? `${profile?.firstName || ''} ${profile?.lastName || ''}`.trim()
+    : profile?.name || 'User'
+  const userEmail = profile?.email || mee?.email || 'Not available'
   const userAvatar = profile?.profile_image || ""
   const userRole = profile?.role_type || "User"
 
@@ -89,22 +94,13 @@ export function NavUser() {
 
   const handleLogout = async () => {
     try {
-      await signOut(auth)
+      localStorage.removeItem("token")
       router.push('/login')
     } catch (error) {
       console.error('Logout error:', error)
     }
   }
-  // const getProfile = async () => {
-  //   // Dispatch an action to fetch the profile data
-  //   await dispatch(fetchProfileByEmail(userEmail)).unwrap()
-  // }
-
-  // useEffect(() => {
-  //   if (!profile) {
-  //     getProfile()
-  //   }
-  // }, [])
+ 
 
   return (
     <>

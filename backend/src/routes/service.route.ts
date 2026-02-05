@@ -8,28 +8,28 @@ import {
   updateService,
   deleteService,
 } from '../conttrolers/service.conttolers';
-// import { verifyFirebaseToken } from '../middleware/auth';
+// import { verifyToken } from '../middleware/auth';
 import { checkPermission, Permission } from '../middleware/rbac';
 import { isAdmin } from '../middleware/rbac';
-import { verifyFirebaseToken } from '../middleware/auth';
+import { verifyToken } from '../middleware/auth';
 
 const router = express.Router();
 
 // All service routes require authentication
-// router.use(verifyFirebaseToken);
+// router.use(verifyToken);
 
 // List services
-router.get('/services', verifyFirebaseToken, getServices);
+router.get('/services', verifyToken, getServices);
 
 // Get single service
-router.get('/services/:id', verifyFirebaseToken, getServiceById);
+router.get('/services/:id', verifyToken, getServiceById);
 
 // Create service (supports multipart form with field 'image')
-router.post('/services', verifyFirebaseToken, isAdmin, upload.single('image'), cloudinaryUpload, createService);
+router.post('/services', verifyToken, isAdmin, upload.single('image'), cloudinaryUpload, createService);
 
 // Update service (supports new image upload)
-router.put('/services/:id', verifyFirebaseToken, isAdmin, upload.single('image'), cloudinaryUpload, updateService);
+router.put('/services/:id', verifyToken, isAdmin, upload.single('image'), cloudinaryUpload, updateService);
 
 // Delete service
-router.delete('/services/:id', verifyFirebaseToken, isAdmin, deleteService);
+router.delete('/services/:id', verifyToken, isAdmin, deleteService);
 export default router;

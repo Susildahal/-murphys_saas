@@ -146,7 +146,7 @@ export const sendVerificationEmail = async (req: Request, res: Response) => {
   }
 };
 
-export const verifyToken = async (req: Request, res: Response) => {
+export const verifyTokenSS = async (req: Request, res: Response) => {
   try {
     const { token } = req.query;
 

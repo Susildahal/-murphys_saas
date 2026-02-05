@@ -1,13 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
-import admin from '../config/firebaseAdmin';
 import * as jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import Auth from '../models/auth';
 
 export interface AuthenticatedRequest extends Request {
-  user?: admin.auth.DecodedIdToken;
+  user?: {
+    uid?: string;
+    userId?: string; 
+    email?: string;
+  };
 }
 
-export const verifyFirebaseToken = async (
+export const verifyToken = async (
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
@@ -15,43 +19,57 @@ export const verifyFirebaseToken = async (
   try {
     const authHeader = req.headers.authorization;
 
+    // 1. Check for Authorization header
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       res.status(401).json({ error: 'Unauthorized: No token provided' });
       return;
     }
 
-    const token = authHeader.split('Bearer ')[1];
+    const token = authHeader.split(' ')[1];
 
     if (!token) {
       res.status(401).json({ error: 'Unauthorized: Invalid token format' });
       return;
     }
 
-    const decodedToken = await jwt.verify(token, process.env.JWT_SECRET || "defaultsecret");
-    const id = (decodedToken as any).userId;
+    // 2. Verify the server-issued JWT
+    try {
+      const decodedToken = jwt.verify(token, process.env.JWT_SECRET || "defaultsecret") as any;
+      
+      // Extract ID from common payload keys
+      const id = decodedToken?.userId || decodedToken?.uid || decodedToken?.sub;
 
-    if (!id) {
-      res.status(401).json({ error: 'Unauthorized: Invalid token payload' });
+      if (!id || !mongoose.isValidObjectId(String(id))) {
+        res.status(401).json({ error: 'Unauthorized: Invalid token payload' });
+        return;
+      }
+
+      // 3. Find the user in the database
+      const user = await Auth.findById(String(id)).select('-password');
+      
+      if (!user) {
+        res.status(401).json({ error: 'Unauthorized: User no longer exists' });
+        return;
+      }
+
+      // 4. Attach user to request and proceed
+      req.user = { 
+        uid: user._id.toString(), 
+        userId: user._id.toString(), 
+        email: user.email 
+      };
+      
+      return next();
+
+    } catch (jwtErr: any) {
+      res.status(401).json({ 
+        error: 'Unauthorized: Invalid or expired token', 
+        details: jwtErr.message 
+      });
       return;
     }
-   const user = await Auth.findById(id);
-   if (!user) {
-      res.status(401).json({ error: 'Unauthorized: User not found' });
-      return;
-   }
-
-    // Attach the decoded token (user info) to the request
-    req.user = { uid: user._id.toString() ,email: user.email } as admin.auth.DecodedIdToken;
-    next();
   } catch (error: any) {
-    console.error('Error verifying Firebase token:', {
-      code: error.code,
-      message: error.message,
-      stack: error.stack
-    });
-    res.status(401).json({ 
-      error: 'Unauthorized: Invalid token',
-      details: error.message 
-    });
+    console.error('Middleware Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
   }
 };

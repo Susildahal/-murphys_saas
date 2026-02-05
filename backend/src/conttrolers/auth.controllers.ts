@@ -393,13 +393,20 @@ export const resendVerificationEmail = async (req: AuthenticatedRequest, res: Re
 };
 export const getCurrentUser = async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const id = req.user;
+    const userIdentifier = req.user;
 
-    if (!id) {
+    if (!userIdentifier) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const profile = await Profile.findOne({ userId: id }).populate('role');
+    // Extract the actual userId string from the user object
+    const userId = userIdentifier.userId || userIdentifier.uid;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized: Invalid user data" });
+    }
+
+    const profile = await Profile.findOne({ userId });
 
     if (!profile) {
       return res.status(404).json({ 
@@ -441,3 +448,35 @@ export const refreshToken = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
+
+
+// change password controller for logged in users
+
+export const changePassword = async (req: AuthenticatedRequest, res: Response) => {
+  const { currentPassword, newPassword } = req.body;
+    try {
+    const userIdentifier = req.user;
+    if (!userIdentifier) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    const userId = userIdentifier.userId || userIdentifier.uid;
+    const user = await Auth.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Current password is incorrect" });
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+    res.status(200).json({ message: "Password changed successfully" });
+  }
+    catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+

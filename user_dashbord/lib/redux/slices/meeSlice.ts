@@ -1,9 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-import app from "@/app/config/firebase";
-
-const auth = getAuth(app);
-
+import axiosInstance from "@/lib/axios";
 interface MeeState {
   data: any;
   loading: boolean;
@@ -16,43 +12,14 @@ const initialState: MeeState = {
   error: null,
 };
 
-// Helper function to wait for auth to be ready
-const waitForAuth = (): Promise<any> => {
-  return new Promise((resolve) => {
-    // If user is already available, resolve immediately
-    if (auth.currentUser) {
-      resolve(auth.currentUser);
-      return;
-    }
-    
-    // Otherwise, wait for auth state to change
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      unsubscribe();
-      resolve(user);
-    });
-  });
-};
+;
 
-// ✅ FRONTEND ONLY (Firebase) - Now waits for auth to be ready
 export const getMee = createAsyncThunk(
   "mee/getMee",
   async (_, { rejectWithValue }) => {
     try {
-      // Wait for Firebase Auth to be ready
-      const user = await waitForAuth();
-
-      if (!user) {
-        return rejectWithValue("User not logged in");
-      }
-
-      // You can control what data you want to store
-      return {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-        emailVerified: user.emailVerified,
-      };
+      const response = await axiosInstance.get("/auth/me");
+         return response.data.data 
     } catch (error: any) {
       return rejectWithValue(error.message || "Failed to get user");
     }

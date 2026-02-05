@@ -9,11 +9,6 @@ import { Mail, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { EmailModal } from "@/app/page/email-model";
-import {
-  getAuth,
-  sendSignInLinkToEmail,
-} from "firebase/auth";
-import app from "@/app/config/firebase";
 import axiosInstance from "@/lib/axios";
 
 const validationSchema = Yup.object({
@@ -23,7 +18,6 @@ const validationSchema = Yup.object({
 });
 
 export default function RegisterPage() {
-  const auth = getAuth(app);
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,24 +27,9 @@ export default function RegisterPage() {
   const [modalLoading, setModalLoading] = useState(false);
   const [modalStatus, setModalStatus] = useState<string | null>(null);
 
-  const emailLinkConfig = {
-    url: `${typeof window !== "undefined" ? window.location.origin : ""}/email-link-callback`,
-    handleCodeInApp: true,
-  };
+ 
 
-  const handleSendEmailLink = async (email: string) => {
-    setModalLoading(true);
-    try {
-      await sendSignInLinkToEmail(auth, email, emailLinkConfig);
-      localStorage.setItem("emailForSignIn", email);
-      setModalStatus("Magic link sent! Check your inbox.");
-      setTimeout(() => setModalStatus(null), 5000);
-    } catch (err) {
-      setModalStatus("Failed to send link.");
-    } finally {
-      setModalLoading(false);
-    }
-  };
+
 
   const handleSendVerification = async (values: any, { setSubmitting }: any) => {
     setLoading(true);
@@ -234,14 +213,6 @@ export default function RegisterPage() {
           </motion.div>
         )}
       </motion.div>
-
-      {/* Email Modal */}
-      <EmailModal
-        open={modalOpen}
-        loading={modalLoading}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleSendEmailLink}
-      />
 
       {/* Toast Notification */}
       <AnimatePresence>

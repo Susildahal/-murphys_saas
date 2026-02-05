@@ -7,14 +7,7 @@ import { fetchServices } from '@/lib/redux/slices/serviceSlice';
 import { Service } from '@/types/service';
 import dynamic from 'next/dynamic';
 const ServiceTable = dynamic(() => import('@/app/page/service-table'), { ssr: false });
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+
 import { ArrowLeft, RefreshCcw } from 'lucide-react';
 import {
   Select,
