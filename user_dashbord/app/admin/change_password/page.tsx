@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -17,7 +17,6 @@ import { getMee } from "@/lib/redux/slices/meeSlice";
 import { showSuccessToast, showErrorToast } from "@/lib/toast-handler";
 import Header from "@/app/page/common/header";
 import { useAppSelector,useAppDispatch } from "@/lib/redux/hooks";
-import { useEffect } from "react";
 import axiosInstance from "@/lib/axios";
 
 export default function Page() {
@@ -37,19 +36,17 @@ export default function Page() {
       await dispatch(getMee()).unwrap();
     } catch (error) {
       // Handle error if needed
-    } 
+    }
   };
 
   useEffect(() => {
-    if(!meeData)
-    dispatchGetMee();
-  }, []);
+    if (!meeData) dispatchGetMee();
+  }, [meeData]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-
     if (!currentPassword || !newPassword || !confirmPassword) {
-
       showErrorToast("Please fill all fields", "Validation Error");
       return;
     }
@@ -72,28 +69,27 @@ export default function Page() {
 
     setLoading(true);
     try {
-
-        const response =await axiosInstance.post("/auth/change-password", {
-          currentPassword,
-          newPassword,
-        });
+      await axiosInstance.post("/auth/change-password", {
+        currentPassword,
+        newPassword,
+      });
       showSuccessToast("Password changed successfully", "Success");
 
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (err: any) {
-        showErrorToast( "Error");
-        setLoading(false);
-        return;
-      }
-
-    
+      setLoading(false);
+      return;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="">
-    <Header title="Change Password" description="Update your account password securely" />
-    <div className="p-4 max-w-2xl mx-auto   ">
+      <Header title="Change Password" description="Update your account password securely" />
+      <div className="p-4 max-w-2xl mx-auto   ">
       <Card className="shadow-sm">
         <CardHeader>
           <CardTitle className="text-xl">Security Settings</CardTitle>
@@ -185,7 +181,6 @@ export default function Page() {
         </CardContent>
       </Card>
     </div>
-    </div>
+  </div>
   );
-}
 }

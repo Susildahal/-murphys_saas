@@ -54,10 +54,9 @@ export const resendInvite = createAsyncThunk(
 
 export const getinvite = createAsyncThunk(
     'invite/getInvite',
-    async ({ page = 1, limit = 10 , email }: { page?: number; limit?: number; email?: string } = {}) => {
+    async ({ page = 1, limit = 10  }: { page?: number; limit?: number} = {}) => {
         try {
-            const response = await axiosInstance.get(`/invites?page=${page}&limit=${limit}&email=${email}`);
-            // Expect backend to return { data: invites, pagination: { total, page, limit, totalPages } }
+            const response = await axiosInstance.get(`/invite/users?page=${page}&limit=${limit}`);
             return {
                 data: response.data.data || [],
                 pagination: response.data.pagination || { total: 0, page, limit, totalPages: 0 },
@@ -67,6 +66,7 @@ export const getinvite = createAsyncThunk(
         }
     }
 );
+
 
 export const deleteInvite = createAsyncThunk(
     'invite/deleteInvite',

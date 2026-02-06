@@ -9,7 +9,8 @@ import {
   verifyForgotPasswordToken,
   forgotPassword,
   resetPassword,
-  changePassword
+  changePassword,
+  deleteUser
 
 } from "../conttrolers/auth.controllers";
 import { 
@@ -37,6 +38,7 @@ authRouter.post("/auth/verify-forgot-password-token", verifyForgotPasswordToken)
 authRouter.post("/auth/forgot-password", forgotPassword);
 authRouter.post("/auth/reset-password", resetPassword);
 authRouter.post("/auth/change-password", verifyToken, changePassword);
+authRouter.delete("/auth/delete-user", verifyToken, deleteUser);
 
 
 export default authRouter;

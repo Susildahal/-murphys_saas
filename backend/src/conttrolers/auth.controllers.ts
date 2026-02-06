@@ -479,4 +479,47 @@ export const changePassword = async (req: AuthenticatedRequest, res: Response) =
   }
 };
 
+export const deleteUser = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
+  const userIdentifier = req.user;
+  const userId = userIdentifier?.userId || userIdentifier?.uid;
 
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+
+    const user = await Auth.findById(userId).session(session);
+    if (!user) {
+      await session.abortTransaction();
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Delete profile directly
+    await Profile.deleteOne({ userId }).session(session);
+
+    // Delete auth user
+    await Auth.findByIdAndDelete(userId).session(session);
+
+    await session.commitTransaction();
+
+    res.status(200).json({
+      message: "User deleted successfully",
+    });
+  } catch (error) {
+    await session.abortTransaction();
+    console.error("Delete user error:", error);
+
+    res.status(500).json({
+      message: "Server error",
+    });
+  } finally {
+    session.endSession();
+  }
+};

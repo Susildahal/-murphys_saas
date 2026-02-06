@@ -32,7 +32,7 @@ export const getAssignedServices = createAsyncThunk(
       if (client_id) query.client_id = client_id;
       if (service_catalog_id) query.service_catalog_id = service_catalog_id;
       if (email) query.email = email;
-      const response = await axiosInstance.get(`/assigned_services`, {
+      const response = await axiosInstance.get(`/assigned`, {
         params: query,
       });
       // Expect response.data.data to be an array of assigned services

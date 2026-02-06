@@ -1,15 +1,5 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import axiosInstance from '@/lib/axios';
-import { 
-  getAuth, 
-  createUserWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
-  signOut as firebaseSignOut
-} from 'firebase/auth';
-import app from '@/app/config/firebase';
-
-/* ================= TYPES ================= */
 
 export interface RegisterData {
   firstName: string;
@@ -47,7 +37,6 @@ interface AuthState {
   emailVerificationSent: boolean;
 }
 
-/* ================= INITIAL STATE ================= */
 
 const initialState: AuthState = {
   user: null,
@@ -58,7 +47,6 @@ const initialState: AuthState = {
   emailVerificationSent: false,
 };
 
-/* ================= THUNKS ================= */
 
 // Register with email/password
 export const registerWithEmail = createAsyncThunk<
@@ -69,19 +57,6 @@ export const registerWithEmail = createAsyncThunk<
   'auth/registerWithEmail',
   async (data, { rejectWithValue }) => {
     try {
-      const auth = getAuth(app);
-      
-      // 1. Create Firebase user
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        data.email,
-        data.password
-      );
-
-      // 2. Get Firebase ID token
-      const idToken = await userCredential.user.getIdToken();
-
-      // 4. Register user profile in backend
       const response = await axiosInstance.post('/auth/register', {
         firstName: data.firstName,
         lastName: data.lastName,
@@ -90,10 +65,6 @@ export const registerWithEmail = createAsyncThunk<
         phone: data.phone,
         country: data.country || 'Australia',
         referralSource: data.referralSource,
-      }, {
-        headers: {
-          'Authorization': `Bearer ${idToken}`
-        }
       });
 
       return response.data.data as UserProfile;
@@ -118,56 +89,7 @@ export const registerWithEmail = createAsyncThunk<
   }
 );
 
-// Register with Google SSO
-export const registerWithGoogle = createAsyncThunk<
-  UserProfile,
-  { firstName?: string; lastName?: string; phone?: string; gender?: string },
-  { rejectValue: string }
->(
-  'auth/registerWithGoogle',
-  async (additionalData, { rejectWithValue }) => {
-    try {
-      const auth = getAuth(app);
-      const provider = new GoogleAuthProvider();
 
-      // 1. Sign in with Google popup
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-
-      // 2. Get Firebase ID token
-      const idToken = await user.getIdToken();
-
-      // 3. Parse name from Google
-      const displayName = user.displayName || '';
-      const nameParts = displayName.split(' ');
-      const firstName = additionalData.firstName || nameParts[0] || '';
-      const lastName = additionalData.lastName || nameParts.slice(1).join(' ') || '';
-
-      // 4. Register user profile in backend
-      const response = await axiosInstance.post('/auth/register', {
-        firstName,
-        lastName,
-        email: user.email,
-        phone: additionalData.phone || user.phoneNumber || '',
-        gender: additionalData.gender || '',
-        country: 'Australia',
-      }, {
-        headers: {
-          'Authorization': `Bearer ${idToken}`
-        }
-      });
-
-      return response.data.data as UserProfile;
-    } catch (error: any) {
-      if (error.code === 'auth/popup-closed-by-user') {
-        return rejectWithValue('Sign-in popup closed');
-      }
-      return rejectWithValue(
-        error.response?.data?.message || error.message || 'Google sign-in failed'
-      );
-    }
-  }
-);
 
 // Get current user
 export const getCurrentUser = createAsyncThunk<
@@ -188,20 +110,6 @@ export const getCurrentUser = createAsyncThunk<
   }
 );
 
-// Sign out
-export const signOut = createAsyncThunk<void, void, { rejectValue: string }>(
-  'auth/signOut',
-  async (_, { rejectWithValue }) => {
-    try {
-      const auth = getAuth(app);
-      await firebaseSignOut(auth);
-    } catch (error: any) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-/* ================= SLICE ================= */
 
 const authSlice = createSlice({
   name: 'auth',
@@ -239,23 +147,6 @@ const authSlice = createSlice({
         state.registrationSuccess = false;
       })
 
-      // Register with Google
-      .addCase(registerWithGoogle.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-        state.registrationSuccess = false;
-      })
-      .addCase(registerWithGoogle.fulfilled, (state, action) => {
-        state.loading = false;
-        state.user = action.payload;
-        state.registrationSuccess = true;
-        state.error = null;
-      })
-      .addCase(registerWithGoogle.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload ?? 'Google registration failed';
-        state.registrationSuccess = false;
-      })
 
       // Get current user
       .addCase(getCurrentUser.pending, (state) => {
@@ -269,14 +160,6 @@ const authSlice = createSlice({
       .addCase(getCurrentUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload ?? 'Failed to fetch user';
-      })
-
-      // Sign out
-      .addCase(signOut.fulfilled, (state) => {
-        state.user = null;
-        state.firebaseUser = null;
-        state.error = null;
-        state.registrationSuccess = false;
       });
   },
 });

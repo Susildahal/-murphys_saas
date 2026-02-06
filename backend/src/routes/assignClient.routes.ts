@@ -1,5 +1,5 @@
 import router from "express";
-import { assignServiceToClient ,acceptedAssignedService,acceptAssignedService  ,getAllAssignedServices ,getAssignDetails ,updateAssignedService ,deleteAssignedService, markRenewalAsPaid } from "../conttrolers/assignServicec.conttlores";
+import { assignServiceToClient ,acceptedAssignedService,acceptAssignedService  ,getAllAssignedServices ,getAssignDetails ,updateAssignedService ,deleteAssignedService, markRenewalAsPaid ,userAssignedServices } from "../conttrolers/assignServicec.conttlores";
 import { verifyToken } from "../middleware/auth";
 import {isAdmin} from "../middleware/rbac";
 
@@ -16,6 +16,19 @@ assignClientRouter.get('/assign_details/:client_id/:service_catalog_id', verifyT
 assignClientRouter.put('/assigned_services/:id', verifyToken,isAdmin, updateAssignedService);
 assignClientRouter.delete('/assigned_services/:id', verifyToken, isAdmin, deleteAssignedService);
 assignClientRouter.patch('/assigned_services/:id/renewals/:renewal_id/pay', verifyToken, isAdmin, markRenewalAsPaid);
+
+
+
+
+//user routes 
+assignClientRouter.get('/assigned', verifyToken, userAssignedServices);
+
+
+
+
+
+
+
 
 export default assignClientRouter;
 

@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { RefreshCcw, User, Briefcase, Search, Calendar, DollarSign, Clock, CheckCircle2, Eye } from 'lucide-react'
 
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
-import { getAssignedServices, getAssignDetails } from '@/lib/redux/slices/assignSlice';
+import { getAssignedServices } from '@/lib/redux/slices/assignSlice';
 import SpinnerComponent from '@/app/page/common/Spinner'
 import { Input } from '@/components/ui/input'
 import Pagination from '@/app/page/common/Pagination'
@@ -50,8 +50,6 @@ const page = () => {
 
     // Filters state
     const [selectedService, setSelectedService] = React.useState<string>('all');
-    const [servicesList, setServicesList] = React.useState<any[]>([]);
-
     // Fetch services for filters
     
 

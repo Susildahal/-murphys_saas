@@ -93,7 +93,7 @@ function Page() {
 
     // Fetch if we have no items yet, or pagination state changed
     if (!hasItems || pageMismatch || limitMismatch) {
-      dispatch(getinvite({ page, limit, email: mee?.email }));
+      dispatch(getinvite({ page, limit,  }));
     }
   }, [dispatch, page, limit, mee?.email]);
 

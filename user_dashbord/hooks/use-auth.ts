@@ -1,20 +1,18 @@
-"use client"
-import { useEffect, useState } from 'react';
-import { onAuthStateChanged, User } from 'firebase/auth';
-import { auth } from '@/app/config/firebase';
+// "use client"
+// import { useEffect, useState } from 'react';
 
-export const useAuth = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+// export const useAuth = () => {
+//   const [user, setUser] = useState<User | null>(null);
+//   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-    });
+//   useEffect(() => {
+//     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+//       setUser(currentUser);
+//       setLoading(false);
+//     });
 
-    return () => unsubscribe();
-  }, []);
+//     return () => unsubscribe();
+//   }, []);
 
-  return { user, loading, isAuthenticated: !!user };
-};
+//   return { user, loading, isAuthenticated: !!user };
+// };

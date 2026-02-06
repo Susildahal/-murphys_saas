@@ -69,7 +69,7 @@ export const processRenewalPayment = async ( req: AuthenticatedRequest, res: Res
         // Create initial billing history record as pending
         const billingHistory = new BillingHistory({
             user_email: user.email || '',
-            user_id: user.uid,
+            user_id: user.uid || '',
             assign_service_id: assignServiceId,
             renewal_id: renewalId,
             invoice_id: assignService.invoice_id,
@@ -95,7 +95,7 @@ export const processRenewalPayment = async ( req: AuthenticatedRequest, res: Res
                 confirm: true,
                 description: `Renewal payment for ${assignService.service_name} - ${assignService.invoice_id}`,
                 metadata: {
-                    userId: user.uid,
+                    userId: user.uid || '',
                     userEmail: user.email || '',
                     renewalId,
                     assignServiceId,

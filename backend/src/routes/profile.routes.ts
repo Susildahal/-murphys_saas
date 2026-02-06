@@ -6,7 +6,6 @@ import {
   updateProfile, 
   sentemail, 
   getProfileByEmail, 
-  deleteProfile, 
   getAdminProfiles,
   toggleUserPermission,
   updateUserRole,
@@ -29,7 +28,6 @@ profilerouter.get("/profiles/types", verifyToken, getAdminProfiles);
 profilerouter.get("/profiles/:id", verifyToken, getProfileById);
 profilerouter.get("/profiles/email/:email", verifyToken, getProfileByEmail);
 profilerouter.put("/profiles/:id", verifyToken, upload.single('profile_image'), cloudinaryUpload, updateProfile);
-profilerouter.delete("/profiles/:id", verifyToken, deleteProfile);
 
 // Email route (admin only)
 profilerouter.post("/send-email", verifyToken, sentemail);

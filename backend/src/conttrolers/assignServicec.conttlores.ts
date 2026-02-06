@@ -8,6 +8,8 @@ import dotenv from "dotenv";
 import mongoose from 'mongoose';
 import twilioClient from "../config/twilio";
 import NotificationService from "../services/notificationService";
+import { AuthenticatedRequest } from "../middleware/auth";
+import { EmailAuthProvider } from "firebase/auth/web-extension";
 dotenv.config()
 
 interface JwtPayload {
@@ -452,3 +454,110 @@ export const markRenewalAsPaid = async (req: Request, res: Response) => {
     res.status(400).json({ message: (error as Error).message });
   }
 };
+
+
+
+
+
+
+export const userAssignedServices = async (req: AuthenticatedRequest, res: Response) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const skip = (page - 1) * limit;
+  const userId = req.user?.userId || req.user?.uid || '';
+
+  const searchQuery = (req.query.search as string) || '';
+  const clientId = userId ;
+  const serviceCatalogId = (req.query.service_catalog_id as string) || '';
+  const email = req.user?.email || '';
+  console.log(email)
+
+  try {
+    const query: any = {};
+
+    // 🔍 Search filter
+    if (searchQuery) {
+      query.$or = [
+        { client_name: { $regex: searchQuery, $options: 'i' } },
+        { service_name: { $regex: searchQuery, $options: 'i' } },
+        { email: { $regex: searchQuery, $options: 'i' } },
+      ];
+    }
+
+    // 🎯 Email filter (separate & professional)
+    if (email) {
+      query.email = { $regex: email, $options: 'i' };
+    }
+
+    if (clientId) {
+      query.client_id = new mongoose.Types.ObjectId(clientId);
+    }
+
+    if (serviceCatalogId) {
+      query.service_catalog_id = new mongoose.Types.ObjectId(serviceCatalogId);
+    }
+
+    const totalCount = await AssignService.countDocuments(query);
+
+    const pipeline: any[] = [
+      { $match: query },
+      { $sort: { createdAt: -1 } },
+
+      {
+        $lookup: {
+          from: 'profiles',
+          localField: 'client_id',
+          foreignField: '_id',
+          as: 'client',
+        },
+      },
+      { $unwind: { path: '$client', preserveNullAndEmptyArrays: true } },
+
+      {
+        $lookup: {
+          from: 'services',
+          localField: 'service_catalog_id',
+          foreignField: '_id',
+          as: 'service',
+        },
+      },
+      { $unwind: { path: '$service', preserveNullAndEmptyArrays: true } },
+
+      {
+        $addFields: {
+          client_name: {
+            $cond: [
+              { $and: ['$client.firstName', '$client.lastName'] },
+              { $concat: ['$client.firstName', ' ', '$client.lastName'] },
+              '$client_name',
+            ],
+          },
+          service_name: { $ifNull: ['$service.name', '$service_name' ] },
+          service_description: { $ifNull: ['$service.description', '$service_description' ] },
+          service_image : { $ifNull: ['$service.image', '$service_image' ]
+        },
+      },
+    },
+
+      { $project: { client: 0, service: 0 } },
+      { $skip: skip },
+      { $limit: limit },
+    ];
+
+    const assignedServices = await AssignService.aggregate(pipeline as any);
+
+    res.status(200).json({
+      data: assignedServices,
+      pagination: {
+        totalCount,
+        page,
+        limit,
+        totalPages: Math.ceil(totalCount / limit),
+      },
+      message: 'Assigned services retrieved successfully',
+    });
+  } catch (error) {
+    res.status(400).json({ message: (error as Error).message });
+  }
+};
+

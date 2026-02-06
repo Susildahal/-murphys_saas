@@ -131,11 +131,13 @@ export const deleteProfile = createAsyncThunk(
   'profile/deleteProfile',
   async (id: string, { rejectWithValue }) => {
     try {
-      const response = await axiosInstance.delete(`/profiles/${id}`);
+      const response = await axiosInstance.delete(`/auth/delete-user`);
       return response.data?.data || response.data;
     }
     catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to delete profile');
+      return rejectWithValue(error?.response?.data?.message ||
+(error?.response?.data?.errors && error.response.data.errors[0]?.msg) ||
+error?.message || 'Failed to delete profile');
     }
   }
 );

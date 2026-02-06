@@ -2,9 +2,6 @@ import Profile from "../models/profile.model";
 import { Request, Response } from "express";
 import { AuthenticatedRequest } from "../middleware/auth";
 import transporter from "../config/nodemiller";
-import AssignService from '../models/assignService.routes';
-import admin from "../config/firebaseAdmin";
-import Jwt from "jsonwebtoken";
 
 
 
@@ -275,42 +272,7 @@ export const getProfileByEmail = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteProfile = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
 
-    // Find profile first to get details for Firebase deletion
-    const profile = await Profile.findById(id);
-    if (!profile) {
-      return res.status(404).json({ message: 'Profile not found' });
-    }
-
-    // Delete from Firebase Auth if email exists
-    if (profile.email) {
-      try {
-        const firebaseUser = await admin.auth().getUserByEmail(profile.email);
-        if (firebaseUser) {
-          await admin.auth().deleteUser(firebaseUser.uid);
-          console.log(`Firebase user ${firebaseUser.uid} deleted for email ${profile.email}`);
-        }
-      } catch (firebaseError: any) {
-        // If user not found in Firebase, just proceed. Log other errors.
-        if (firebaseError.code !== 'auth/user-not-found') {
-          console.error('Error deleting Firebase user:', firebaseError);
-
-        }
-      }
-    }
-
-    // Delete from MongoDB
-    await Profile.findByIdAndDelete(id);
-
-    res.status(200).json({ data: profile, message: 'Profile and associated account deleted successfully' });
-  }
-  catch (error) {
-    res.status(400).json({ message: (error as Error).message });
-  }
-};
 
 
 export const getAdminProfiles = async (req: Request, res: Response) => {

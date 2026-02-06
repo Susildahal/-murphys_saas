@@ -65,8 +65,15 @@ axiosInstance.interceptors.response.use(
       console.error('Forbidden - user does not have required permissions');
       showErrorToast('You do not have permission to perform this action. Please login with an account that has access.', 'Access Denied');
       // Sign out the user and redirect to login to ensure they re-authenticate
-
     } 
+    else if(error.response?.status === 404) {
+      showErrorToast('The requested resource was not found.', 'Not Found');
+
+    }
+       else if(error.response?.status === 400) {
+      showErrorToast('The request was invalid. Please check your input and try again.', 'Bad Request');
+
+    }
      else if (error.response?.status === 500) {
       showErrorToast('Something went wrong on the server. Please try again later.', 'Server Error');
     } else if (error.response?.data?.message) {

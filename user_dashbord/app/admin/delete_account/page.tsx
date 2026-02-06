@@ -12,15 +12,14 @@ import StrictDeleteModal from '@/app/page/common/StrictDeleteModal'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { getMee } from '@/lib/redux/slices/meeSlice'
 import { useRouter } from 'next/navigation'
-import { useToast } from '@/hooks/use-toast'
 import Header from '@/app/page/common/header'
 import { AlertTriangle, Trash2 } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
+import {deleteProfile} from "@/lib/redux/slices/profileSlice"
 
 const Page = () => {
     const dispatch = useAppDispatch()
     const router = useRouter()
-    const { toast } = useToast()
 
     const { data: mee, loading: meeLoading } = useAppSelector((state) => state.mee)
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -35,14 +34,6 @@ const Page = () => {
     const handleDelete = async () => {
         const idToDelete = mee?._id || mee?.id
 
-        if (!idToDelete) {
-            toast({
-                title: 'Error',
-                description: 'User profile not found.',
-                variant: 'destructive',
-            })
-            return
-        }
 
         setIsDeleting(true)
         try {
@@ -50,21 +41,11 @@ const Page = () => {
 
             if (deleteProfile.fulfilled.match(resultAction)) {
 
-                toast({
-                    title: 'Account deleted',
-                    description: 'Your account has been permanently removed.',
-                })
-
                 router.push('/login')
             } else {
                 throw new Error('Deletion failed')
             }
         } catch (error: any) {
-            toast({
-                title: 'Error',
-                description: error.message || 'Failed to delete account.',
-                variant: 'destructive',
-            })
             setIsDeleting(false)
             setIsModalOpen(false)
         }

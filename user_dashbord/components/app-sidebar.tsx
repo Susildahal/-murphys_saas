@@ -41,23 +41,7 @@ const data = {
       plan: "",
     },
   ],
-  navMain: [
-    {
-      title: "Account Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "Change Password",
-          url: "/admin/change_password",
-        },
-        {
-          title: "Delete Account",
-          url: "/admin/delete_account",
-        },
-      ],
-    },
-  ],
+
   projects: [
     {
       name: "Dashboard",
@@ -135,16 +119,7 @@ export function AppSidebar({ searchQuery = "", ...props }: AppSidebarProps) {
     )
   }, [searchQuery])
 
-  // Filter nav items based on search
-  const filteredNavMain = React.useMemo(() => {
-    if (!searchQuery) return data.navMain
-    return data.navMain.map(item => ({
-      ...item,
-      items: item.items?.filter(subItem =>
-        subItem.title.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    })).filter(item => item.items && item.items.length > 0)
-  }, [searchQuery])
+
 
   return (
     <Sidebar collapsible="icon" {...props} className="border-r bg-white dark:bg-black text-slate-900 dark:text-white">
@@ -204,7 +179,7 @@ export function AppSidebar({ searchQuery = "", ...props }: AppSidebarProps) {
 
       {/* Scrollable Content */}
       <SidebarContent className="overflow-y-auto custom-scrollbar flex-1 px-3 py-4 gap-6">
-        {filteredProjects.length === 0 && filteredNavMain.length === 0 ? (
+        {filteredProjects.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
             <Search className="h-8 w-8 opacity-50 mb-2" />
             <p className="text-xs">No matches found</p>
@@ -212,7 +187,6 @@ export function AppSidebar({ searchQuery = "", ...props }: AppSidebarProps) {
         ) : (
           <div className="space-y-6">
             <NavProjects projects={filteredProjects} />
-            <NavMain items={filteredNavMain} />
           </div>
         )}
       </SidebarContent>

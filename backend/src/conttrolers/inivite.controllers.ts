@@ -4,6 +4,7 @@ import transporter from "../config/nodemiller";
 import Profile from "../models/profile.model";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
+import { AuthenticatedRequest } from "../middleware/auth";
 dotenv.config()
 
 
@@ -46,12 +47,15 @@ export const sendInvite = async (req: Request, res: Response) => {
 
     // Generate token
     const token = jwt.sign(
-      { email },
+      { email,
+        firstName,
+        lastName
+       },
       process.env.JWT_SECRET as string,
       { expiresIn: "5d" }
     );
  const encodedUrlToken = encodeURIComponent(token);
-    const acceptUrl = `${process.env.createaccoutroutes}/token=${encodedUrlToken}`;
+    const acceptUrl = `${process.env.frontendurl}createaccount/token=${encodedUrlToken}`;
 
     // Send email
     await transporter.sendMail({
@@ -178,11 +182,7 @@ export const changeInviteStatus = async (req: Request, res: Response) => {
     if (!invite) {
       return res.status(404).json({ message: "Invite not found" });
     }
-
-    if(status === "accepted" ){
-     await new Profile({ email: email, firstName: invite.firstName, lastName: invite.lastName, role_type: invite.role_type }).save();
-    }
-    invite.inviteStatus = status;
+     invite.inviteStatus = status;
     await invite.save();
     res.status(200).json({ data: invite, message: "Invite status changed successfully" });
   }
@@ -192,7 +192,6 @@ export const changeInviteStatus = async (req: Request, res: Response) => {
 };
 
 
-  
 
   export const updateInvite = async (req: Request, res: Response) => {
     try {
@@ -235,7 +234,10 @@ export  const inviteAgain = async (req: Request, res: Response) => {
     const lastName = invite.lastName;
     const role_type = invite.role_type;
     const token = jwt.sign(
-      { email },
+      { email,
+        firstName,
+        lastName,
+       },
       process.env.JWT_SECRET as string,
       { expiresIn: '5d' }
     );
@@ -243,7 +245,7 @@ export  const inviteAgain = async (req: Request, res: Response) => {
    invite.inviteStatus = 'pending';
    invite.role_type = role_type;
    await invite.save();
-    const acceptUrl = `${process.env.createaccoutroutes}/token=${encodedUrlToken}`;
+    const acceptUrl = `${process.env.frontendurl}createaccount/token=${encodedUrlToken}`;
 
     // Send email
     await transporter.sendMail({
@@ -296,20 +298,38 @@ export  const inviteAgain = async (req: Request, res: Response) => {
 };
 
 
-
-export const getinvitebyemail = async ( req: Request, res: Response) => {
-  const {email } = req.params;
+//users
+export const getinvitebyemail = async ( req: AuthenticatedRequest, res: Response) => {
+  const email = req.user?.email;
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+    console.log(email)
   try {
-    const invite = await Invite.findOne({ email: email, invite_type: 'invite' });
-    if (!invite) {
+    if (!email) {
+      return res.status(400).json({ message: 'No email associated with authenticated user' });
+    }
+    // Run find and count in parallel for pagination
+    const [invites, total] = await Promise.all([
+      Invite.find({ invite_email: email, invite_type: 'invite' }).skip(skip).limit(limit),
+      Invite.countDocuments({ invite_email: email, invite_type: 'invite' }),
+    ]);
+
+    if (!invites || invites.length === 0) {
       return res.status(404).json({ message: "Invite not found" });
     }
 
-    if(invite.inviteStatus !== 'pending') {
-      return res.status(400).json({ message: `Invite has already been ${invite.inviteStatus}` });
-    }
-
-    res.status(200).json({ data: invite, message: "Invite retrieved successfully" });
+    // Return paginated invites
+    res.status(200).json({
+      data: invites,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+      message: "Invite retrieved successfully",
+    });
   }
   catch (error) {
     res.status(500).json({ message: (error as Error).message });
