@@ -68,20 +68,12 @@ export default function CreateTicketPage() {
     }
   }, [dispatch, meeData])
 
-  useEffect(() => {
-    if (meeData?.email && !profile) {
-      dispatch(fetchProfileByEmail(meeData.email))
-    }
-  }, [dispatch, meeData, profile])
 
   useEffect(() => {
-    const fetchAssignedServices = async () => {
-      if (!meeData?.uid) return
+    const fetchServices = async () => {
       try {
         setLoadingServices(true)
-        const response = await axiosInstance.get('/assigned_services', {
-          params: { clientId: meeData.uid }
-        })
+        const response = await axiosInstance.get('/assigned')
         setAssignedServices(response.data.data || [])
       } catch (error) {
         console.error('Error fetching assigned services:', error)
@@ -91,10 +83,8 @@ export default function CreateTicketPage() {
       }
     }
 
-    if (meeData?.uid) {
-      fetchAssignedServices()
-    }
-  }, [meeData])
+    fetchServices()
+  }, [])
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])

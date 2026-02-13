@@ -29,7 +29,7 @@ import { useToast } from '@/hooks/use-toast'
 import SpinnerComponent from '@/app/page/common/Spinner'
 import Header from '@/app/page/common/header'
 import { useAppSelector, useAppDispatch } from '@/lib/redux/hooks'
-import { fetchProfile } from '@/lib/redux/slices/profileSlice'
+import { getadminProfile } from '@/lib/redux/slices/profileSlice'
 import {
   Select,
   SelectContent,
@@ -177,7 +177,7 @@ function BillingHistoryPage() {
 
   useEffect(() => {
     // Fetch all profiles/clients for the filter dropdown
-    dispatch(fetchProfile({ limit: 1000 }));
+    dispatch(getadminProfile({ limit: 1000 ,role_type:'client user' }));
   }, [dispatch]);
 
   useEffect(() => {

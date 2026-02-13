@@ -34,7 +34,7 @@ export function NavProjects({
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="text-xs font-semibold text-slate-800 dark:text-white/70 uppercase tracking-wider px-2 mb-2">
+      <SidebarGroupLabel className="text-xs  font-semibold text-slate-800 dark:text-white/70 uppercase tracking-wider px-2 mb-2">
         Quick Access
       </SidebarGroupLabel>
       <SidebarMenu>

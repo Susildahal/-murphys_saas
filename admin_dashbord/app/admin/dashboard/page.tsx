@@ -99,7 +99,7 @@ export default function DashboardPage() {
       icon: Users,
       color: "text-blue-500",
       bg: "bg-blue-500/10",
-      trend: "+12%"
+      trend: ""
     },
     {
       title: "Total Services",
@@ -107,7 +107,7 @@ export default function DashboardPage() {
       icon: Package,
       color: "text-blue-600",
       bg: "bg-blue-600/10",
-      trend: "+8%"
+      trend: ""
     },
     {
       title: "Assigned Services",
@@ -115,7 +115,7 @@ export default function DashboardPage() {
       icon: CheckCircle2,
       color: "text-blue-700",
       bg: "bg-blue-700/10",
-      trend: "+23%"
+      trend: ""
     },
     {
       title: "Unread Notices",
@@ -196,16 +196,13 @@ export default function DashboardPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
               >
-                <Card className="border shadow-sm overflow-hidden hover:shadow-md transition-all duration-200 relative group">
+                <Card className="border  overflow-hidden hover:shadow-md transition-all duration-200 relative group">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
-                      <div className={`p-3 rounded-xl ${stat.bg} transition-transform group-hover:scale-110`}>
+                      <div className={` rounded-xl ${stat.bg} transition-transform group-hover:scale-110`}>
                         <stat.icon className={`h-6 w-6 ${stat.color}`} />
                       </div>
-                      <div className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 font-medium">
-                        <TrendingUp className="w-3 h-3" />
-                        {stat.trend}
-                      </div>
+                  
                     </div>
                     <div className="mt-4">
                       <h3 className="text-sm font-medium text-muted-foreground">{stat.title}</h3>
