@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Users,
@@ -8,15 +8,9 @@ import {
   CheckCircle2,
   Bell,
   ArrowUpRight,
-  PlusCircle,
-  Send,
-  UserPlus,
-  BarChart3,
-  TrendingUp,
   Activity,
   Layers,
   Calendar,
-  Filter
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -99,7 +93,6 @@ export default function DashboardPage() {
       icon: Users,
       color: "text-blue-500",
       bg: "bg-blue-500/10",
-      trend: ""
     },
     {
       title: "Total Services",
@@ -107,7 +100,6 @@ export default function DashboardPage() {
       icon: Package,
       color: "text-blue-600",
       bg: "bg-blue-600/10",
-      trend: ""
     },
     {
       title: "Assigned Services",
@@ -115,7 +107,6 @@ export default function DashboardPage() {
       icon: CheckCircle2,
       color: "text-blue-700",
       bg: "bg-blue-700/10",
-      trend: ""
     },
     {
       title: "Unread Notices",
@@ -123,7 +114,6 @@ export default function DashboardPage() {
       icon: Bell,
       color: "text-blue-800",
       bg: "bg-blue-800/10",
-      trend: `${totalNotices || 0} total`
     }
   ];
 

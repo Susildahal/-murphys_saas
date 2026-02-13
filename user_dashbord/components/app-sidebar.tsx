@@ -2,19 +2,21 @@
 
 import * as React from "react"
 import {
-  AudioWaveform,
+  Package,
   BookOpen,
   Bot,
   Settings2,
   LayoutDashboard,
   Briefcase,
   CreditCard,
+  User,
+  UserPlus,
+  FileText,
   Search,
   ShoppingCart,
   Ticket
 } from "lucide-react"
 import { motion, AnimatePresence } from "motion/react"
-import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
 import {
@@ -61,7 +63,7 @@ const data = {
     {
       name: "My Services",
       url: "/admin/view_assign_service",
-      icon: AudioWaveform,
+      icon: Package,
     },
     {
       name: "Cart",
@@ -91,17 +93,17 @@ const data = {
     {
       name: "Invite Users",
       url: "/admin/invte_users",
-      icon: Bot,
+      icon: UserPlus,
     },
     {
       name: "Invoices",
       url: "/admin/invoices",
-      icon: Bot,
+      icon: FileText,
     }
   ],
 }
 
-import { User } from "lucide-react"
+
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   searchQuery?: string

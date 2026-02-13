@@ -748,7 +748,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
                     <Button
                       type="submit"
                       disabled={loading}
-                      className="min-w-[200px] h-11 bg-[#480082] hover:bg-[#3a006b]"
+                      className="min-w-[200px] "
                     >
                       {loading ? (
                         <>
