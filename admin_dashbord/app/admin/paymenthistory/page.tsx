@@ -601,7 +601,7 @@ function BillingHistoryPage() {
         </div>
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
+          <Card className='shadow-none '>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center">
@@ -618,7 +618,7 @@ function BillingHistoryPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className='shadow-none'>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950 flex items-center justify-center">
@@ -637,7 +637,7 @@ function BillingHistoryPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className='shadow-none'>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-950 flex items-center justify-center">
@@ -657,7 +657,7 @@ function BillingHistoryPage() {
           </Card>
 
           <div>
-            <Card>
+            <Card className='shadow-none'>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-950 flex items-center justify-center">

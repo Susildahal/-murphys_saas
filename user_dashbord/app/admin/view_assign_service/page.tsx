@@ -97,10 +97,6 @@ const page = () => {
         } catch (error) {
         }
     }
-
-
-
-
     return (
         <div className="space-y-6">
             {loading && <SpinnerComponent />}
@@ -151,7 +147,7 @@ const page = () => {
                                 const collectedPercentage = servicePrice > 0 ? (paidAmount / servicePrice) * 100 : 0;
 
                                 return (
-                                    <Card key={service._id ?? service.id} className="rounded-lg shadow hover:shadow-lg transition-shadow duration-200">
+                                    <Card key={service._id ?? service.id} className="rounded-lg duration-200">
                                         {/* Header */}
                                         <CardContent className="px-4 py-4">
                                             <div className="flex items-start gap-4">
@@ -196,7 +192,7 @@ const page = () => {
                                                             : service.isaccepted === 'pending' 
                                                                 ? <span className="text-amber-600 dark:text-amber-400">Pending</span>
                                                                 : <span className="text-red-600 dark:text-red-400">Inactive</span>
-                                                        }
+                                                       }
                                                     </div>
                                                 </div>
                                             </div>

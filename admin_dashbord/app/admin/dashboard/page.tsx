@@ -186,7 +186,7 @@ export default function DashboardPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
               >
-                <Card className="border  overflow-hidden hover:shadow-md transition-all duration-200 relative group">
+                <Card className="border  overflow-hidden shadow-none transition-all duration-200 relative group">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div className={` rounded-xl ${stat.bg} transition-transform group-hover:scale-110`}>
@@ -209,7 +209,7 @@ export default function DashboardPage() {
           {/* Stats Overview with Charts */}
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Services Distribution Pie Chart */}
-            <Card className="border shadow-sm">
+            <Card className="border ">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Activity className="h-5 w-5 text-blue-500" />
@@ -310,7 +310,7 @@ export default function DashboardPage() {
             </Card>
 
             {/* Notices Pie Chart */}
-            <Card className="border shadow-sm">
+            <Card className="border ">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Bell className="h-5 w-5 text-blue-500" />
@@ -410,7 +410,7 @@ export default function DashboardPage() {
             </Card>
 
             {/* Categories Overview */}
-            <Card className="border shadow-sm bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/30">
+            <Card className="border   dark:from-blue-950/30 dark:to-blue-900/30">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Layers className="h-5 w-5 text-blue-500" />
@@ -420,7 +420,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-lg  border border-blue-200 dark:border-blue-800">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
                         <Layers className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -433,7 +433,7 @@ export default function DashboardPage() {
                     <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{totalCategories}</p>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-blue-300 dark:border-blue-700">
+                  <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-lg  border border-blue-300 dark:border-blue-700">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
                         <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
@@ -446,7 +446,7 @@ export default function DashboardPage() {
                     <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{totalProfiles}</p>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-blue-400 dark:border-blue-600">
+                  <div className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 rounded-lg  border border-blue-400 dark:border-blue-600">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-xl bg-blue-600/20 flex items-center justify-center">
                         <Package className="w-6 h-6 text-blue-700 dark:text-blue-500" />
@@ -464,7 +464,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Recent Assignments Table */}
-          <Card className="border shadow-sm">
+          <Card className="border ">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-xl">Recent Assignments</CardTitle>

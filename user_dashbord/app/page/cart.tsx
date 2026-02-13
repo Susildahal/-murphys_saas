@@ -2,27 +2,28 @@
 import React, { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks';
 import { getCart, removeFromCart, clearCart  ,updateCartStatus} from '@/lib/redux/slices/cartSlice';
-import { Service } from '@/types/service';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ShoppingCart, Trash2, X, CreditCard, Info, CheckCircle, Clock } from 'lucide-react';
+import { ShoppingCart, Trash2, X, Info, CheckCircle, Clock } from 'lucide-react';
 import Image from 'next/image';
 import SpinnerComponent from './common/Spinner';
 import Header from './common/header';
 import { useRouter } from 'next/navigation';
+import {getMee} from  "@/lib/redux/slices/meeSlice"
 
 export default function CartPage() {
   const dispatch = useAppDispatch();
   const { toast } = useToast();
   const { cart, loading } = useAppSelector((state) => state.cart);
-  const meeState = useAppSelector((s) => s.mee);
-  const userid = meeState.data?.uid || '';
+ const { data: meeData } = useAppSelector((state) => state.mee);
+  const userid = meeData?._id || '';
   const router = useRouter();
   const [viewingSingleService, setViewingSingleService] = React.useState<string | null>(null);
+
 
   useEffect(() => {
     if (userid) {

@@ -44,17 +44,18 @@ const InvoicesPage = () => {
       const renewals = Array.isArray(svc.renewal_dates) ? svc.renewal_dates : []
       
       if (renewals.length === 0) {
-        // if no renewals, still add one row representing service invoice
+        // No renewals yet - show "No payment required" status
         r.push({
           source: 'service',
           serviceId: svc._id,
           invoiceId: svc.invoice_id,
           serviceName: svc.service_name,
           issueDate: svc.createdAt || svc.start_date,
-          dueDate: svc.end_date || null,
-          amount: Number(svc.price || 0),
-          paid: svc.isaccepted === 'accepted',
+          dueDate: null,
+          amount: 0,
+          paid: false,
           isOverdue: false,
+          noPaymentRequired: true,
           raw: svc,
         })
       } else {
@@ -74,6 +75,7 @@ const InvoicesPage = () => {
             amount: Number(ren.price || svc.price || 0),
             paid: hasPaid,
             isOverdue,
+            noPaymentRequired: false,
             raw: svc
           })
         })
@@ -190,33 +192,52 @@ const InvoicesPage = () => {
                 </td>
 
                 <td className="p-4">
-                  <Badge 
-                    variant={row.paid ? 'default' : row.isOverdue ? 'destructive' : 'secondary'}
-                    className={
-                      row.paid 
-                        ? 'bg-green-100 text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-300' 
-                        : row.isOverdue 
-                          ? 'bg-red-100 text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300' 
-                          : 'bg-blue-50 text-blue-700 hover:bg-blue-50 dark:bg-blue-900/20 dark:text-blue-300'
-                    }
-                  >
-                    {row.paid ? 'Paid' : row.isOverdue ? 'Overdue' : 'Sent'}
-                  </Badge>
+                  {row.noPaymentRequired ? (
+                    <Badge 
+                      variant="secondary"
+                      className="bg-gray-100 text-gray-600 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-400"
+                    >
+                      Pending
+                    </Badge>
+                  ) : (
+                    <Badge 
+                      variant={row.paid ? 'default' : row.isOverdue ? 'destructive' : 'secondary'}
+                      className={
+                        row.paid 
+                          ? 'bg-green-100 text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-300' 
+                          : row.isOverdue 
+                            ? 'bg-red-100 text-red-700 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300' 
+                            : 'bg-blue-50 text-blue-700 hover:bg-blue-50 dark:bg-blue-900/20 dark:text-blue-300'
+                      }
+                    >
+                      {row.paid ? 'Paid' : row.isOverdue ? 'Overdue' : 'Sent'}
+                    </Badge>
+                  )}
                 </td>
                 <td className="p-4 text-sm text-gray-600 dark:text-gray-400">
                   {row.issueDate ? new Date(row.issueDate).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '-'}
                 </td>
                 <td className="p-4 text-sm text-gray-600 dark:text-gray-400">
-                  {row.dueDate ? new Date(row.dueDate).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '-'}
+                  {row.noPaymentRequired 
+                    ? <span className="text-gray-500 italic">Available soon</span>
+                    : row.dueDate 
+                      ? new Date(row.dueDate).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) 
+                      : '-'
+                  }
                 </td>
                 <td className="p-4 text-right font-semibold text-gray-900 dark:text-gray-100">
-                  {row.amount > 0 ? `$${row.amount.toLocaleString()}` : '-'}
+                  {row.noPaymentRequired ? '-' : row.amount > 0 ? `$${row.amount.toLocaleString()}` : '-'}
                 </td>
                 <td className="p-4 text-right font-semibold text-gray-900 dark:text-gray-100">
-                  {row.amount > 0 ? `$${row.amount.toLocaleString()}` : '-'}
+                  {row.noPaymentRequired ? '-' : row.amount > 0 ? `$${row.amount.toLocaleString()}` : '-'}
                 </td>
                 <td className="p-4 text-right">
-                  <div className="flex items-center justify-end gap-2">
+                  {row.noPaymentRequired ? (
+                    <span className="text-sm text-gray-500 dark:text-gray-400 italic">
+                      No payment required
+                    </span>
+                  ) : (
+                    <div className="flex items-center justify-end gap-2">
                  
                     <button 
                       title="View" 
@@ -237,6 +258,7 @@ const InvoicesPage = () => {
                       </Link>
                     )}
                   </div>
+                  )}
                 </td>
               </tr>
             ))}

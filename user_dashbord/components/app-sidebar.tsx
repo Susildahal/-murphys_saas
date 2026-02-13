@@ -4,8 +4,6 @@ import * as React from "react"
 import {
   Package,
   BookOpen,
-  Bot,
-  Settings2,
   LayoutDashboard,
   Briefcase,
   CreditCard,

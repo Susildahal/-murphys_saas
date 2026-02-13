@@ -6,10 +6,8 @@ import transporter from "../config/nodemiller";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import mongoose from 'mongoose';
-import twilioClient from "../config/twilio";
 import NotificationService from "../services/notificationService";
 import { AuthenticatedRequest } from "../middleware/auth";
-import { EmailAuthProvider } from "firebase/auth/web-extension";
 dotenv.config()
 
 interface JwtPayload {
@@ -28,7 +26,7 @@ export const assignServiceToClient = async (req: Request, res: Response) => {
     if (!useExistingService) {
       return res.status(404).json({ message: 'Service not found' });
     }
-    const clientProfile = await Profile.findById(client_id);
+    const clientProfile = await Profile.findOne({ userId: client_id });
     if (!clientProfile) {
       return res.status(404).json({ message: 'Client profile not found' });
     }
@@ -241,12 +239,12 @@ export const getAssignDetails = async (req: Request, res: Response) => {
     }
 
     const [clientProfile, service] = await Promise.all([
-      Profile.findById(client_id),
+      Profile.findOne({ userId: client_id }),
       Service.findById(service_catalog_id),
     ]);
-    if (!clientProfile || !service) {
-      return res.status(404).json({ message: 'Client or Service not found' });
-    }
+    // if (!clientProfile || !service) {
+    //   return res.status(404).json({ message: 'Client or Service not found' });
+    // }
     res.status(200).json({ data: { clientProfile, service }, message: 'Assigned service retrieved successfully' });
   }
   catch (error) {

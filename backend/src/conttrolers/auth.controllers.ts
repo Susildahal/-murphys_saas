@@ -86,7 +86,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
 
 export const login = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { email, password, rememberMe } = req.body;
     try {
     // Find user by email
     const user = await Auth.findOne({ email });
@@ -102,15 +102,20 @@ export const login = async (req: Request, res: Response) => {
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       process.env.JWT_SECRET || "defaultsecret",
-      { expiresIn: "1h" }
+      { expiresIn: "1h" } //1 hour only
     );
 
-    const refreshToken = jwt.sign(
-      { userId: user._id  , email: user.email },
-      process.env.JWT_SECRET || "defaultrefreshsecret",
-      { expiresIn: "30d" }
-    );
-    res.status(200).json({ token , refreshToken ,  });
+    // Only generate refresh token if rememberMe is true
+    const response: { token: string; refreshToken?: string } = { token };
+    if (rememberMe) {
+      const refreshToken = jwt.sign(
+        { userId: user._id, email: user.email },
+        process.env.JWT_SECRET || "defaultrefreshsecret",
+        { expiresIn: "30d" }
+      );
+      response.refreshToken = refreshToken;
+    }
+    res.status(200).json(response);
   }
     catch (error) {
     res.status(500).json({ message: "Server error", error });
@@ -427,6 +432,7 @@ export const getCurrentUser = async (req: AuthenticatedRequest, res: Response) =
 // Refresh Token Controller
 export const refreshToken = async (req: Request, res: Response) => {
   const { refreshToken } = req.body;
+  console.log("nepal")
     try {
     if (!refreshToken) {
       return res.status(400).json({ message: "Refresh token is required" });
@@ -440,7 +446,7 @@ export const refreshToken = async (req: Request, res: Response) => {
     const newToken = jwt.sign(
       { userId: user._id, email: user.email },
       process.env.JWT_SECRET || "defaultsecret",
-      { expiresIn: "1h" }
+      { expiresIn: "30d" } //1 month 
     );
     res.status(200).json({ token: newToken });
   }

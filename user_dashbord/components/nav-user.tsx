@@ -95,6 +95,7 @@ console.log("Profile data in NavUser:", profile)
   const handleLogout = async () => {
     try {
       localStorage.removeItem("token")
+      localStorage.removeItem("refreshToken")
       router.push('/login')
     } catch (error) {
       console.error('Logout error:', error)
@@ -190,7 +191,6 @@ console.log("Profile data in NavUser:", profile)
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
     </>
   )
 }

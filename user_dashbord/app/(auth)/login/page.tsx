@@ -30,10 +30,14 @@ export default function LoginPage() {
       const userCredential = await axiosInstance.post("/auth/login", {
         email: values.email,
         password: values.password,
+        rememberMe,
       });
 
       if (userCredential.data && userCredential.data.token) {
         localStorage.setItem("token", userCredential.data.token);
+        if (userCredential.data.refreshToken) {
+          localStorage.setItem("refreshToken", userCredential.data.refreshToken);
+        }
         setModalStatus("Login successful! Redirecting...");
         setTimeout(() => {
           setModalStatus(null);
@@ -65,7 +69,7 @@ export default function LoginPage() {
         </div>
 
         <Formik
-          initialValues={{ email: "", password: "" }}
+          initialValues={{ email: "", password: "", rememberMe: false }}
           validationSchema={validationSchema}
           onSubmit={handleLogin}
         >

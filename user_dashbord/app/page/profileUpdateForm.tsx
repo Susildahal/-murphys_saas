@@ -236,30 +236,6 @@ export default function ProfileUpdateForm() {
     visible: { opacity: 1, x: 0 }
   };
 
-  const formatAusMobile = (value: string) => {
-  // Keep only numbers
-  let digits = value.replace(/\D/g, "")
-
-  // Convert international prefix +61 or 61 to leading 0
-  if (digits.startsWith('61')) digits = '0' + digits.slice(2)
-
-  // If user typed without leading 0 (e.g. 412345678), add it
-  if (digits.length === 9 && digits.startsWith('4')) digits = '0' + digits
-
-  // Limit to 10 digits (04XXXXXXXX)
-  if (digits.length > 10) digits = digits.slice(0, 10)
-
-  // Auto space: 0412 345 678
-  if (digits.length > 4 && digits.length <= 7) {
-    return `${digits.slice(0, 4)} ${digits.slice(4)}`
-  }
-
-  if (digits.length > 7) {
-    return `${digits.slice(0, 4)} ${digits.slice(4, 7)} ${digits.slice(7, 10)}`
-  }
-
-  return digits
-}
 
 // General phone formatter aware of selected country code
 const formatPhone = (value: string, countryCode = '+61') => {
@@ -291,7 +267,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
       >
         {/* Left Column: Avatar & Summary */}
         <div className="lg:col-span-4 space-y-6">
-          <Card className="border-none  bg-card overflow-hidden">
+          <Card className=" bg-card overflow-hidden">
             <div className="h-24 " />
             <CardContent className="relative pt-0">
               <div className="flex flex-col items-center -mt-12">
@@ -337,7 +313,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
             </CardContent>
           </Card>
 
-          <Card className="border-none bg-primary/5 p-6">
+          <Card className="bg-primary/5 p-6">
             <div className="flex items-center gap-3 mb-2">
               <Info className="w-5 h-5 text-primary" />
               <h4 className="font-semibold text-primary">Profile Completeness</h4>
@@ -357,7 +333,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
 
         {/* Right Column: Main Form */}
         <div className="lg:col-span-8">
-          <div className="border-none  bg-card">
+          <Card className=" bg-card">
             <CardContent className="p-8">
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
@@ -442,13 +418,16 @@ const formatPhone = (value: string, countryCode = '+61') => {
                               <PopoverContent className="w-auto p-0" align="start">
                                 <Calendar
                                   mode="single"
+                                  captionLayout="dropdown"
                                   selected={date}
-                                  onSelect={(d) => {
+                                  onSelect={(d: Date | undefined) => {
                                     setDate(d);
                                     if (d) field.onChange(d.toISOString().split('T')[0]);
                                     setDobOpen(false);
                                   }}
                                   disabled={(d) => d > new Date() || d < new Date("1900-01-01")}
+                                  fromYear={1900}
+                                  toYear={new Date().getFullYear()}
                                   initialFocus
                                 />
                               </PopoverContent>
@@ -769,7 +748,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
                 </form>
               </Form>
             </CardContent>
-          </div>
+          </Card>
         </div>
       </motion.div>
     </div>
