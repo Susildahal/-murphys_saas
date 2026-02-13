@@ -1,10 +1,8 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Mail, Lock, UserPlus, CheckCircle, AlertCircle } from "lucide-react";
 import axiosInstance from "@/lib/axios";
-import { registerUser } from "@/lib/registerUser";
-import { createUserInFirestore } from "@/lib/firebaseUser";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,7 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useEffect } from "react";
+import { useEffect } from "react";  
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -28,7 +26,7 @@ interface CreateAccountPageProps {
   email?: string;
 }
 
-const CreateAccountPage = () => {
+const CreateAccountContent = () => {
   const params = useParams();
   const searchParams = useSearchParams();
   const pathToken = (params as { token?: string })?.token;
@@ -86,7 +84,7 @@ const CreateAccountPage = () => {
       setEmail(response.data.data.email);
     } catch (error: any) {
       setMessageType('error');
-      setMessage(error?.response?.data?.message || 'Invalid or expired token.');
+      setMessage(error?.response?.data?.message ?? (typeof error?.response?.data === 'string' ? error.response.data : undefined) ?? error?.message ?? 'Invalid or expired token');
     } finally {
       setIsVerifying(false);
     }
@@ -115,7 +113,7 @@ const CreateAccountPage = () => {
       setMessage('Invite accepted. Please set up your account.');
     } catch (err: any) {
       setMessageType('error');
-      setMessage(err?.message || 'Failed to accept invite. You can still create an account.');
+      setMessage(err?.response?.data?.message ?? (typeof err?.response?.data === 'string' ? err.response.data : undefined) ?? err?.message ?? 'Failed to accept invite. You can still create an account.');
     } finally {
       setLoading(false);
       setShowDialog(false);
@@ -160,18 +158,24 @@ const CreateAccountPage = () => {
     }
     setLoading(true);
     try {
-      await registerUser(email, password);
-      await createUserInFirestore({ email });
+      // Call backend register API directly (no Firebase)
+      const payload: any = {
+        firstName: user?.firstName || '',
+        lastName: user?.lastName || '',
+        email,
+        password,
+      };
+      await axiosInstance.post('/auth/register', payload);
       setMessageType('success');
-      setMessage('Account created successfully.');
+      setMessage('Account created successfully. You can now log in.');
       setTimeout(() => {
-        window.location.href = '/profile';
-      }, 100);
+        window.location.href = '/login';
+      }, 800);
     } catch (err: any) {
       if (err.code === 'auth/email-already-in-use') {
         setMessage('Email is already in use. Please log in instead.');
       } else {
-        setMessage(err?.message || 'Failed to create account.');
+        setMessage(err?.response?.data?.message ?? (typeof err?.response?.data === 'string' ? err.response.data : undefined) ?? err?.message ?? 'Failed to create account.');
       }
       setMessageType('error');
     } finally {
@@ -444,4 +448,4 @@ const CreateAccountPage = () => {
   );
 };
 
-export default CreateAccountPage;
+export default CreateAccountContent;

@@ -37,7 +37,6 @@ import {Separator} from "@/components/ui/separator";
 import { format } from 'date-fns';
 import { useRouter, usePathname } from 'next/navigation';
 import { COUNTRIES } from '@/lib/countries';
-import { publicDecrypt } from 'node:crypto';
 
 const profileSchema = z.object({
   firstName: z.string().min(2, { message: 'First name must be at least 2 characters' }),

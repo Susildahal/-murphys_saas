@@ -6,12 +6,14 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Lock, Eye, EyeOff, CheckCircle2, AlertCircle, KeyRound } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import app from '@/app/config/firebase';
-import { getAuth, confirmPasswordReset, verifyPasswordResetCode } from 'firebase/auth';
+import axiosInstance from "@/lib/axios";
+
 
 function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  // oobCode may be present in query or path; capture it once for reuse
+  const oobCode = searchParams.get('oobCode');
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -19,12 +21,15 @@ function ResetPasswordContent() {
   const [status, setStatus] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: '' });
   const [loading, setLoading] = useState(false);
   const [verifyingCode, setVerifyingCode] = useState(true);
-  const [email, setEmail] = useState("");
-  const [oobCode, setOobCode] = useState<string | null>(null);
+  const [email, setEmail] = useState("" );
+  const [userId, setUserId] = useState("");
+
+  console.log( email, "and", userId )
+
 
   // Verify the reset code on mount
   useEffect(() => {
-    const code = searchParams.get('oobCode');
+    const code = searchParams.get('token');
     
     if (!code) {
       setStatus({ type: 'error', message: 'Invalid or missing reset code. Please request a new password reset link.' });
@@ -32,18 +37,19 @@ function ResetPasswordContent() {
       return;
     }
 
-    setOobCode(code);
+  
     
     const verifyCode = async () => {
       try {
-        const auth = getAuth(app);
+  
         // Verify the password reset code is valid and get the user's email
-        const userEmail = await verifyPasswordResetCode(auth, code);
-        setEmail(userEmail);
+        const userEmail = await axiosInstance.post('/auth/verify-forgot-password-token', { token: code });
+        setEmail(userEmail.data.data.email);
+        setUserId(userEmail.data.data.userId);
         setVerifyingCode(false);
       } catch (err: any) {
-        const msg = err?.message || 'Invalid or expired reset code. Please request a new password reset link.';
-        setStatus({ type: 'error', message: msg });
+        const serverMsg = err?.response?.data?.message ?? (typeof err?.response?.data === 'string' ? err.response.data : undefined) ?? err?.message ?? 'Invalid or expired reset code. Please request a new password reset link.';
+        setStatus({ type: 'error', message: serverMsg });
         setVerifyingCode(false);
       }
     };
@@ -65,34 +71,43 @@ function ResetPasswordContent() {
       return;
     }
 
-    if (!oobCode) {
-      setStatus({ type: 'error', message: 'Invalid reset code. Please request a new password reset link.' });
-      return;
-    }
 
     setLoading(true);
     setStatus({ type: null, message: '' });
     
     try {
-      const auth = getAuth(app);
       // Confirm the password reset with the code and new password
-      await confirmPasswordReset(auth, oobCode, password);
+
+       const response = await axiosInstance.post('/auth/reset-password', {
+        id: userId,
+        email: email,
+        newPassword: password,
+      });
+
+      if(!userId){
+        throw new Error('User ID is missing. Cannot reset password.');
+      }
+
+      if(response.status !== 200){
+        throw new Error('Failed to reset password. Please try again.');
+      }
+      // Success
       setStatus({ type: 'success', message: 'Password reset successful! Redirecting to login...' });
       
       // Redirect to login after 2 seconds
-      setTimeout(() => {
+      setTimeout(() => {  
         router.push('/login');
       }, 2000);
     } catch (err: any) {
-      const msg = err?.message || 'Failed to reset password. Please try again.';
-      setStatus({ type: 'error', message: msg });
+      const serverMsg = err?.response?.data?.message ?? (typeof err?.response?.data === 'string' ? err.response.data : undefined) ?? err?.message ?? 'Failed to reset password. Please try again.';
+      setStatus({ type: 'error', message: serverMsg });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -104,7 +119,7 @@ function ResetPasswordContent() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.5 }}
-          className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200/60 dark:border-slate-700 p-8 md:p-10"
+          className="bg-white dark:bg-slate-800  border border-slate-200/60 dark:border-slate-700 p-8 md:p-10"
         >
           {/* Icon */}
           <motion.div
@@ -147,7 +162,7 @@ function ResetPasswordContent() {
               />
               <p className="text-slate-600 dark:text-slate-400">Verifying reset code...</p>
             </motion.div>
-          ) : status.type === 'error' && !oobCode ? (
+          ) : status.type === 'error'  ? (
             // Show error if code verification failed
             <motion.div
               initial={{ opacity: 0 }}
@@ -232,7 +247,7 @@ function ResetPasswordContent() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 text-base font-semibold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300"
+                  className="w-full h-12 text-base font-semibold  transition-all duration-300"
                   disabled={loading || !password || !confirmPassword}
                 >
                   {loading ? (

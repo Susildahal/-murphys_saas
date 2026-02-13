@@ -1,201 +1,67 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { useRouter } from "next/navigation";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, EyeOff, Mail, } from "lucide-react";
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  sendSignInLinkToEmail,
-  onAuthStateChanged,
-} from "firebase/auth";
-import app from "@/app/config/firebase";
+import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { EmailModal } from "@/app/page/email-model";
-import Image from "next/image";
 import axiosInstance from "@/lib/axios";
 
+const validationSchema = Yup.object({
+  email: Yup.string().email("Invalid email").required("Email is required"),
+  password: Yup.string().required("Password is required"),
+});
 
-export default function AdminLoginPage() {
-  const auth = getAuth(app);
+export default function LoginPage() {
+
   const router = useRouter();
-
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalLoading, setModalLoading] = useState(false);
-  const [modalStatus, setModalStatus] = useState<string | null>(null);
   const [passwordClick, setPasswordClick] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => {
-      if (user) router.replace("/admin/dashboard");
-    });
-    return () => unsub();
-  }, [auth, router]);
-
-  const emailLinkConfig = {
-    url: `${typeof window !== "undefined" ? window.location.origin : ""}/email-link-callback`,
-    handleCodeInApp: true,
-  };
-
-  const validationSchema = Yup.object({
-    email: Yup.string().email("Invalid email").required("Required"),
-    password: Yup.string()
-      .min(6, "Password too short")
-     
-      .required("Required"),
-  });
-
+  const [modalStatus, setModalStatus] = useState<string | null>(null);
   const handleLogin = async (
     values: { email: string; password: string },
     { setSubmitting, setStatus }: any
   ) => {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
-      
-      const user = userCredential.user;
-      await user.getIdToken(true);
-      
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const checkProfile = async () => {
-        try {
-          const response = await axiosInstance.get('/profiles', {
-            params: { email: values.email }
-          });
-          if (response.status === 200) {
-            router.replace("/admin/dashboard");
-          } else {
-            router.replace("/profile");
-          }
-        } catch (error) {
-          console.error('Profile check error:', error);
-          router.replace("/profile");
-        }
-      };
-      await checkProfile();
-     
-    } catch (err: any) {
-      console.error('Login error:', err);
-      setStatus({ error: "Invalid credentials. Please try again." });
+      const userCredential = await axiosInstance.post("/auth/login", {
+        email: values.email,
+        password: values.password,
+      });
+console.log(userCredential.data)
+      if (userCredential.data && userCredential.data.token) {
+        localStorage.setItem("token", userCredential.data.token);
+        setModalStatus("Login successful! Redirecting...");
+        setTimeout(() => {
+          setModalStatus(null);
+          router.push("/admin/dashboard");
+        }, 1000);
+      }
+
+    } catch (error: any) {
+      setStatus({ error: error?.response?.data?.message ?? (typeof error?.response?.data === 'string' ? error.response.data : undefined) ?? error?.message ?? "Invalid email or password" });
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleSendEmailLink = async (email: string) => {
-    setModalLoading(true);
-    try {
-      await sendSignInLinkToEmail(auth, email, emailLinkConfig);
-      localStorage.setItem("emailForSignIn", email);
-      setModalStatus("Magic link sent! Check your inbox.");
-      setTimeout(() => setModalStatus(null), 5000);
-    } catch (err) {
-      setModalStatus("Failed to send link.");
-    } finally {
-      setModalLoading(false);
-    }
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black p-4 relative overflow-hidden">
-      {/* Geometric Background Pattern */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Top Right Lines */}
-        <div className="absolute top-0 right-0 w-1/3 h-1/3">
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={`tr-${i}`}
-              className="absolute border-l border-t border-blue-500"
-              style={{
-                width: `${100 + i * 30}px`,
-                height: `${100 + i * 30}px`,
-                right: `${i * 20}px`,
-                top: `${i * 20}px`,
-                transform: 'rotate(45deg)',
-              }}
-            />
-          ))}
-        </div>
-        {/* Top Left Lines */}
-        <div className="absolute top-0 left-0 w-1/4 h-1/4">
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={`tl-${i}`}
-              className="absolute border-l border-t border-blue-500"
-              style={{
-                width: `${60 + i * 20}px`,
-                height: `${60 + i * 20}px`,
-                left: `${i * 15}px`,
-                top: `${i * 15}px`,
-                transform: 'rotate(45deg)',
-              }}
-            />
-          ))}
-        </div>
-        {/* Bottom Left Lines */}
-        <div className="absolute bottom-0 left-0 w-1/4 h-1/4">
-          {[...Array(3)].map((_, i) => (
-            <div
-              key={`bl-${i}`}
-              className="absolute border-l border-b border-blue-500"
-              style={{
-                width: `${80 + i * 25}px`,
-                height: `${80 + i * 25}px`,
-                left: `${i * 18}px`,
-                bottom: `${i * 18}px`,
-                transform: 'rotate(45deg)',
-              }}
-            />
-          ))}
-        </div>
-         <div className="absolute bottom-0 right-0 w-1/4 h-1/4">
-          {[...Array(5)].map((_, i) => (
-            <div
-              key={`bl-${i}`}
-              className="absolute border-l border-b border-blue-500"
-              style={{
-                width: `${100 + i * 25}px`,
-                height: `${100 + i * 25}px`,
-                left: `${i * 18}px`,
-                bottom: `${i * 18}px`,
-                transform: 'rotate(45deg)',
-              }}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Brand Badge with Magic Link */}
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="absolute top-8 left-1/2 -translate-x-1/2"
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-lg bg-white border border-gray-200 p-10"
       >
-        <Image
-          src="/logo.png"
-          alt="Brand Logo"
-          width={150}
-          height={50}
-        />
-      </motion.div>
-
-      {/* Login Card */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.1 }}
-        className="relative w-full max-w-md bg-white rounded-lg shadow-2xl p-8 mt-16"
-      >
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold text-neutral-900 mb-2">Admin Log In</h2>
-          <p className="text-sm text-neutral-600">Please enter your details</p>
+        {/* Header */}
+        <div className="text-center mb-10">
+          <h1 className="text-3xl font-semibold text-gray-900 mb-3">Sign In</h1>
+          <p className="text-base text-gray-500">
+            Enter your credentials to access your account
+          </p>
         </div>
 
         <Formik
@@ -204,66 +70,67 @@ export default function AdminLoginPage() {
           onSubmit={handleLogin}
         >
           {({ isSubmitting, status, touched, errors }) => (
-            <Form className="space-y-3">
+            <Form className="space-y-5">
               {/* Email Field */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-neutral-700">
-                  Email
-                </Label>
+              <div>
                 <Field
                   as={Input}
                   id="email"
                   name="email"
                   type="email"
-                  className={`h-11 rounded border-neutral-300 shadow-none bg-white text-black focus-visible:ring-purple-500 ${
-                    touched.email && errors.email ? "border-red-400" : ""
-                  }`}
+                  placeholder="Email Address"
+                  className={`h-12 text-base rounded shadow-none ${touched.email && errors.email
+                      ? "border-red-500"
+                      : ""
+                    }`}
                 />
                 {touched.email && errors.email && (
-                  <p className="text-xs text-red-600">{errors.email}</p>
+                  <p className="text-sm text-red-600 mt-2">{errors.email}</p>
                 )}
               </div>
 
               {/* Password Field */}
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium text-neutral-700">
-                  Password
-                </Label>
+              <div>
                 <div className="relative">
                   <Field
                     as={Input}
                     id="password"
                     name="password"
                     type={passwordClick ? "text" : "password"}
-                    className={`h-11 pr-10 rounded border-neutral-300 bg-white text-black shadow-none focus-visible:ring-purple-500 ${
-                      touched.password && errors.password ? "border-red-400" : ""
-                    }`}
+                    placeholder="Password"
+                    className={`h-12 text-base pr-12 rounded shadow-none ${touched.password && errors.password
+                        ? "border-red-500"
+                        : ""
+                      }`}
                   />
                   <button
                     type="button"
                     onClick={() => setPasswordClick(!passwordClick)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
-                    {passwordClick ? <EyeOff className="w-4 h-4 text-blue-700" /> : <Eye className="w-4 h-4 text-blue-600" />}
+                    {passwordClick ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
                   </button>
                 </div>
                 {touched.password && errors.password && (
-                  <p className="text-xs text-red-600">{errors.password}</p>
+                  <p className="text-sm text-red-600 mt-2">{errors.password}</p>
                 )}
               </div>
 
               {/* Remember Me & Forgot Password */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-1">
+              <div className="flex items-center justify-between pt-1">
+                <div className="flex items-center gap-2">
                   <Checkbox
                     id="remember"
                     checked={rememberMe}
                     onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                    className="border-purple-600 data-[state=checked]:bg-purple-600"
                   />
                   <label
                     htmlFor="remember"
-                    className="text-sm text-neutral-700 cursor-pointer select-none"
+                    className="text-sm text-gray-600 cursor-pointer select-none"
                   >
                     Remember me
                   </label>
@@ -271,9 +138,9 @@ export default function AdminLoginPage() {
                 <button
                   type="button"
                   onClick={() => router.push("/forgot-password")}
-                  className="text-sm text-neutral-700 cursor-pointer hover:text-purple-600 transition"
+                  className="text-sm text-blue-600 cursor-pointer hover:text-blue-700 font-medium"
                 >
-                  Forgot Password?
+                  Forgot password?
                 </button>
               </div>
 
@@ -281,58 +148,46 @@ export default function AdminLoginPage() {
               <AnimatePresence>
                 {status?.error && (
                   <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0 }}
-                    className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg border border-red-200"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="bg-red-50 border border-red-200 p-4"
                   >
-                    {status.error}
+                    <p className="text-sm text-red-800">{status.error}</p>
                   </motion.div>
                 )}
               </AnimatePresence>
 
-              {/* Log In Button */}
+              {/* Submit Button */}
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full h-11 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium rounded-lg transition-all disabled:opacity-50"
+                className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white text-base"
               >
                 {isSubmitting ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Logging in...
-                  </span>
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Signing in...</span>
+                  </div>
                 ) : (
-                  "Log In"
+                  "Sign In"
                 )}
               </Button>
-              <div className=" flex justify-center items-center  cursor-pointer pt-4">
-
-                <Button
-        variant="link"
-        className="absolute bottom-3   cursor-pointer text-neutral-500 hover:text-purple-600 transition text-sm"
-        onClick={() => setModalOpen(true)}
-      >
-        <Mail className="w-4 h-4 mr-2 inline-block" />
-        Log in with Magic Link
-      </Button>
-      </div>
             </Form>
           )}
         </Formik>
-           
+
+        {/* Sign Up Link */}
+        <p className="mt-8 text-center text-base text-gray-600">
+          Don't have an account?{" "}
+          <button
+            onClick={() => router.push("/register")}
+            className="text-blue-600 cursor-pointer hover:text-blue-700 font-medium"
+          >
+            Create one
+          </button>
+        </p>
       </motion.div>
-
- 
-
-      {/* Email Modal */}
-      <EmailModal
-        open={modalOpen}
-        loading={modalLoading}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleSendEmailLink}
-      />
-
       {/* Toast Notification */}
       <AnimatePresence>
         {modalStatus && (
@@ -340,9 +195,11 @@ export default function AdminLoginPage() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-neutral-900 text-white px-6 py-3 rounded-lg shadow-lg z-50"
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
           >
-            <span className="text-sm">{modalStatus}</span>
+            <div className="bg-gray-900 text-white px-6 py-3">
+              <p className="text-sm">{modalStatus}</p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

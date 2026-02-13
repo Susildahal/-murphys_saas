@@ -58,7 +58,7 @@ export default function LoginPage() {
       >
         {/* Header */}
         <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">Sign In</h1>
+          <h1 className="text-3xl font-semibold text-gray-900 mb-3">Sign In</h1>
           <p className="text-base text-gray-500">
             Enter your credentials to access your account
           </p>
@@ -138,7 +138,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => router.push("/forgot-password")}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  className="text-sm text-blue-600 cursor-pointer hover:text-blue-700 font-medium"
                 >
                   Forgot password?
                 </button>
@@ -182,7 +182,7 @@ export default function LoginPage() {
           Don't have an account?{" "}
           <button
             onClick={() => router.push("/register")}
-            className="text-blue-600 hover:text-blue-700 font-medium"
+            className="text-blue-600 cursor-pointer hover:text-blue-700 font-medium"
           >
             Create one
           </button>

@@ -10,73 +10,42 @@ import {
 import { Button } from '@/components/ui/button'
 import StrictDeleteModal from '@/app/page/common/StrictDeleteModal'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
-import { fetchProfileByEmail, deleteProfile } from '@/lib/redux/slices/profileSlice'
-import { getMee, clearMee } from '@/lib/redux/slices/meeSlice'
-import { getAuth, signOut } from 'firebase/auth'
-import app from '@/app/config/firebase'
+import { getMee } from '@/lib/redux/slices/meeSlice'
 import { useRouter } from 'next/navigation'
-import { useToast } from '@/hooks/use-toast'
 import Header from '@/app/page/common/header'
 import { AlertTriangle, Trash2 } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
+import {deleteProfile} from "@/lib/redux/slices/profileSlice"
 
 const Page = () => {
     const dispatch = useAppDispatch()
     const router = useRouter()
-    const { toast } = useToast()
 
     const { data: mee, loading: meeLoading } = useAppSelector((state) => state.mee)
-    const { profile, loading: profileLoading } = useAppSelector((state) => state.profile)
-
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
 
     useEffect(() => {
-        if (!mee?.email) dispatch(getMee())
-    }, [dispatch, mee])
-
-    useEffect(() => {
-        if (mee?.email && !profile) {
-            dispatch(fetchProfileByEmail(mee.email))
+        if (!mee) {
+            dispatch(getMee())
         }
-    }, [dispatch, mee, profile])
+    }, [dispatch, mee,])
 
     const handleDelete = async () => {
-        const idToDelete = profile?._id || profile?.id
+        const idToDelete = mee?._id || mee?.id
 
-        if (!idToDelete) {
-            toast({
-                title: 'Error',
-                description: 'User profile not found.',
-                variant: 'destructive',
-            })
-            return
-        }
 
         setIsDeleting(true)
         try {
             const resultAction = await dispatch(deleteProfile(idToDelete))
 
             if (deleteProfile.fulfilled.match(resultAction)) {
-                const auth = getAuth(app)
-                await signOut(auth)
-                dispatch(clearMee())
-
-                toast({
-                    title: 'Account deleted',
-                    description: 'Your account has been permanently removed.',
-                })
 
                 router.push('/login')
             } else {
                 throw new Error('Deletion failed')
             }
         } catch (error: any) {
-            toast({
-                title: 'Error',
-                description: error.message || 'Failed to delete account.',
-                variant: 'destructive',
-            })
             setIsDeleting(false)
             setIsModalOpen(false)
         }
@@ -84,7 +53,7 @@ const Page = () => {
 
     const confirmString = mee?.email || 'delete my account'
 
-    if (meeLoading || (mee?.email && profileLoading && !profile)) {
+    if (meeLoading) {
         return (
             <div className="flex items-center justify-center h-40 text-muted-foreground">
                 Loading account settings…

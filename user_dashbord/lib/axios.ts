@@ -71,13 +71,13 @@ axiosInstance.interceptors.response.use(
 
     }
        else if(error.response?.status === 400) {
-      showErrorToast('The request was invalid. Please check your input and try again.', 'Bad Request');
+      showErrorToast(error.response.data?.message || 'Bad request. Please check your input and try again.', 'Bad Request');
 
     }
      else if (error.response?.status === 500) {
       showErrorToast('Something went wrong on the server. Please try again later.', 'Server Error');
     } else if (error.response?.data?.message) {
-      showErrorToast(error.response.data.message, 'Error');
+      showErrorToast(error.response.data?.message, 'Error');
     } else if (error.message === 'Network Error') {
       showErrorToast('Network error. Please check your internet connection.', 'Connection Error');
     } else {

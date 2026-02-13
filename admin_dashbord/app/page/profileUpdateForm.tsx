@@ -33,7 +33,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from '@/lib/utils';
 import { getMee } from "@/lib/redux/slices/meeSlice";
-import { ChevronDownIcon } from "lucide-react";
 import { format } from 'date-fns';
 import { useRouter, usePathname } from 'next/navigation';
 import { Separator } from '@/components/ui/separator';
