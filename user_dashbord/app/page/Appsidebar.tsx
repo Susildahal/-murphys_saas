@@ -29,7 +29,7 @@ export default function Sidebar({ children }: SidebarProps) {
   }, [dispatch]);
 
   return (
-    <SidebarProvider className=" bg-white min-h-screen">
+    <SidebarProvider className=" min-h-screen">
       <div className="">
         <AppSidebar searchQuery={searchQuery} />
       </div>

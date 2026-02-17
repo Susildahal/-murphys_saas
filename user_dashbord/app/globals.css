@@ -48,11 +48,13 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
+  /* slightly off-white background for light mode to avoid plain-white look */
+  --background: #fcf9f7bb;
   --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
+  /* keep cards/popovers pure white for subtle contrast */
+  --card: #fcf9f7bb;
   --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
+  --popover: #ffffff;
   --popover-foreground: oklch(0.145 0 0);
   --primary: oklch(0.205 0 0);
   --primary-foreground: oklch(0.985 0 0);

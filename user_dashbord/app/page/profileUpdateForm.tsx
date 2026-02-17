@@ -267,7 +267,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
       >
         {/* Left Column: Avatar & Summary */}
         <div className="lg:col-span-4 space-y-6">
-          <Card className=" bg-card overflow-hidden">
+          <Card className="  overflow-hidden">
             <div className="h-24 " />
             <CardContent className="relative pt-0">
               <div className="flex flex-col items-center -mt-12">
@@ -313,7 +313,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
             </CardContent>
           </Card>
 
-          <Card className="bg-primary/5 p-6">
+          {/* <Card className="bg-primary/5 p-6">
             <div className="flex items-center gap-3 mb-2">
               <Info className="w-5 h-5 text-primary" />
               <h4 className="font-semibold text-primary">Profile Completeness</h4>
@@ -328,7 +328,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
             <p className="text-xs text-muted-foreground mt-2">
               {pd?._id ? 'Your profile is looking great!' : 'Complete your details to access all features.'}
             </p>
-          </Card>
+          </Card> */}
         </div>
 
         {/* Right Column: Main Form */}

@@ -122,7 +122,7 @@ export function AppSidebar({ searchQuery = "", ...props }: AppSidebarProps) {
 
 
   return (
-    <Sidebar collapsible="icon" {...props} className="border-r bg-white dark:bg-black text-slate-900 dark:text-white">
+    <Sidebar collapsible="icon" {...props} className="border-r  dark:bg-black text-slate-900 dark:text-white">
       <style jsx global>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 5px;
@@ -165,13 +165,9 @@ export function AppSidebar({ searchQuery = "", ...props }: AppSidebarProps) {
 
           {isCollapsed && (
             <div className="flex w-full justify-center">
-              <Image
-                src="/logo.png"
-                alt="Murphys Logo"
-                width={32}
-                height={32}
-                className="object-contain"
-              />
+              <span className="text-lg font-bold tracking-tight bg-gradient-to-r from-gray-900 to-violet-600 dark:from-white dark:to-violet-400 bg-clip-text text-transparent">
+                MT
+              </span>
             </div>
           )}
         </div>
