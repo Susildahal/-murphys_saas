@@ -351,10 +351,10 @@ const page = () => {
                                                                 resetRenewalForm();
                                                                 setRenewalDialogOpen(true);
                                                             }}
-                                                            className="gap-2 text-muted-foreground hover:text-foreground"
+                                                            className="gap-2 cursor-pointer text-muted-foreground "
                                                         >
                                                             <Plus className="h-4 w-4" />
-                                                            Add
+                                                            Add Renewal
                                                         </Button>
                                                     )}
                                                 </TableCell>

@@ -179,7 +179,7 @@ function page() {
     <>
  
 
-    {!(loading || profileLoading || !data) && (
+    {!( profileLoading || !data) && (
       <>
         <Header
           title="Assign Service"
@@ -295,7 +295,7 @@ function page() {
 
             
               <div className="flex items-center justify-end gap-2">
-                <Button onClick={handleAssignSubmit}>{ loading? <SpinnerComponent  /> : "Assign"}</Button>
+                <Button onClick={handleAssignSubmit} disabled={loading}>{ loading? <SpinnerComponent  /> : "Assign"}</Button>
               </div>
             </div>
 
