@@ -624,12 +624,12 @@ function BillingHistoryPage() {
           <Card className='shadow-none '>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center">
-                  <CheckCircle2 className="h-6 w-6 text-emerald-600" />
+                <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+                  <CheckCircle2 className="h-6 w-6 text-gray-600 dark:text-gray-200" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Total Paid</p>
-                  <p className="text-2xl font-bold text-emerald-600">${totalPaid}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">${totalPaid}</p>
                   <p className="text-xs text-muted-foreground">
                     {getStatByStatus('completed')?.count || 0} payments
                   </p>
@@ -641,12 +641,12 @@ function BillingHistoryPage() {
           <Card className='shadow-none'>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950 flex items-center justify-center">
-                  <XCircle className="h-6 w-6 text-red-600" />
+                <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+                  <XCircle className="h-6 w-6 text-gray-600 dark:text-gray-200" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Failed</p>
-                  <p className="text-2xl font-bold text-red-600">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     ${getStatByStatus('failed')?.totalAmount || 0}
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -660,12 +660,12 @@ function BillingHistoryPage() {
           <Card className='shadow-none'>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-950 flex items-center justify-center">
-                  <Clock className="h-6 w-6 text-amber-600" />
+                <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+                  <Clock className="h-6 w-6 text-gray-600 dark:text-gray-200" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Pending</p>
-                  <p className="text-2xl font-bold text-amber-600">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     ${getStatByStatus('pending')?.totalAmount || 0}
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -680,12 +680,12 @@ function BillingHistoryPage() {
             <Card className='shadow-none'>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-950 flex items-center justify-center">
-                  <DollarSign className="h-6 w-6 text-blue-600" />
+                <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+                  <DollarSign className="h-6 w-6 text-gray-600 dark:text-gray-200" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Refunded</p>
-                  <p className="text-2xl font-bold text-blue-600">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     ${getStatByStatus('refunded')?.totalAmount || 0}
                   </p>
                   <p className="text-xs text-muted-foreground">

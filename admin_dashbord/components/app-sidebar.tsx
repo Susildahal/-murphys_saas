@@ -6,9 +6,6 @@ import {
   BookOpen,
   Bot,
   Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
   PieChart,
   Settings2,
   SquareTerminal,
@@ -200,14 +197,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               transition={{ duration: 0.2 }}
               className="flex items-center"
             >
-              <Image
-                src="/logo.png"
-                alt="Murphys Logo"
-                width={isCollapsed ? 32 : 130}
-                height={isCollapsed ? 32 : 40}
-                className="object-contain"
-                priority
-              />
+              {isCollapsed ? (
+                <span className="text-lg font-bold tracking-tight bg-gradient-to-r from-gray-900 to-violet-600 dark:from-white dark:to-violet-400 bg-clip-text text-transparent select-none">
+                  MT
+                </span>
+              ) : (
+                <Image
+                  src="/logo.png"
+                  alt="Murphys Logo"
+                  width={130}
+                  height={40}
+                  className="object-contain"
+                  priority
+                />
+              )}
             </motion.div>
           </AnimatePresence>
         </motion.div>

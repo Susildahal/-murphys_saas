@@ -296,7 +296,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="space-y-1">
                       <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-blue-300" />
+                        <span className="w-2 h-2 rounded-full bg-blue-300 inline-block" />
                         Inactive
                       </p>
                       <p className="text-2xl font-bold text-blue-400 dark:text-blue-300">{inactiveService}</p>
@@ -386,7 +386,7 @@ export default function DashboardPage() {
                   <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                     <div className="space-y-1">
                       <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-blue-500" />
+                        <span className="w-2 h-2 rounded-full bg-blue-500" />
                         Read
                       </p>
                       <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{Math.max(Number(totalNotices || 0) - Number(unreadNotices || 0), 0)}</p>
@@ -396,7 +396,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="space-y-1">
                       <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-blue-400" />
+                        <span className="w-2 h-2 rounded-full bg-blue-400" />
                         Unread
                       </p>
                       <p className="text-2xl font-bold text-blue-500 dark:text-blue-400">{Number(unreadNotices || 0)}</p>
