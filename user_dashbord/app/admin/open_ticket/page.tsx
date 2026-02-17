@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { fetchTickets, deleteTicket } from '@/lib/redux/slices/ticketSlice'
-import { getMee } from '@/lib/redux/slices/meeSlice'
 import Header from '@/app/page/common/header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -30,7 +29,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, MoreVertical, Eye, Trash2, Edit, Plus, TicketIcon, AlertCircle, Clock, CheckCircle2, TrendingUp } from 'lucide-react'
+import { Loader2, MoreVertical, Eye, Trash2, Edit, Plus, TicketIcon, AlertCircle, Clock, CheckCircle2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { toast } from 'sonner'
 
@@ -42,17 +41,14 @@ export default function OpenTicketPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [ticketToDelete, setTicketToDelete] = useState<any>(null)
   const [deleting, setDeleting] = useState(false)
+  console.log('meeData:', meeData)
+
+
 
   useEffect(() => {
-    if (!meeData) {
-      dispatch(getMee())
-    }
-  }, [dispatch, meeData])
-
-  useEffect(() => {
-    if (meeData?.uid) {
-      dispatch(fetchTickets({ userId: meeData.uid }))
-    }
+      if (meeData?.uid) {
+        dispatch(fetchTickets({ userId: meeData._id }))
+      }
   }, [dispatch, meeData])
 
   const handleDelete = async () => {
@@ -153,7 +149,6 @@ export default function OpenTicketPage() {
         {/* Tickets Table */}
         <div className="">
           <CardHeader className="">
-          
           </CardHeader>
           <CardContent className="p-0">
             <Table>
@@ -232,8 +227,7 @@ export default function OpenTicketPage() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-[160px]">
                             <DropdownMenuItem
-                              onClick={() => router.push(`/admin/open_ticket/${ticket._id}`)}
-                            >
+                              onClick={() => router.push(`/admin/open_ticket/${ticket._id}`)}>
                               <Eye className="h-4 w-4 mr-2" />
                               View Details
                             </DropdownMenuItem>

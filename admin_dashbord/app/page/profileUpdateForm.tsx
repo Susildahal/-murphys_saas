@@ -28,7 +28,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl,  FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from '@/lib/utils';
@@ -195,13 +195,13 @@ export default function ProfileUpdateForm() {
             <CardContent className="relative pt-0">
               <div className="flex flex-col items-center -mt-12">
                 <div className="relative group">
-                  <Avatar className="w-32 h-32 border-4 border-background shadow-2xl transition-transform duration-300 group-hover:scale-105">
+                  <Avatar className="w-32 h-32 border-4 border-background  transition-transform duration-300 group-hover:scale-105">
                     <AvatarImage src={imagePreview} className="object-cover" />
                     <AvatarFallback className="text-4xl bg-muted">
                       {form.watch('firstName')?.[0] || <User className="w-12 h-12" />}
                     </AvatarFallback>
                   </Avatar>
-                  <label className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full cursor-pointer shadow-lg hover:bg-primary/90 transition-colors">
+                  <label className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full cursor-pointer  hover:bg-primary/90 transition-colors">
                     <Camera className="w-4 h-4" />
                     <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
                   </label>
@@ -234,7 +234,7 @@ export default function ProfileUpdateForm() {
             </CardContent>
           </Card>
 
-          <Card className=" bg-primary/5 p-6">
+          {/* <Card className=" bg-primary/5 p-6">
             <div className="flex items-center gap-3 mb-2">
               <Info className="w-5 h-5 text-primary" />
               <h4 className="font-semibold text-primary">Profile Completeness</h4>
@@ -249,7 +249,7 @@ export default function ProfileUpdateForm() {
             <p className="text-xs text-muted-foreground mt-2">
               {pd?._id ? 'Your profile is looking great!' : 'Complete your details to access all features.'}
             </p>
-          </Card>
+          </Card> */}
         </div>
 
         {/* Right Column: Main Form */}

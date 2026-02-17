@@ -47,7 +47,6 @@ export default function CreateTicketPage() {
   const router = useRouter()
   const dispatch = useAppDispatch()
   const { data: meeData } = useAppSelector((state) => state.mee)
-  const { profile } = useAppSelector((state) => state.profile)
   const [submitting, setSubmitting] = useState(false)
   const [assignedServices, setAssignedServices] = useState<any[]>([])
   const [loadingServices, setLoadingServices] = useState(true)
@@ -135,7 +134,7 @@ export default function CreateTicketPage() {
     setSubmitting(true)
 
     try {
-      const userName = profile?.name || meeData.displayName || meeData.email?.split('@')[0] || 'User'
+      const userName = meeData.displayName || meeData.email?.split('@')[0] || 'User'
       
       const form = new FormData()
       form.append('userId', meeData.uid || '')

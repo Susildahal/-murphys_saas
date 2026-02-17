@@ -1,14 +1,23 @@
 import Ticket from '../models/ticket.model';
-import { Request, Response } from 'express';
+import { Request, Response  } from 'express';
 import cloudinary from '../config/cloudinary';
+import { AuthenticatedRequest } from '../middleware/auth';
+import Profile from '../models/profile.model';
 
 // Create a new ticket
-export const createTicket = async (req: Request, res: Response) => {
+export const createTicket = async (req: AuthenticatedRequest, res: Response) => {
+  const userid= req.user?.userId;
+  console.log('userid:', userid )
+
+  const user = await Profile.findOne({ userId: userid });
+  console.log('user:', user)
+
+
   try {
     const {
-      userId,
-      userEmail,
-      userName,
+      userId: bodyUserId,
+      userEmail: bodyUserEmail,
+      userName: bodyUserName,
       assignedServiceId,
       assignedServiceName,
       problemType,
@@ -17,6 +26,11 @@ export const createTicket = async (req: Request, res: Response) => {
       images = [],
       publicIds = []
     } = req.body;
+
+    // Resolve user fields (prefer auth/profile values, fall back to body)
+    const userId = bodyUserId || req.user?.userId || userid;
+    const userEmail = req.user?.email || bodyUserEmail || user?.email;
+    const userName = bodyUserName || (user ? `${user.firstName} ${user.lastName}` : 'Unknown User');
 
     // Validate required fields
     if (!userId || !userEmail || !userName || !assignedServiceId || !assignedServiceName || !problemType || !description) {

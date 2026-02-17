@@ -486,6 +486,26 @@ function BillingHistoryPage() {
         title="Billing History"
         description="View and manage all your payment transactions"
         total={billingHistory.length}
+        extra={            <div className="  flex items-end justify-end mb-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className='cursor-pointer'>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={exportToPDF}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Export as PDF
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={exportToCSV}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Export as CSV
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>}
       />
 
       <div className="space-y-6 ">
@@ -683,7 +703,7 @@ function BillingHistoryPage() {
 
         {/* Transaction History */}
         <div>
-            <div className="  flex items-end justify-end mb-4">
+            {/* <div className="  flex items-end justify-end mb-4">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm">
@@ -702,7 +722,7 @@ function BillingHistoryPage() {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </div>
+            </div> */}
           <div className="rounded-lg  overflow-hidden">
             {billingHistory.length === 0 ? (
               <div className="text-center py-12">
@@ -759,7 +779,7 @@ function BillingHistoryPage() {
                               <User className="h-4 w-4 text-muted-foreground" />
                               <button
                                 onClick={() => fetchUserDetails(item.user_id, item.user_email)}
-                                className="text-sm text-blue-600 hover:underline text-left"
+                                className="text-sm cursor-pointer text-blue-600 hover:underline text-left"
                               >
                                 {item.user_email}
                               </button>
