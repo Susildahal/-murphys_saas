@@ -24,7 +24,6 @@ import Image from 'next/image';
 import SpinnerComponent from './common/Spinner';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
-import { getMee } from '@/lib/redux/slices/meeSlice';
 
 interface ServiceTableProps {   
     categoryFilter?: string;
@@ -47,12 +46,6 @@ export default function ServiceTable({ categoryFilter = 'all' }: ServiceTablePro
     useEffect(() => {
         dispatch(fetchServices({ page: currentPage, limit: ITEMS_PER_PAGE, category: categoryFilter === 'all' ? undefined : categoryFilter } as any));
     }, [dispatch, currentPage, categoryFilter]);
-
-    useEffect(() => {
-        if (userid) {
-            dispatch(getCart(userid));
-        }
-    }, [dispatch, userid]);
 
     const formatBillingType = (type: string) => {
         const formats: Record<string, string> = {

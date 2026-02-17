@@ -158,7 +158,6 @@ export default function CartPage() {
           ) : null}
         </>
       }
-      icon={<ShoppingCart className="h-8 w-8 text-blue-600" />}
     />
 
     <div className="">
