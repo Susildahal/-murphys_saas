@@ -22,6 +22,7 @@ export const assignServiceToClient = async (req: Request, res: Response) => {
     if (!client_id || !service_catalog_id || !price || !cycle) {
       return res.status(400).json({ message: 'client_id, service_catalog_id, price, and cycle are required' });
     }
+    console.log(req.body);
     const useExistingService = await Service.findById(service_catalog_id);
     if (!useExistingService) {
       return res.status(404).json({ message: 'Service not found' });

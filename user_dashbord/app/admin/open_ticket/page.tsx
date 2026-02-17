@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { fetchTickets, deleteTicket } from '@/lib/redux/slices/ticketSlice'
 import Header from '@/app/page/common/header'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent,  CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Table,
   TableBody,
@@ -181,7 +181,7 @@ export default function OpenTicketPage() {
                         <p className="text-xs text-muted-foreground">Create your first ticket to get started</p>
                         <Button 
                           size="sm" 
-                          className="mt-2"
+                          className="mt-2 cursor-pointer"
                           onClick={() => router.push('/admin/open_ticket/create')}
                         >
                           <Plus className="h-4 w-4 mr-2" />

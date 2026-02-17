@@ -206,7 +206,6 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
     }
     setAssignSubmitting(true);
     const payload = {
-      id: typeof crypto !== 'undefined' && (crypto as any).randomUUID ? (crypto as any).randomUUID() : `${Date.now()}-${Math.random()}`,
       client_id: selectedClient,
       service_catalog_id: (assigningService as any)._id || (assigningService as any).id,
       status: assignStatus,
@@ -484,8 +483,9 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
                 </TableCell>
                 <TableCell>
                   <Button
-                    variant="outline"
+                    variant="link"
                     size="sm"
+                    className='cursor-pointer'
                     onClick={() => openAssignDialog(service)}
                   >
                     Assign
