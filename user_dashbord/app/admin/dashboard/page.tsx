@@ -63,9 +63,9 @@ export default function DashboardPage() {
 
   const statsCards = [  
     {
-      title: "Outstanding Balance",
+      title: "Paid Balance ",
       value: `$${stats.totalSpent || 0}`,
-      subtitle: stats.totalSpent > 0 ? 'Balance pending' : 'All clear',
+      subtitle: stats.totalSpent > 0 ? 'Balance Paid' : 'No payments made',
       icon: Building2,
       color: 'text-blue-500',
       borderColor: 'border-l-blue-500',
@@ -136,13 +136,10 @@ export default function DashboardPage() {
               </div>
               </div>
               <Link href="/admin/billing" className=' relative top-0 left-0'>
-                <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white">
+                <Button size="sm" className="bg-red-600 cursor-pointer hover:bg-red-700 text-white">
                   Pay Now
                 </Button>
               </Link>
-            
-           
-         
           </Alert>
          
         )}
@@ -177,7 +174,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold ">Recent Invoices</h2>
                 <Link href="/admin/billing-history">
-                  <Button variant="link" className="text-blue-600 text-sm">View All</Button>
+                  <Button variant="link" className="text-blue-600 cursor-pointer text-sm">View All</Button>
                 </Link>
               </div>
               <div className="space-y-3">
@@ -218,7 +215,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold ">Active Services</h2>
                 <Link href="/admin/view_assign_service">
-                  <Button variant="link" className="text-blue-600 text-sm">View All</Button>
+                  <Button variant="link" className="text-blue-600 cursor-pointer text-sm">View All</Button>
                 </Link>
               </div>
               <div className="space-y-3">
