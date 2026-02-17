@@ -405,9 +405,7 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
                 <TableCell className="font-medium">
                   <div className="flex flex-col">
                     <span className="font-semibold text-foreground">{service.name}</span>
-                    <Badge variant="outline" className="w-fit text-[10px] mt-1 px-1 py-0 h-4 font-normal opacity-70">
-                      ID: {((service as any)._id || (service as any).id).slice(-6)}
-                    </Badge>
+                 
                   </div>
                 </TableCell>
                 <TableCell className="max-w-[200px]">

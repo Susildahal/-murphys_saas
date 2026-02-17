@@ -122,23 +122,8 @@ export function AppSidebar({ searchQuery = "", ...props }: AppSidebarProps) {
 
 
   return (
-    <Sidebar collapsible="icon" {...props} className="border-r  dark:bg-black text-slate-900 dark:text-white">
-      <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 5px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: var(--muted-foreground);
-          opacity: 0.2;
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          opacity: 0.4;
-        }
-      `}</style>
+    <Sidebar collapsible="icon" {...props} className=" bg-white dark:bg-black text-slate-900 dark:text-white">
+   
 
       {/* Fixed Header */}
       <SidebarHeader className="bg-background pb-4 pt-4">

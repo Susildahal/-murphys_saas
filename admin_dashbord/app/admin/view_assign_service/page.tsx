@@ -862,7 +862,6 @@ const page = () => {
                                                     renewal_price: priceNum,
                                                     renewal_id: editingRenewalId ?? undefined
                                                 })).unwrap();
-
                                                 toast({
                                                     title: 'Success',
                                                     description: isEditingRenewal ? 'Renewal date updated successfully' : 'Renewal date added successfully'
@@ -873,7 +872,14 @@ const page = () => {
                                                 toast({ title: 'Failed', description: err?.message || 'Could not save renewal date', variant: 'destructive' });
                                             }
                                         }}>
-                                            {isEditingRenewal ? 'Update Renewal' : 'Add Renewal Date'}
+                                            {loading ? (
+                                                <span className="flex items-center">
+                                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                    {isEditingRenewal ? 'Updating...' : 'Adding...'}
+                                                </span>
+                                            ) : (
+                                                isEditingRenewal ? 'Update Renewal' : 'Add Renewal Date'
+                                            )}
                                         </Button>
                                         {isEditingRenewal && (
                                             <Button variant="outline" onClick={resetRenewalForm}>

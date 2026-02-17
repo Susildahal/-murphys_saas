@@ -65,6 +65,7 @@ export default function DashboardPage() {
     {
       title: "Outstanding Balance",
       value: `$${stats.totalSpent || 0}`,
+      subtitle: stats.totalSpent > 0 ? 'Balance pending' : 'All clear',
       icon: Building2,
       color: 'text-blue-500',
       borderColor: 'border-l-blue-500',
@@ -102,6 +103,7 @@ export default function DashboardPage() {
     {
       title: "Unpaid Invoices",
       value: unpaidInvoices || 0,
+      subtitle: unpaidInvoices > 0 ? `$${unpaidAmount} total due` : 'No pending payments',
       icon: Clock,
       color: 'text-blue-500',
       borderColor: 'border-l-blue-500',
@@ -115,40 +117,52 @@ export default function DashboardPage() {
       <Header 
     title='Dashboard'  
     />
-      <div className="p-2 space-y-6">
+      <div className=" space-y-6">
         {/* Payment Overdue Alert */}
         {unpaidInvoices > 0 && (
-          <Alert className="bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-700">
-            <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-300" />
+        
+          <Alert className="bg-red-50 flex justify-between gap-3 items-center border-red-200 dark:bg-red-900/20 dark:border-red-700">
+            <div className="flex items-center gap-5">
+                        <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-300" />
+
+    <div className=' flex justify-start items-start flex-col'>
+
             <AlertTitle className="text-red-800 dark:text-red-200 font-semibold">Payment Overdue</AlertTitle>
-            <AlertDescription className="text-red-700 dark:text-red-200 flex items-center justify-between">
+            <AlertDescription className="text-red-700 dark:text-red-200 ">
               <span>
                 You have {unpaidInvoices} unpaid invoice{unpaidInvoices > 1 ? 's' : ''} totaling ${unpaidAmount}
               </span>
-              <Link href="/admin/billing">
+             </AlertDescription>
+              </div>
+              </div>
+              <Link href="/admin/billing" className=' relative top-0 left-0'>
                 <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white">
                   Pay Now
                 </Button>
               </Link>
-            </AlertDescription>
+            
+           
+         
           </Alert>
+         
         )}
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {statsCards.map((card, index) => (
             <Link href={card.link} key={index}>
-              <Card className={`border-l-4 ${card.borderColor}  transition-shadow cursor-pointer `}>
-                <CardContent className="p-2">
-                  <div className="flex items-center justify-between mb-4">
-                    <card.icon className={`h-8 w-8 ${card.color}`} />
+              <Card className={`border-l-4 ${card.borderColor} hover:shadow-md transition-all cursor-pointer`}>
+                <CardContent className="px-3 py-2.5 flex items-center gap-3">
+                  <div className={`rounded-lg bg-blue-50 dark:bg-blue-900/20 p-2 shrink-0`}>
+                    <card.icon className={`h-5 w-5 ${card.color}`} />
                   </div>
-                  <p className="text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">{card.title}</p>
-                  
-                  <div className=' flex gap-2'><h3 className="text-2xl font-bold text-slate-900 dark:text-white">{card.value}</h3>
-                  {card.subtitle && (
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{card.subtitle}</p>
-                  )}</div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400 truncate">{card.title}</p>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">{card.value}</h3>
+                    {card.subtitle && (
+                      <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate">{card.subtitle}</p>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             </Link>

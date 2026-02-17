@@ -233,7 +233,7 @@ function Page() {
 
                     <Button 
                       size="sm"
-                      className="w-full"
+                      className="w-full cursor-pointer"
                       onClick={() => setSelectedRenewal({ 
                         id: renewal._id, 
                         amount: renewal.price,
