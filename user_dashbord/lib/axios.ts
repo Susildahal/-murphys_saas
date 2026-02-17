@@ -1,6 +1,13 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { showErrorToast, showSuccessToast } from './toast-handler';
 
+// Extend axios config to support skipToast flag
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    skipToast?: boolean;
+  }
+}
+
 // Promise to wait for auth state to be ready
 let authStateReady = false;
 
@@ -57,6 +64,9 @@ axiosInstance.interceptors.request.use(
 // Response interceptor for error handling with refresh token support
 axiosInstance.interceptors.response.use(
   (response) => {
+    // Skip toast if skipToast flag is set (e.g. auth pages handle errors inline)
+    if (response.config.skipToast) return response;
+
     // Show success toast for successful requests (optional, can be customized)
     if (response.config.method !== 'get') {
       const method = response.config.method?.toUpperCase();
@@ -147,19 +157,22 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Handle other error cases
-    if (error.response?.status === 404) {
-      showErrorToast('The requested resource was not found.', 'Not Found');
-    } else if (error.response?.status === 400) {
-      showErrorToast((error.response.data as { message?: string })?.message || 'Bad request. Please check your input and try again.', 'Bad Request');
-    } else if (error.response?.status === 500) {
-      showErrorToast('Something went wrong on the server. Please try again later.', 'Server Error');
-    } else if ((error.response?.data as { message?: string })?.message) {
-      showErrorToast((error.response?.data as { message?: string })?.message || 'Error', 'Error');
-    } else if (error.message === 'Network Error') {
-      showErrorToast('Network error. Please check your internet connection.', 'Connection Error');
-    } else {
-      showErrorToast(error.message || 'An unexpected error occurred.', 'Error');
+    // Skip toast if skipToast flag is set (auth pages handle errors inline)
+    if (!originalRequest.skipToast) {
+      // Handle other error cases
+      if (error.response?.status === 404) {
+        showErrorToast('The requested resource was not found.', 'Not Found');
+      } else if (error.response?.status === 400) {
+        showErrorToast((error.response.data as { message?: string })?.message || 'Bad request. Please check your input and try again.', 'Bad Request');
+      } else if (error.response?.status === 500) {
+        showErrorToast('Something went wrong on the server. Please try again later.', 'Server Error');
+      } else if ((error.response?.data as { message?: string })?.message) {
+        showErrorToast((error.response?.data as { message?: string })?.message || 'Error', 'Error');
+      } else if (error.message === 'Network Error') {
+        showErrorToast('Network error. Please check your internet connection.', 'Connection Error');
+      } else {
+        showErrorToast(error.message || 'An unexpected error occurred.', 'Error');
+      }
     }
     
     return Promise.reject(error);

@@ -105,6 +105,16 @@ export const login = async (req: Request, res: Response) => {
       { expiresIn: "1h" } //1 hour only
     );
 
+    if(rememberMe){ // save the refresh token in the db
+      const refreshToken = jwt.sign(
+        { userId: user._id, email: user.email },
+        process.env.JWT_SECRET || "defaultrefreshsecret",
+        { expiresIn: "30d" }
+      );
+      user.refreshToken = refreshToken;
+      await user.save();
+    }
+
     // Only generate refresh token if rememberMe is true
     const response: { token: string; refreshToken?: string } = { token };
     if (rememberMe) {
