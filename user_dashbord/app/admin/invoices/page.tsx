@@ -242,7 +242,7 @@ const InvoicesPage = () => {
                     <button 
                       title="View" 
                       onClick={() => openInvoice(row)} 
-                      className="inline-flex items-center justify-center p-2 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 transition-colors"
+                      className="inline-flex cursor-pointer items-center justify-center p-2 rounded-md bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 transition-colors"
                     >
                       <Eye className="h-4 w-4"/>
                     </button>
