@@ -745,7 +745,7 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
                     <SelectItem value="__no_clients__" disabled>No clients found</SelectItem>
                   ) : (
                     profiles.map((u: any) => (
-                      <SelectItem key={u._id || u.id || u.email} value={u._id || u.id || u.email}>{`${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email}</SelectItem>
+                      <SelectItem key={u._id || u.id || u.email} value={u.userId || u._id || u.id}>{`${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email}</SelectItem>
                     ))
                   )}
                 </SelectContent>

@@ -15,7 +15,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { getadminProfile } from '@/lib/redux/slices/profileSlice'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { fetchRoles } from '@/lib/redux/slices/roleSlice'
-import { useAuth } from '@/hooks/use-auth'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import Pagination from '@/app/page/common/Pagination'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
@@ -26,20 +25,22 @@ import { Separator } from '@/components/ui/separator'
 import Header from '@/app/page/common/header'
 import SpinnerComponent from '@/app/page/common/Spinner'
 import { Input } from '@/components/ui/input'
-import axiosInstance from '@/lib/axios'
-import { useRouter } from 'next/navigation'
+import { useRouter  } from 'next/navigation'
 import { fetchServices, assignServiceToClient } from '@/lib/redux/slices/serviceSlice'
 import { useToast } from '@/hooks/use-toast'
 import DateRangePicker from '@/components/ui/date-range-picker'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
+import Link from "next/link"
+
+
+
+
 function ClientsUsersPage() {
   const dispatch = useAppDispatch()
   const [searchTerm, setSearchTerm] = React.useState('')
   const { profile, loading, error, page, totalPages } = useAppSelector((state) => state.profile as any)
-  const { roles } = useAppSelector((state: any) => state.role)
   const { services } = useAppSelector((state) => state.services)
-  const { user: currentUser } = useAuth()
   const router = useRouter();
   const { toast } = useToast();
 
@@ -179,44 +180,18 @@ function ClientsUsersPage() {
                     <TableCell>{admin.firstName} {admin.lastName}</TableCell>
                     <TableCell>{admin.email}</TableCell>
                     <TableCell>{admin.role_type || '-'}</TableCell>
-                    {/* <TableCell>
-                      <Select
-                        value={admin.role || ''}
-                        onValueChange={async (value) => {
-                          try {
-                            // get Firebase id token
-                            const idToken = currentUser ? await currentUser.getIdToken(true) : ''
-                            // convert placeholder 'none' to null for unassign
-                            const roleIdToSend = value === 'none' ? null : value
-                            // send assign request to backend
-                            await axiosInstance.post('/roles/assign', { userId: admin._id || admin.id, roleId: roleIdToSend })
-                            // refresh list
-                            dispatch(getadminProfile({ role_type: 'admin user', page: page || 1, limit: 10, search: searchTerm } as any))
-                          } catch (err: any) {
-                            console.error('Assign role error', err)
-                            alert(err?.response?.data?.message || 'Failed to assign role')
-                          }
-                        }}
-                      >
-                        <SelectTrigger className="w-[160px]">
-                          <SelectValue placeholder={roles.find((r: any) => r._id === admin.role)?.name || 'Select role'} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          {roles.map((r: any) => (
-                            <SelectItem key={r._id} value={r._id}>{r.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </TableCell> */}
+                    
                     <TableCell>
+                      <Link href={`/admin/assign_service/${admin._id || admin.id}`}>
                       <Button
-                        variant="outline"
+                        variant="link"
                         size="sm"
-                        onClick={() => openAssignDialog(admin)}
+                        className='cursor-pointer'
                       >
                         Assign Service  
                       </Button>
+                      </Link>
+                      
                     </TableCell>
                        <TableCell>{admin.country || '-'}</TableCell>
                     <TableCell>{admin.phone || '-'}</TableCell>

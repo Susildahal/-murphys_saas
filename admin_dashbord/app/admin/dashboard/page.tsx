@@ -285,10 +285,10 @@ export default function DashboardPage() {
                   {/* Stats Summary */}
                   <div className="grid grid-cols-2 gap-4 pt-4 border-t">
                     <div className="space-y-1">
-                      <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-blue-500" />
-                        Active
-                      </p>
+<p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+  <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />
+  Active
+</p>
                       <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{activeService}</p>
                       <p className="text-xs">
                         {totalServices > 0 ? `${Math.round((activeService / totalServices) * 100)}%` : '0%'}
