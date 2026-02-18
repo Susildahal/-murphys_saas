@@ -19,7 +19,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Loader2, ArrowLeft, Upload, X, Edit, Save } from 'lucide-react'
+import { Loader2, ArrowLeft, Upload, X, Edit } from 'lucide-react'
 import { toast } from 'sonner'
 import { quillModules, quillFormats } from '@/lib/quillConfig'
 import { format } from 'date-fns'
@@ -51,7 +51,6 @@ function TicketDetailsContent() {
   const params = useParams()
   const searchParams = useSearchParams()
   const dispatch = useAppDispatch()
-  const { data: meeData } = useAppSelector((state) => state.mee)
   const { currentTicket, loading } = useAppSelector((state) => state.tickets)
   
   const ticketId = params.id as string
@@ -68,11 +67,7 @@ function TicketDetailsContent() {
     priority: 'medium'
   })
 
-  useEffect(() => {
-    if (!meeData) {
-      dispatch(getMee())
-    }
-  }, [dispatch, meeData])
+
 
   useEffect(() => {
     if (ticketId) {
@@ -201,7 +196,7 @@ function TicketDetailsContent() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="mx-auto max-w-3xl p-6">
       <Header
 
         title="Ticket Details"
@@ -215,9 +210,7 @@ function TicketDetailsContent() {
           <div className="flex items-start justify-between">
             <div>
               <CardTitle>Ticket Details</CardTitle>
-              <CardDescription>
-                Ticket ID: {currentTicket._id}
-              </CardDescription>
+
             </div>
             <div className="flex items-center gap-2">
               <Badge variant="outline" className={getStatusColor(currentTicket.status)}>
@@ -245,56 +238,57 @@ function TicketDetailsContent() {
                 <Input value={currentTicket.assignedServiceName} disabled />
               </div>
 
-              {/* Problem Type */}
-              <div className="space-y-2">
-                <Label htmlFor="problemType">Problem Type *</Label>
-                <Select
-                  value={formData.problemType}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, problemType: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select problem type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {problemTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Problem Type & Priority */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="problemType">Problem Type *</Label>
+                  <Select
+                    value={formData.problemType}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, problemType: value }))}
+                  >
+                    <SelectTrigger className='w-full'>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {problemTypes.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              {/* Priority */}
-              <div className="space-y-2">
-                <Label htmlFor="priority">Priority</Label>
-                <Select
-                  value={formData.priority}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {priorities.map((priority) => (
-                      <SelectItem key={priority.value} value={priority.value}>
-                        {priority.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <Label htmlFor="priority">Priority</Label>
+                  <Select
+                    value={formData.priority}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value }))}
+                  >
+                    <SelectTrigger className='w-full'>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {priorities.map((priority) => (
+                        <SelectItem key={priority.value} value={priority.value}>
+                          {priority.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               {/* Description */}
               <div className="space-y-2">
                 <Label>Description *</Label>
-                <div className="border rounded-md">
+                <div className="border rounded-md overflow-hidden">
                   <Editor
                     value={formData.description}
                     onChange={(value) => setFormData(prev => ({ ...prev, description: value }))}
                     modules={quillModules}
                     formats={quillFormats}
-                    placeholder="Describe the problem in detail..."
+                    placeholder="Describe the issue..."
                   />
                 </div>
               </div>
@@ -303,15 +297,15 @@ function TicketDetailsContent() {
               {currentTicket.images && currentTicket.images.length > 0 && (
                 <div className="space-y-2">
                   <Label>Existing Images</Label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 gap-3">
                     {currentTicket.images.map((image: string, index: number) => (
-                      <div key={index} className="relative">
+                      <div key={index} className="relative aspect-square">
                         <Image
                           src={image}
                           alt={`Ticket image ${index + 1}`}
                           width={200}
                           height={150}
-                          className="w-full h-32 object-cover rounded-md border"
+                          className="w-full h-full object-cover rounded-md"
                         />
                       </div>
                     ))}
@@ -319,51 +313,52 @@ function TicketDetailsContent() {
                 </div>
               )}
 
-              {/* New Images */}
+              {/* Image Upload */}
               <div className="space-y-2">
-                <Label>Add New Images (Optional)</Label>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      onChange={handleImageChange}
-                      className="hidden"
-                      id="image-upload"
-                      disabled={(currentTicket.images?.length || 0) + newImages.length >= 5}
-                    />
-                    <Label
-                      htmlFor="image-upload"
-                      className={`flex items-center gap-2 px-4 py-2 border rounded-md cursor-pointer hover:bg-accent ${
-                        (currentTicket.images?.length || 0) + newImages.length >= 5 ? 'opacity-50 cursor-not-allowed' : ''
-                      }`}
-                    >
-                      <Upload className="h-4 w-4" />
-                      Upload Images
-                    </Label>
-                    <span className="text-sm text-muted-foreground">
-                      {(currentTicket.images?.length || 0) + newImages.length}/5 images
+                <Label>Attachments (max 5)</Label>
+                <div className="space-y-3">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageChange}
+                    className="hidden"
+                    id="image-upload"
+                    disabled={(currentTicket.images?.length || 0) + newImages.length >= 5}
+                  />
+                  <Label
+                    htmlFor="image-upload"
+                    className={`flex items-center justify-center gap-2 h-24 border-2 border-dashed rounded-md cursor-pointer transition-colors ${
+                      (currentTicket.images?.length || 0) + newImages.length >= 5
+                        ? 'opacity-50 cursor-not-allowed'
+                        : 'hover:border-primary hover:bg-accent'
+                    }`}
+                  >
+                    <Upload className="h-5 w-5" />
+                    <span>
+                      {(currentTicket.images?.length || 0) + newImages.length === 0
+                        ? 'Click to upload images'
+                        : `${(currentTicket.images?.length || 0) + newImages.length}/5 uploaded`}
                     </span>
-                  </div>
+                  </Label>
 
                   {newImagePreviews.length > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-3 gap-3">
                       {newImagePreviews.map((preview, index) => (
-                        <div key={index} className="relative group">
+                        <div key={index} className="relative group aspect-square">
                           <img
                             src={preview}
                             alt={`Preview ${index + 1}`}
-                            className="w-full h-32 object-cover rounded-md border"
+                            className="w-full h-full object-cover rounded-md"
                           />
                           <Button
                             type="button"
                             variant="destructive"
                             size="icon"
-                            className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
                             onClick={() => removeNewImage(index)}
                           >
-                            <X className="h-4 w-4" />
+                            <X className="h-3 w-3" />
                           </Button>
                         </div>
                       ))}
@@ -372,8 +367,8 @@ function TicketDetailsContent() {
                 </div>
               </div>
 
-              {/* Submit Buttons */}
-              <div className="flex items-center justify-end gap-4 pt-4">
+              {/* Actions */}
+              <div className="flex justify-end gap-3 pt-4">
                 <Button
                   type="button"
                   variant="outline"
@@ -393,7 +388,6 @@ function TicketDetailsContent() {
                 </Button>
                 <Button type="submit" disabled={submitting}>
                   {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  <Save className="mr-2 h-4 w-4" />
                   Save Changes
                 </Button>
               </div>

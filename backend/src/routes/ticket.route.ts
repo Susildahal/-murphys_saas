@@ -5,7 +5,8 @@ import {
   getTicketById,
   updateTicket,
   deleteTicket,
-  updateTicketStatus
+  updateTicketStatus,
+  getUserTickets
 } from '../conttrolers/ticket.controller';
 import upload from '../middleware/upload';
 import cloudinaryMultiUpload from '../middleware/cloudinaryMultiUpload';
@@ -18,6 +19,9 @@ ticketRouter.post('/tickets', verifyToken, upload.array('images', 5), cloudinary
 
 // Get all tickets with filters
 ticketRouter.get('/tickets', verifyToken, getTickets);
+
+// User tickets (must be before :id to avoid "user" being cast as ObjectId)
+ticketRouter.get('/tickets/user', verifyToken, getUserTickets);
 
 // Get single ticket
 ticketRouter.get('/tickets/:id', verifyToken, getTicketById);

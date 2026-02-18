@@ -10,12 +10,11 @@ export const createTicket = async (req: AuthenticatedRequest, res: Response) => 
   console.log('userid:', userid )
 
   const user = await Profile.findOne({ userId: userid });
-  console.log('user:', user)
 
 
   try {
     const {
-      userId: bodyUserId,
+      userId: userid,
       userEmail: bodyUserEmail,
       userName: bodyUserName,
       assignedServiceId,
@@ -26,11 +25,11 @@ export const createTicket = async (req: AuthenticatedRequest, res: Response) => 
       images = [],
       publicIds = []
     } = req.body;
-
+    
     // Resolve user fields (prefer auth/profile values, fall back to body)
-    const userId = bodyUserId || req.user?.userId || userid;
-    const userEmail = req.user?.email || bodyUserEmail || user?.email;
-    const userName = bodyUserName || (user ? `${user.firstName} ${user.lastName}` : 'Unknown User');
+    const userId = user ? user.userId : userid;
+    const userEmail =  user?.email || bodyUserEmail;
+    const userName =  (user ? `${user.firstName} ${user.lastName}` : bodyUserName);
 
     // Validate required fields
     if (!userId || !userEmail || !userName || !assignedServiceId || !assignedServiceName || !problemType || !description) {
@@ -39,6 +38,20 @@ export const createTicket = async (req: AuthenticatedRequest, res: Response) => 
         message: 'Missing required fields' 
       });
     }
+
+    console.log('Creating ticket with data:', {
+      userId,
+      userEmail,
+      userName,
+      assignedServiceId,
+      assignedServiceName,
+      problemType,
+      description,
+      images,
+      publicIds,
+      priority: priority || 'medium',
+      status: 'open'
+    });
 
     const newTicket = new Ticket({
       userId,
@@ -264,6 +277,55 @@ export const updateTicketStatus = async (req: Request, res: Response) => {
     return res.status(500).json({ 
       success: false, 
       message: 'Failed to update ticket status' 
+    });
+  }
+};
+
+
+
+//user api
+
+export const getUserTickets = async (req: AuthenticatedRequest, res: Response) => {
+  const userid = req.user?.userId;
+  try {
+    const { 
+      page = '1', 
+      limit = '10', 
+      status, 
+      priority,
+      assignedServiceId
+    } = req.query;
+
+    const pageNum = Math.max(1, parseInt(page as string));
+    const lim = Math.max(1, parseInt(limit as string));
+
+    const filter: any = {};
+          if (userid) filter.userId = userid;
+    if (status) filter.status = status;
+    if (priority) filter.priority = priority;
+    if (assignedServiceId) filter.assignedServiceId = assignedServiceId;
+
+    const total = await Ticket.countDocuments(filter);
+    const tickets = await Ticket.find(filter)
+      .skip((pageNum - 1) * lim)
+      .limit(lim)
+      .sort({ createdAt: -1 });
+
+    return res.json({
+      success: true,
+      data: tickets,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: lim,
+        totalPages: Math.ceil(total / lim)
+      }
+    });
+  } catch (error: any) {
+    console.error('Error fetching tickets:', error);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch tickets' 
     });
   }
 };

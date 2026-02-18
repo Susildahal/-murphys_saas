@@ -46,10 +46,9 @@ export default function OpenTicketPage() {
 
 
   useEffect(() => {
-      if (meeData?.uid) {
-        dispatch(fetchTickets({ userId: meeData._id }))
-      }
-  }, [dispatch, meeData])
+        dispatch(fetchTickets())
+   
+  }, [dispatch,])
 
   const handleDelete = async () => {
     if (!ticketToDelete) return
@@ -100,47 +99,43 @@ export default function OpenTicketPage() {
         {/* Stats Overview */}
         {tickets.length > 0 && (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="border-l-4 border-l-blue-500 ">
-              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Open Tickets</CardTitle>
+            <Card className="border-l-4 border-l-blue-500">
+              <CardContent className="p-3 flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-muted-foreground">Open Tickets</p>
+                  <p className="text-xl font-bold">{stats.open}</p>
+                </div>
                 <TicketIcon className="h-4 w-4 text-blue-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.open}</div>
-                <p className="text-xs text-muted-foreground mt-1">Awaiting response</p>
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 border-l-blue-500 ">
-              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
+            <Card className="border-l-4 border-l-blue-500">
+              <CardContent className="p-3 flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-muted-foreground">In Progress</p>
+                  <p className="text-xl font-bold">{stats.inProgress}</p>
+                </div>
                 <Clock className="h-4 w-4 text-blue-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.inProgress}</div>
-                <p className="text-xs text-muted-foreground mt-1">Being worked on</p>
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 border-l-blue-500 ">
-              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Resolved</CardTitle>
+            <Card className="border-l-4 border-l-blue-500">
+              <CardContent className="p-3 flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-muted-foreground">Resolved</p>
+                  <p className="text-xl font-bold">{stats.resolved}</p>
+                </div>
                 <CheckCircle2 className="h-4 w-4 text-blue-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.resolved}</div>
-                <p className="text-xs text-muted-foreground mt-1">Successfully closed</p>
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 border-l-blue-500 ">
-              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <CardTitle className="text-sm font-medium text-muted-foreground">Urgent</CardTitle>
+            <Card className="border-l-4 border-l-blue-500">
+              <CardContent className="p-3 flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-muted-foreground">Urgent</p>
+                  <p className="text-xl font-bold">{stats.urgent}</p>
+                </div>
                 <AlertCircle className="h-4 w-4 text-blue-500" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.urgent}</div>
-                <p className="text-xs text-muted-foreground mt-1">High priority items</p>
               </CardContent>
             </Card>
           </div>
@@ -154,6 +149,7 @@ export default function OpenTicketPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                <TableHead>Image</TableHead>
                   <TableHead>Service</TableHead>
                   <TableHead>Problem Type</TableHead>
                   <TableHead>Priority</TableHead>
@@ -193,6 +189,7 @@ export default function OpenTicketPage() {
                 ) : (
                   tickets.map((ticket) => (
                     <TableRow key={ticket._id} className="hover:bg-muted/50">
+                      <TableCell>{ticket.images && ticket.images.length > 0 ? <img src={ticket.images[0]} alt="Ticket" className="h-10 w-10 rounded-md object-cover" /> : <div className="h-8 w-8 rounded-md bg-gray-200 dark:bg-gray-700 flex items-center justify-center"><TicketIcon className="h-4 w-4 text-gray-500" /></div>}</TableCell>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
                               <div className="h-8 w-8 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">

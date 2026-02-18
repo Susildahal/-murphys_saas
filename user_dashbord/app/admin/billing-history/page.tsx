@@ -4,6 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table'
 import { 
   Receipt, 
   CheckCircle2, 
@@ -142,11 +150,11 @@ function BillingHistoryPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle2 className="h-5 w-5 text-emerald-600" />;
+        return <CheckCircle2 className="h-5 w-5 text-blue-600" />;
       case 'failed':
-        return <XCircle className="h-5 w-5 text-red-600" />;
+        return <XCircle className="h-5 w-5 text-blue-600" />;
       case 'pending':
-        return <Clock className="h-5 w-5 text-amber-600" />;
+        return <Clock className="h-5 w-5 text-blue-600" />;
       case 'refunded':
         return <DollarSign className="h-5 w-5 text-blue-600" />;
       default:
@@ -503,81 +511,61 @@ function BillingHistoryPage() {
       <div className="space-y-6 ">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-3">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center">
-                  <CheckCircle2 className="h-6 w-6 text-emerald-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Paid</p>
-                  <p className="text-2xl font-bold text-emerald-600">${totalPaid}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {getStatByStatus('completed')?.count || 0} payments
-                  </p>
-                </div>
+          <Card className="border-l-4 border-l-blue-500">
+            <CardContent className="p-3 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-950 flex items-center justify-center">
+                <CheckCircle2 className="h-4 w-4 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Total Paid</p>
+                <p className="text-xl font-bold">${totalPaid}</p>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-3">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950 flex items-center justify-center">
-                  <XCircle className="h-6 w-6 text-red-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Failed</p>
-                  <p className="text-2xl font-bold text-red-600">
-                    ${getStatByStatus('failed')?.totalAmount || 0}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {getStatByStatus('failed')?.count || 0} attempts
-                  </p>
-                </div>
+          <Card className="border-l-4 border-l-blue-500">
+            <CardContent className="p-3 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-950 flex items-center justify-center">
+                <XCircle className="h-4 w-4 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Failed</p>
+                <p className="text-xl font-bold">
+                  ${getStatByStatus('failed')?.totalAmount || 0}
+                </p>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-3">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-950 flex items-center justify-center">
-                  <Clock className="h-6 w-6 text-amber-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Pending</p>
-                  <p className="text-2xl font-bold text-amber-600">
-                    ${getStatByStatus('pending')?.totalAmount || 0}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {getStatByStatus('pending')?.count || 0} payments
-                  </p>
-                </div>
+          <Card className="border-l-4 border-l-blue-500">
+            <CardContent className="p-3 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-950 flex items-center justify-center">
+                <Clock className="h-4 w-4 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Pending</p>
+                <p className="text-xl font-bold">
+                  ${getStatByStatus('pending')?.totalAmount || 0}
+                </p>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-950 flex items-center justify-center">
-                  <DollarSign className="h-6 w-6 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Refunded</p>
-                  <p className="text-2xl font-bold text-blue-600">
-                    ${getStatByStatus('refunded')?.totalAmount || 0}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {getStatByStatus('refunded')?.count || 0} refunds
-                  </p>
-                </div>
+          <Card className="border-l-4 border-l-blue-500">
+            <CardContent className="p-3 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-950 flex items-center justify-center">
+                <DollarSign className="h-4 w-4 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Refunded</p>
+                <p className="text-xl font-bold">
+                  ${getStatByStatus('refunded')?.totalAmount || 0}
+                </p>
               </div>
             </CardContent>
           </Card>
         </div>
-        <Card>
+        <div className='p-0  border-none'>
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Transaction History</CardTitle>
@@ -601,91 +589,96 @@ function BillingHistoryPage() {
               </DropdownMenu>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {billingHistory.length === 0 ? (
-                <div className="text-center py-12">
-                  <Receipt className="h-16 w-16 text-muted-foreground/50 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Transactions Found</h3>
-                  <p className="text-muted-foreground">
-                    {filter !== 'all' ? 'Try changing your filters' : 'No payment history available'}
-                  </p>
-                </div>
-              ) : (
-                billingHistory.map((item) => (
-                  <div 
-                    key={item._id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-4 flex-1">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center bg-muted">
-                        {getStatusIcon(item.payment_status)}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium">{item.service_name}</p>
-                          {getStatusBadge(item.payment_status)}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Invoice: {item.invoice_id}
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Service</TableHead>
+                  <TableHead>Invoice</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {billingHistory.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="h-32 text-center">
+                      <div className="flex flex-col items-center justify-center gap-2">
+                        <Receipt className="h-12 w-12 text-muted-foreground/40" />
+                        <p className="text-sm font-medium">No Transactions Found</p>
+                        <p className="text-xs text-muted-foreground">
+                          {filter !== 'all' ? 'Try changing your filters' : 'No payment history available'}
                         </p>
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
-                          <span className="flex items-center gap-1">
-                            <CalendarIcon className="h-3 w-3" />
-                            {format(new Date(item.createdAt), 'MMM dd, yyyy HH:mm')}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  billingHistory.map((item) => (
+                    <TableRow key={item._id} className="hover:bg-muted/50">
+                      <TableCell className="font-medium">{item.service_name}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{item.invoice_id}</TableCell>
+                      <TableCell>
+                        <span className="font-semibold">${item.amount}</span>
+                        <span className="text-xs text-muted-foreground ml-1 uppercase">{item.currency}</span>
+                      </TableCell>
+                      <TableCell>{getStatusBadge(item.payment_status)}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {format(new Date(item.createdAt), 'MMM dd, yyyy')}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {item.payment_status === 'completed' && (
+                          <span className="text-xs text-green-600 dark:text-green-400 flex items-center justify-end gap-1">
+                            <CheckCircle2 className="h-3 w-3" />
+                            Payment successful
                           </span>
-                          {item.payment_date && (
-                            <span className="flex items-center gap-1">
-                              <CheckCircle2 className="h-3 w-3" />
-                              Paid: {format(new Date(item.payment_date), 'MMM dd, yyyy')}
-                            </span>
-                          )}
-                        </div>
-                        {item.failure_reason && (
-                          <p className="text-xs text-red-600 mt-1">
-                            Reason: {item.failure_reason}
-                          </p>
                         )}
-                      </div>
-                    </div>
-
-                    <div className="text-right">
-                      <p className="text-lg font-bold">
-                        ${item.amount}
-                      </p>
-                      <p className="text-xs text-muted-foreground uppercase">
-                        {item.currency}
-                      </p>
-                      {item.stripe_payment_intent_id && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {item.stripe_payment_intent_id.substring(0, 20)}...
-                        </p>
-                      )}
-                      {item.payment_status === 'failed' && (
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          className="mt-2"
-                          onClick={() => openDeleteDialog(item._id)}
-                        >
-                          <Trash2 className="h-3 w-3 mr-1" />
-                          Delete
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+                        {item.payment_status === 'pending' && (
+                          <span className="text-xs text-amber-600 dark:text-amber-400 flex items-center justify-end gap-1">
+                            <Clock className="h-3 w-3" />
+                            Awaiting payment
+                          </span>
+                        )}
+                        {item.payment_status === 'refunded' && (
+                          <span className="text-xs text-blue-600 dark:text-blue-400 flex items-center justify-end gap-1">
+                            <DollarSign className="h-3 w-3" />
+                            Amount refunded
+                          </span>
+                        )}
+                        {item.payment_status === 'failed' && (
+                          <div className="flex items-center justify-end gap-2">
+                            <span className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                              <XCircle className="h-3 w-3" />
+                              Payment failed
+                            </span>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => openDeleteDialog(item._id)}
+                            >
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Delete
+                            </Button>
+                          </div>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
 
             {/* Pagination */}
-            <Pagination 
-              page={page} 
-              totalPages={totalPages} 
-              onPageChange={setPage} 
-            />
+            <div className="p-4">
+              <Pagination 
+                page={page} 
+                totalPages={totalPages} 
+                onPageChange={setPage} 
+              />
+            </div>
           </CardContent>
-        </Card>
+        </div>
       </div>
 
       {/* Delete Confirmation Dialog */}

@@ -56,7 +56,7 @@ export const fetchTickets = createAsyncThunk<
   { rejectValue: string }
 >('tickets/fetchTickets', async (params, { rejectWithValue }) => {
   try {
-    const response = await axiosInstance.get('/tickets', { params });
+    const response = await axiosInstance.get('/tickets/user', { params });
     return {
       data: response.data.data as Ticket[],
       pagination: response.data.pagination

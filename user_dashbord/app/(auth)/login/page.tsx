@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
   motion,
   useSpring,
@@ -38,18 +38,24 @@ function useCursor() {
 
 // ── Floating Particles ────────────────────────────────────────────────────────
 function FloatingParticles() {
-  const particles = useMemo(() =>
-    Array.from({ length: 18 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 6 + 2,
-      duration: Math.random() * 8 + 6,
-      delay: Math.random() * 4,
-      shape: i % 4,
-      color: ["#7c3aed33", "#f97316aa", "#facc1555", "#1f293766"][i % 4],
-    }))
-  , []);
+  const [particles, setParticles] = useState<
+    { id: number; x: number; y: number; size: number; duration: number; delay: number; shape: number; color: string }[]
+  >([]);
+
+  useEffect(() => {
+    setParticles(
+      Array.from({ length: 18 }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: Math.random() * 6 + 2,
+        duration: Math.random() * 8 + 6,
+        delay: Math.random() * 4,
+        shape: i % 4,
+        color: ["#7c3aed33", "#f97316aa", "#facc1555", "#1f293766"][i % 4],
+      }))
+    );
+  }, []);
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
