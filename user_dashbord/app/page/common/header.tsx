@@ -18,7 +18,6 @@ interface HeaderProps {
   extraInfo?: React.ReactNode;
   total?: number;
 }
-
 const onClick = (event: React.MouseEvent) => {
   event.preventDefault();
   window.history.back();
