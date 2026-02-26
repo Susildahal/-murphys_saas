@@ -52,7 +52,6 @@ function FloatingParticles() {
   const [particles, setParticles] = useState<
     { id: number; x: number; y: number; size: number; duration: number; delay: number; shape: number; color: string }[]
   >([]);
-
   useEffect(() => {
     setParticles(
       Array.from({ length: 18 }, (_, i) => ({
@@ -216,12 +215,11 @@ function Smile({ sad = false, worried = false, size = 16, color = "#111" }) {
 
 type CharProps = { rawX: MotionValue<number>; rawY: MotionValue<number>; mood: string; introReady: boolean };
 
-// ── 🐱 Cat ────────────────────────────────────────────────────────────────────
-function CatChar({ rawX, rawY, mood, introReady }: CharProps) {
-  const bx = useSpring(useTransform(rawX, [-1, 1], [-6, 6]), SP_SLOW);
-  const by = useSpring(useTransform(rawY, [-1, 1], [-4, 4]), SP_SLOW);
-  const rz = useSpring(useTransform(rawX, [-1, 1], [-3, 3]), SP_SLOW);
-  const tailRot = useSpring(useTransform(rawX, [-1, 1], [-15, 15]), SP_MED);
+// ── 💻 Coder ──────────────────────────────────────────────────────────────────
+function CoderChar({ rawX, rawY, mood, introReady }: CharProps) {
+  const bx = useSpring(useTransform(rawX, [-1, 1], [-7, 7]), SP_SLOW);
+  const by = useSpring(useTransform(rawY, [-1, 1], [-5, 5]), SP_SLOW);
+  const rz = useSpring(useTransform(rawX, [-1, 1], [-2, 2]), SP_SLOW);
 
   const isHiding = mood === "hiding";
   const isWorried = mood === "worried" || mood === "peeking";
@@ -230,132 +228,127 @@ function CatChar({ rawX, rawY, mood, introReady }: CharProps) {
   return (
     <motion.div
       style={{ x: bx, y: by, rotateZ: rz, transformOrigin: "bottom center" }}
-      initial={{ y: 80, opacity: 0, scale: 0.5 }}
+      initial={{ y: 90, opacity: 0, scale: 0.5 }}
       animate={introReady ? { y: 0, opacity: 1, scale: 1 } : {}}
-      transition={{ delay: 0.2, ...SP_SPRING }}
-      className="absolute bottom-0 left-[5px] z-30"
+      transition={{ delay: 0.15, ...SP_SPRING }}
+      className="absolute bottom-0 left-[0px] z-30"
     >
       <motion.div
-        animate={{ y: [0, -6, 0] }}
-        transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+        animate={{ y: [0, -5, 0] }}
+        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
       >
-        <div className="relative" style={{ width: 100, height: 130 }}>
-          {/* Tail */}
-          <motion.div
-            style={{ rotate: tailRot, transformOrigin: "bottom center" }}
-            className="absolute"
-          >
-            <div style={{
-              position: "absolute", bottom: 10, left: -18,
-              width: 14, height: 50, borderRadius: "8px 8px 0 0",
-              backgroundColor: BRAND.accent, transform: "rotate(-30deg)",
-            }} />
-          </motion.div>
+        <div className="relative" style={{ width: 110, height: 200 }}>
+          {/* Chair */}
+          <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", width: 80, height: 10, borderRadius: 5, backgroundColor: "#1e3a5f" }} />
+          <div style={{ position: "absolute", bottom: 10, left: "50%", transform: "translateX(-50%)", width: 6, height: 30, backgroundColor: "#1e3a5f" }} />
 
-          {/* Body */}
-          <div className="absolute bottom-0 left-0 right-0 mx-auto flex justify-center">
-            <div style={{
-              width: 80, height: 65, borderRadius: "40px 40px 12px 12px",
-              backgroundColor: BRAND.accent,
-            }} />
+          {/* Body / hoodie */}
+          <div style={{
+            position: "absolute", bottom: 38, left: "50%", transform: "translateX(-50%)",
+            width: 78, height: 85, borderRadius: "16px 16px 8px 8px",
+            background: `linear-gradient(160deg, ${BRAND.primaryDark}, ${BRAND.primary})`,
+            zIndex: 2,
+          }}>
+            {/* Hoodie pocket */}
+            <div style={{ position: "absolute", bottom: 14, left: "50%", transform: "translateX(-50%)", width: 32, height: 18, borderRadius: "0 0 8px 8px", border: `2px solid ${BRAND.primaryLight}`, borderTop: "none" }} />
+            {/* Logo on chest */}
+            <div style={{ position: "absolute", top: 18, left: "50%", transform: "translateX(-50%)", fontSize: 8, color: "#fff", fontWeight: 900, letterSpacing: 1, background: BRAND.accentLight, borderRadius: 4, padding: "2px 5px" }}>{"</>"}</div>
           </div>
 
-          {/* Head */}
-          <div className="absolute bottom-[50px] left-1/2 -translate-x-1/2" style={{ width: 72, height: 62 }}>
-            {/* Left ear */}
-            <div style={{
-              position: "absolute", top: -14, left: 4,
-              width: 0, height: 0,
-              borderLeft: "10px solid transparent", borderRight: "10px solid transparent",
-              borderBottom: `20px solid ${BRAND.accent}`,
-            }} />
-            {/* Right ear */}
-            <div style={{
-              position: "absolute", top: -14, right: 4,
-              width: 0, height: 0,
-              borderLeft: "10px solid transparent", borderRight: "10px solid transparent",
-              borderBottom: `20px solid ${BRAND.accent}`,
-            }} />
-            {/* Inner left ear */}
-            <div style={{
-              position: "absolute", top: -8, left: 9,
-              width: 0, height: 0,
-              borderLeft: "5px solid transparent", borderRight: "5px solid transparent",
-              borderBottom: `12px solid #7dd3fc`,
-            }} />
-            {/* Inner right ear */}
-            <div style={{
-              position: "absolute", top: -8, right: 9,
-              width: 0, height: 0,
-              borderLeft: "5px solid transparent", borderRight: "5px solid transparent",
-              borderBottom: `12px solid #7dd3fc`,
-            }} />
+          {/* Left arm */}
+          <motion.div
+            animate={{ rotate: [0, -6, 0, 4, 0] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+            style={{ transformOrigin: "top center", position: "absolute", bottom: 78, left: 4, width: 14, height: 44, borderRadius: 7, background: BRAND.primary, zIndex: 3 }}
+          >
+            <div style={{ position: "absolute", bottom: -8, left: -2, width: 18, height: 14, borderRadius: "50%", backgroundColor: "#fde68a" }} />
+          </motion.div>
+          {/* Right arm — typing */}
+          <motion.div
+            animate={{ rotate: [0, 5, 0, -4, 0] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+            style={{ transformOrigin: "top center", position: "absolute", bottom: 78, right: 4, width: 14, height: 44, borderRadius: 7, background: BRAND.primary, zIndex: 3 }}
+          >
+            <div style={{ position: "absolute", bottom: -8, right: -2, width: 18, height: 14, borderRadius: "50%", backgroundColor: "#fde68a" }} />
+          </motion.div>
 
-            {/* Face */}
-            <div style={{
-              width: 72, height: 62, borderRadius: "50%",
-              backgroundColor: BRAND.accent,
-              display: "flex", flexDirection: "column", alignItems: "center",
-              justifyContent: "center", gap: 4, position: "relative",
-            }}>
-              {/* Eyes */}
-              <div style={{ display: "flex", gap: 14, marginTop: -2 }}>
-                {isHiding ? (
-                  <>
-                    <div style={{ width: 12, height: 2, backgroundColor: "#fff", borderRadius: 2 }} />
-                    <div style={{ width: 12, height: 2, backgroundColor: "#fff", borderRadius: 2 }} />
-                  </>
-                ) : (
-                  <>
-                    <Eye rawX={rawX} rawY={rawY} size={14} pupilSize={7} />
-                    <Eye rawX={rawX} rawY={rawY} size={14} pupilSize={7} />
-                  </>
-                )}
-              </div>
-
-              {/* Nose */}
-              <div style={{
-                width: 6, height: 4, borderRadius: "50%",
-                backgroundColor: "#fda4af", marginTop: 1,
-              }} />
-
-              {/* Whiskers */}
-              <svg width="60" height="16" viewBox="0 0 60 16" style={{ position: "absolute", bottom: 12 }}>
-                <line x1="2" y1="4" x2="18" y2="6" stroke="#fff" strokeWidth="1" opacity="0.5" />
-                <line x1="2" y1="10" x2="18" y2="10" stroke="#fff" strokeWidth="1" opacity="0.5" />
-                <line x1="42" y1="6" x2="58" y2="4" stroke="#fff" strokeWidth="1" opacity="0.5" />
-                <line x1="42" y1="10" x2="58" y2="10" stroke="#fff" strokeWidth="1" opacity="0.5" />
-              </svg>
-
-              {/* Mouth */}
-              <div style={{ marginTop: -2 }}>
-                <Smile sad={isSad} worried={isWorried} size={12} color="#fff" />
+          {/* Laptop */}
+          <div style={{ position: "absolute", bottom: 38, left: "50%", transform: "translateX(-50%)", zIndex: 5 }}>
+            {/* Screen */}
+            <div style={{ width: 90, height: 58, borderRadius: "6px 6px 0 0", backgroundColor: "#0f172a", border: `2px solid ${BRAND.accentLight}`, position: "relative", overflow: "hidden" }}>
+              {/* Code lines */}
+              {[0, 1, 2, 3].map(i => (
+                <motion.div
+                  key={i}
+                  animate={{ opacity: [0.4, 1, 0.4] }}
+                  transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.3 }}
+                  style={{ position: "absolute", top: 8 + i * 12, left: [8, 16, 10, 20][i], height: 5, width: [45, 32, 50, 28][i], borderRadius: 3, backgroundColor: [BRAND.accentLight, "#4ade80", BRAND.primaryLight, "#fbbf24"][i] }}
+                />
+              ))}
+              {/* Cursor blink */}
+              <motion.div animate={{ opacity: [1, 0, 1] }} transition={{ duration: 0.8, repeat: Infinity }} style={{ position: "absolute", bottom: 8, left: 46, width: 2, height: 10, backgroundColor: "#e2e8f0" }} />
+            </div>
+            {/* Keyboard */}
+            <div style={{ width: 96, height: 12, borderRadius: "0 0 4px 4px", backgroundColor: "#1e293b", border: `1px solid ${BRAND.accentLight}`, marginLeft: -3 }}>
+              <div style={{ display: "flex", gap: 2, padding: "2px 4px", flexWrap: "wrap" }}>
+                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(i => (
+                  <div key={i} style={{ width: 5, height: 4, borderRadius: 1, backgroundColor: "#334155" }} />
+                ))}
               </div>
             </div>
           </div>
 
-          {/* Paws */}
-          <div style={{
-            position: "absolute", bottom: -2, left: 12,
-            width: 18, height: 10, borderRadius: "50%",
-            backgroundColor: "#7dd3fc",
-          }} />
-          <div style={{
-            position: "absolute", bottom: -2, right: 12,
-            width: 18, height: 10, borderRadius: "50%",
-            backgroundColor: "#7dd3fc",
-          }} />
+          {/* Head */}
+          <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 68, height: 65, zIndex: 6 }}>
+            {/* Hair */}
+            <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 68, height: 28, borderRadius: "34px 34px 0 0", backgroundColor: "#1e3a5f" }} />
+            {/* Side hair */}
+            <div style={{ position: "absolute", top: 8, left: -2, width: 10, height: 22, borderRadius: "6px 0 0 8px", backgroundColor: "#1e3a5f" }} />
+            <div style={{ position: "absolute", top: 8, right: -2, width: 10, height: 22, borderRadius: "0 6px 8px 0", backgroundColor: "#1e3a5f" }} />
+
+            {/* Face */}
+            <div style={{
+              position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)",
+              width: 66, height: 52, borderRadius: "0 0 30px 30px",
+              backgroundColor: "#fde68a",
+              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 5,
+            }}>
+              {/* Glasses */}
+              <div style={{ display: "flex", gap: 4, alignItems: "center", zIndex: 2 }}>
+                <div style={{ width: 20, height: 14, borderRadius: 6, border: "2px solid #1e40af", backgroundColor: "#dbeafe55", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {isHiding ? <div style={{ width: 12, height: 2, backgroundColor: "#1e40af", borderRadius: 2 }} /> : <Eye rawX={rawX} rawY={rawY} size={11} pupilSize={5} white={false} />}
+                </div>
+                <div style={{ width: 4, height: 2, backgroundColor: "#1e40af" }} />
+                <div style={{ width: 20, height: 14, borderRadius: 6, border: "2px solid #1e40af", backgroundColor: "#dbeafe55", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {isHiding ? <div style={{ width: 12, height: 2, backgroundColor: "#1e40af", borderRadius: 2 }} /> : <Eye rawX={rawX} rawY={rawY} size={11} pupilSize={5} white={false} />}
+                </div>
+              </div>
+              <Smile sad={isSad} worried={isWorried} size={13} color="#92400e" />
+            </div>
+          </div>
+
+          {/* Floating code snippets */}
+          {[0, 1].map(i => (
+            <motion.div
+              key={i}
+              animate={{ y: [0, -10, 0], opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 2 + i * 0.5, repeat: Infinity, delay: i * 1 }}
+              style={{ position: "absolute", top: [24, 50][i], left: [i === 0 ? -22 : 96][0], fontSize: 8, color: BRAND.accentLight, fontWeight: 700, fontFamily: "monospace", whiteSpace: "nowrap" }}
+            >
+              {["{code}", "</>"][i]}
+            </motion.div>
+          ))}
         </div>
       </motion.div>
     </motion.div>
   );
 }
 
-// ── Friendly Robot ────────────────────────────────────────────────────────────
-function RobotChar({ rawX, rawY, mood, introReady }: CharProps) {
-  const bx = useSpring(useTransform(rawX, [-1, 1], [-12, 12]), SP_SLOW);
-  const by = useSpring(useTransform(rawY, [-1, 1], [-8, 8]), SP_SLOW);
-  const cursorRotate = useSpring(useTransform(rawX, [-1, 1], [-3, 3]), SP_SLOW);
+// ── 🤖 AI Bot ─────────────────────────────────────────────────────────────────
+function AIBotChar({ rawX, rawY, mood, introReady }: CharProps) {
+  const bx = useSpring(useTransform(rawX, [-1, 1], [-10, 10]), SP_SLOW);
+  const by = useSpring(useTransform(rawY, [-1, 1], [-7, 7]), SP_SLOW);
+  const headTilt = useSpring(useTransform(rawX, [-1, 1], [-4, 4]), SP_MED);
 
   const isHiding = mood === "hiding";
   const isWorried = mood === "worried" || mood === "peeking";
@@ -363,132 +356,126 @@ function RobotChar({ rawX, rawY, mood, introReady }: CharProps) {
 
   return (
     <motion.div
-      style={{ x: bx, y: by, transformOrigin: "bottom center", left: 85, zIndex: 10 }}
-      initial={{ y: 120, opacity: 0, scale: 0.4 }}
+      style={{ x: bx, y: by, transformOrigin: "bottom center", left: 95, zIndex: 15 }}
+      initial={{ y: 110, opacity: 0, scale: 0.4 }}
       animate={introReady ? { y: 0, opacity: 1, scale: 1 } : {}}
-      transition={{ delay: 0.35, ...SP_SPRING }}
+      transition={{ delay: 0.3, ...SP_SPRING }}
       className="absolute bottom-0"
     >
       <motion.div
         animate={{ y: [0, -4, 0] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+        transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
       >
-        <motion.div
-          style={{ rotate: cursorRotate, transformOrigin: "bottom center" }}
-          className="relative flex flex-col items-center"
-        >
-          {/* Antenna */}
-          <motion.div
-            animate={{ rotate: [0, 8, -8, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            style={{ transformOrigin: "bottom center" }}
-            className="flex flex-col items-center"
-          >
-            <div style={{
-              width: 10, height: 10, borderRadius: "50%",
-              backgroundColor: "#fbbf24",
-              boxShadow: "0 0 8px #fbbf2488",
-            }} />
-            <div style={{ width: 3, height: 14, backgroundColor: "#94a3b8" }} />
-          </motion.div>
-
-          {/* Head */}
-          <div style={{
-            width: 90, height: 70, borderRadius: 18,
-            backgroundColor: BRAND.primary,
-            display: "flex", flexDirection: "column",
-            alignItems: "center", justifyContent: "center", gap: 6,
-            position: "relative", border: "3px solid #1e40af",
-          }}>
-            {/* Bolts */}
-            <div style={{ position: "absolute", left: -6, top: "50%", transform: "translateY(-50%)", width: 8, height: 8, borderRadius: "50%", backgroundColor: "#94a3b8", border: "2px solid #64748b" }} />
-            <div style={{ position: "absolute", right: -6, top: "50%", transform: "translateY(-50%)", width: 8, height: 8, borderRadius: "50%", backgroundColor: "#94a3b8", border: "2px solid #64748b" }} />
-
-            {/* Eyes */}
-            <div style={{ display: "flex", gap: 16 }}>
-              {isHiding ? (
-                <>
-                  <div style={{ width: 16, height: 3, backgroundColor: "#93c5fd", borderRadius: 2 }} />
-                  <div style={{ width: 16, height: 3, backgroundColor: "#93c5fd", borderRadius: 2 }} />
-                </>
-              ) : (
-                <>
-                  <div style={{ width: 20, height: 16, borderRadius: 6, backgroundColor: "#dbeafe", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Eye rawX={rawX} rawY={rawY} size={12} pupilSize={6} white={false} />
-                  </div>
-                  <div style={{ width: 20, height: 16, borderRadius: 6, backgroundColor: "#dbeafe", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Eye rawX={rawX} rawY={rawY} size={12} pupilSize={6} white={false} />
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* Mouth */}
-            <Smile sad={isSad || isHiding} worried={isWorried} size={18} color="#93c5fd" />
-          </div>
-
+        <div className="relative" style={{ width: 95, height: 190 }}>
           {/* Neck */}
-          <div style={{ width: 20, height: 8, backgroundColor: "#94a3b8" }} />
+          <div style={{ position: "absolute", bottom: 85, left: "50%", transform: "translateX(-50%)", width: 18, height: 20, backgroundColor: "#334155", zIndex: 3 }} />
 
           {/* Body */}
           <div style={{
-            width: 80, height: 110, borderRadius: "14px 14px 8px 8px",
-            backgroundColor: BRAND.primary,
-            border: "3px solid #1e40af",
-            position: "relative", display: "flex", flexDirection: "column",
-            alignItems: "center", paddingTop: 12,
+            position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)",
+            width: 82, height: 90, borderRadius: "14px 14px 10px 10px",
+            background: `linear-gradient(160deg, #1e293b, #0f172a)`,
+            border: `2px solid ${BRAND.primary}`,
+            zIndex: 2,
           }}>
+            {/* Circuit lines */}
+            <svg width="78" height="86" viewBox="0 0 78 86" style={{ position: "absolute", top: 0, left: 0, opacity: 0.3 }}>
+              <line x1="15" y1="20" x2="15" y2="50" stroke={BRAND.accentLight} strokeWidth="1" />
+              <line x1="15" y1="35" x2="35" y2="35" stroke={BRAND.accentLight} strokeWidth="1" />
+              <circle cx="35" cy="35" r="3" fill={BRAND.accentLight} />
+              <line x1="60" y1="20" x2="60" y2="60" stroke={BRAND.primaryLight} strokeWidth="1" />
+              <line x1="40" y1="60" x2="60" y2="60" stroke={BRAND.primaryLight} strokeWidth="1" />
+              <circle cx="40" cy="60" r="3" fill={BRAND.primaryLight} />
+            </svg>
             {/* Chest panel */}
-            <div style={{
-              width: 40, height: 30, borderRadius: 8,
-              backgroundColor: "#1e3a5f",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            }}>
-              <motion.div
-                animate={{ opacity: [1, 0.3, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#4ade80" }}
-              />
-              <motion.div
-                animate={{ opacity: [0.3, 1, 0.3] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#fbbf24" }}
-              />
-              <motion.div
-                animate={{ opacity: [1, 0.5, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#f87171" }}
-              />
+            <div style={{ position: "absolute", top: 16, left: "50%", transform: "translateX(-50%)", width: 44, height: 30, borderRadius: 8, backgroundColor: "#0f172a", border: `1px solid ${BRAND.accentLight}` }}>
+              {[0, 1].map(i => (
+                <motion.div key={i} animate={{ opacity: [1, 0.2, 1] }} transition={{ duration: 0.9 + i * 0.3, repeat: Infinity, delay: i * 0.4 }} style={{ margin: "4px 6px", height: 5, borderRadius: 3, background: i === 0 ? `linear-gradient(90deg,${BRAND.accentLight},${BRAND.primaryLight})` : `linear-gradient(90deg,#4ade80,#22c55e)` }} />
+              ))}
+              <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ duration: 1.5, repeat: Infinity }} style={{ margin: "3px auto", width: 10, height: 10, borderRadius: "50%", backgroundColor: BRAND.accentLight, boxShadow: `0 0 6px ${BRAND.accentLight}` }} />
             </div>
-
-            {/* Belt */}
-            <div style={{ width: "100%", height: 6, backgroundColor: "#94a3b8", marginTop: 12 }} />
+            {/* Side vents */}
+            {[-1, 1].map(side => (
+              <div key={side} style={{ position: "absolute", top: 55, [side === -1 ? "left" : "right"]: 6 }}>
+                {[0, 1, 2].map(i => <div key={i} style={{ width: 8, height: 3, borderRadius: 2, backgroundColor: "#334155", margin: "2px 0" }} />)}
+              </div>
+            ))}
           </div>
 
           {/* Arms */}
-          <div style={{ position: "absolute", top: 106, left: -14, width: 12, height: 45, borderRadius: 6, backgroundColor: "#94a3b8" }}>
-            <div style={{ position: "absolute", bottom: -6, left: 0, width: 14, height: 14, borderRadius: "50%", backgroundColor: "#94a3b8", border: "2px solid #64748b" }} />
-          </div>
-          <div style={{ position: "absolute", top: 106, right: -14, width: 12, height: 45, borderRadius: 6, backgroundColor: "#94a3b8" }}>
-            <div style={{ position: "absolute", bottom: -6, right: 0, width: 14, height: 14, borderRadius: "50%", backgroundColor: "#94a3b8", border: "2px solid #64748b" }} />
-          </div>
+          {[-1, 1].map((side, idx) => (
+            <motion.div
+              key={idx}
+              animate={{ rotate: [0, side * 8, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: idx * 0.6 }}
+              style={{ transformOrigin: "top center", position: "absolute", bottom: 45, [side === -1 ? "left" : "right"]: -8, width: 16, height: 48, borderRadius: 8, background: "linear-gradient(180deg,#1e293b,#334155)", border: `1px solid ${BRAND.primary}`, zIndex: 1 }}
+            >
+              {/* Hand / gripper */}
+              <div style={{ position: "absolute", bottom: -6, left: "50%", transform: "translateX(-50%)", width: 20, height: 14, borderRadius: 7, backgroundColor: "#1e293b", border: `1px solid ${BRAND.primaryLight}` }} />
+            </motion.div>
+          ))}
 
-          {/* Feet */}
-          <div style={{ display: "flex", gap: 12, marginTop: -2 }}>
-            <div style={{ width: 28, height: 14, borderRadius: "6px 6px 10px 10px", backgroundColor: "#475569" }} />
-            <div style={{ width: 28, height: 14, borderRadius: "6px 6px 10px 10px", backgroundColor: "#475569" }} />
+          {/* Head */}
+          <motion.div style={{ rotate: headTilt, transformOrigin: "bottom center", position: "absolute", top: 92, left: "50%", transform: "translateX(-50%)", zIndex: 8 }}>
+            {/* Antenna */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 2 }}>
+              <motion.div animate={{ scale: [1, 1.6, 1], backgroundColor: [BRAND.accentLight, "#fbbf24", BRAND.accentLight] }} transition={{ duration: 1.2, repeat: Infinity }} style={{ width: 8, height: 8, borderRadius: "50%", boxShadow: `0 0 10px ${BRAND.accentLight}` }} />
+              <div style={{ width: 3, height: 14, backgroundColor: "#475569" }} />
+            </div>
+            {/* Head box */}
+            <div style={{
+              width: 80, height: 65, borderRadius: 14,
+              background: "linear-gradient(160deg,#1e293b,#0f172a)",
+              border: `2px solid ${BRAND.primary}`,
+              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8,
+              position: "relative",
+            }}>
+              {/* Visor strip */}
+              <div style={{ position: "absolute", top: 15, left: 4, right: 4, height: 24, borderRadius: 8, background: `linear-gradient(135deg,${BRAND.glow},${BRAND.primary}44)`, border: `1px solid ${BRAND.primaryLight}`, display: "flex", alignItems: "center", justifyContent: "center", gap: 14 }}>
+                {isHiding ? (
+                  <>
+                    <div style={{ width: 14, height: 3, backgroundColor: BRAND.accentLight, borderRadius: 2 }} />
+                    <div style={{ width: 14, height: 3, backgroundColor: BRAND.accentLight, borderRadius: 2 }} />
+                  </>
+                ) : (
+                  <>
+                    <Eye rawX={rawX} rawY={rawY} size={14} pupilSize={8} white={true} />
+                    <Eye rawX={rawX} rawY={rawY} size={14} pupilSize={8} white={true} />
+                  </>
+                )}
+              </div>
+              {/* Mouth speaker */}
+              <div style={{ position: "absolute", bottom: 10, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 3 }}>
+                {[0, 1, 2, 3, 4].map(i => (
+                  <motion.div key={i} animate={{ scaleY: isHiding ? 1 : [0.5, 1.5, 0.8, 1.2, 0.5] }} transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.1 }} style={{ width: 3, height: isSad ? 2 : 8, borderRadius: 2, backgroundColor: BRAND.accentLight }} />
+                ))}
+              </div>
+              {/* Side bolt */}
+              <div style={{ position: "absolute", left: -6, top: "50%", transform: "translateY(-50%)", width: 7, height: 7, borderRadius: "50%", backgroundColor: "#475569", border: "1px solid #64748b" }} />
+              <div style={{ position: "absolute", right: -6, top: "50%", transform: "translateY(-50%)", width: 7, height: 7, borderRadius: "50%", backgroundColor: "#475569", border: "1px solid #64748b" }} />
+            </div>
+          </motion.div>
+
+          {/* Legs */}
+          <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 10 }}>
+            {[0, 1].map(i => (
+              <div key={i}>
+                <div style={{ width: 24, height: 28, borderRadius: "6px 6px 0 0", background: "linear-gradient(180deg,#1e293b,#0f172a)", border: `1px solid ${BRAND.primary}` }} />
+                <div style={{ width: 28, height: 10, borderRadius: "0 0 6px 6px", backgroundColor: "#0f172a", border: `1px solid ${BRAND.primaryLight}`, marginLeft: -2 }} />
+              </div>
+            ))}
           </div>
-        </motion.div>
+        </div>
       </motion.div>
     </motion.div>
   );
 }
 
-// ── Round Ghost ───────────────────────────────────────────────────────────────
-function GhostChar({ rawX, rawY, mood, introReady }: CharProps) {
-  const bx = useSpring(useTransform(rawX, [-1, 1], [-18, 18]), SP_MED);
-  const by = useSpring(useTransform(rawY, [-1, 1], [-10, 10]), SP_MED);
-  const rz = useSpring(useTransform(rawX, [-1, 1], [4, -4]), SP_MED);
+// ── ☁️ Cloud Server ───────────────────────────────────────────────────────────
+function CloudChar({ rawX, rawY, mood, introReady }: CharProps) {
+  const bx = useSpring(useTransform(rawX, [-1, 1], [-14, 14]), SP_MED);
+  const by = useSpring(useTransform(rawY, [-1, 1], [-9, 9]), SP_MED);
+  const rz = useSpring(useTransform(rawX, [-1, 1], [3, -3]), SP_MED);
 
   const isHiding = mood === "hiding";
   const isWorried = mood === "worried" || mood === "peeking";
@@ -496,191 +483,170 @@ function GhostChar({ rawX, rawY, mood, introReady }: CharProps) {
 
   return (
     <motion.div
-      style={{ x: bx, y: by, rotateZ: rz, transformOrigin: "bottom center", left: 200, zIndex: 20 }}
-      initial={{ y: 100, opacity: 0, scale: 0.3 }}
+      style={{ x: bx, y: by, rotateZ: rz, transformOrigin: "bottom center", left: 195, zIndex: 20 }}
+      initial={{ y: 80, opacity: 0, scale: 0.3 }}
       animate={introReady ? { y: 0, opacity: 1, scale: 1 } : {}}
       transition={{ delay: 0.45, ...SP_SPRING }}
       className="absolute bottom-0"
     >
       <motion.div
-        animate={{ y: [0, -8, 0] }}
-        transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        animate={{ y: [0, -9, 0] }}
+        transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
       >
-        <div className="relative" style={{ width: 80, height: 120 }}>
-          {/* Main body */}
-          <div style={{
-            width: 80, height: 100, borderRadius: "40px 40px 0 0",
-            backgroundColor: "#e0f2fe",
-            position: "relative",
-          }}>
-            {/* Blush */}
-            <div style={{ position: "absolute", top: 52, left: 6, width: 14, height: 8, borderRadius: "50%", backgroundColor: "#fecdd3", opacity: 0.6 }} />
-            <div style={{ position: "absolute", top: 52, right: 6, width: 14, height: 8, borderRadius: "50%", backgroundColor: "#fecdd3", opacity: 0.6 }} />
+        <div className="relative" style={{ width: 110, height: 140 }}>
+          {/* Data beams going down */}
+          {[0, 1, 2].map(i => (
+            <motion.div
+              key={i}
+              animate={{ height: [0, 30, 0], opacity: [0, 0.7, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.5 }}
+              style={{ position: "absolute", bottom: -30, left: [28, 52, 76][i], width: 3, borderRadius: 2, backgroundColor: [BRAND.accentLight, BRAND.primaryLight, "#4ade80"][i], transformOrigin: "top" }}
+            />
+          ))}
 
-            {/* Face */}
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 28, gap: 6 }}>
-              <div style={{ display: "flex", gap: 18 }}>
+          {/* Server rack body */}
+          <div style={{
+            position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)",
+            width: 86, height: 80, borderRadius: "8px 8px 6px 6px",
+            background: "linear-gradient(160deg,#1e293b,#0f172a)",
+            border: `2px solid ${BRAND.primary}`,
+            zIndex: 2,
+          }}>
+            {/* Server rack units */}
+            {[0, 1, 2].map(i => (
+              <div key={i} style={{ position: "absolute", top: 8 + i * 22, left: 6, right: 6, height: 16, borderRadius: 4, backgroundColor: "#0f172a", border: `1px solid ${BRAND.primaryLight}44`, display: "flex", alignItems: "center", paddingLeft: 6, gap: 4 }}>
+                <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1 + i * 0.2, repeat: Infinity }} style={{ width: 5, height: 5, borderRadius: "50%", backgroundColor: ["#4ade80", BRAND.accentLight, "#fbbf24"][i] }} />
+                <div style={{ flex: 1, height: 3, borderRadius: 2, backgroundColor: "#334155" }} />
+                <div style={{ width: 12, height: 8, borderRadius: 2, backgroundColor: "#334155", marginRight: 4 }} />
+              </div>
+            ))}
+          </div>
+
+          {/* Cloud puff shape */}
+          <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: 110, height: 72, position: "absolute", top: 0 }}>
+            {/* Big center puff */}
+            <div style={{ position: "absolute", top: 14, left: "50%", transform: "translateX(-50%)", width: 68, height: 58, borderRadius: "50%", background: `linear-gradient(135deg,${BRAND.primaryLight},${BRAND.primary})`, boxShadow: `0 0 20px ${BRAND.glow}` }} />
+            {/* Left small puff */}
+            <div style={{ position: "absolute", top: 26, left: 4, width: 46, height: 44, borderRadius: "50%", background: `linear-gradient(135deg,${BRAND.primary},${BRAND.primaryDark})` }} />
+            {/* Right small puff */}
+            <div style={{ position: "absolute", top: 22, right: 4, width: 50, height: 48, borderRadius: "50%", background: `linear-gradient(135deg,${BRAND.primaryLight},${BRAND.primary})` }} />
+            {/* Face on the cloud */}
+            <div style={{ position: "absolute", top: 22, left: "50%", transform: "translateX(-50%)", width: 68, height: 56, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, zIndex: 5 }}>
+              <div style={{ display: "flex", gap: 16 }}>
                 {isHiding ? (
                   <>
-                    <div style={{ width: 10, height: 3, backgroundColor: "#64748b", borderRadius: 2 }} />
-                    <div style={{ width: 10, height: 3, backgroundColor: "#64748b", borderRadius: 2 }} />
+                    <div style={{ width: 12, height: 3, backgroundColor: "#fff", borderRadius: 2 }} />
+                    <div style={{ width: 12, height: 3, backgroundColor: "#fff", borderRadius: 2 }} />
                   </>
                 ) : (
                   <>
-                    <Eye rawX={rawX} rawY={rawY} size={13} pupilSize={7} white={false} />
-                    <Eye rawX={rawX} rawY={rawY} size={13} pupilSize={7} white={false} />
+                    <Eye rawX={rawX} rawY={rawY} size={14} pupilSize={7} white={true} />
+                    <Eye rawX={rawX} rawY={rawY} size={14} pupilSize={7} white={true} />
                   </>
                 )}
               </div>
-              <Smile sad={isSad} worried={isWorried} size={12} color="#64748b" />
+              <Smile sad={isSad} worried={isWorried} size={13} color="#fff" />
             </div>
-          </div>
 
-          {/* Wavy bottom */}
-          <svg width="80" height="20" viewBox="0 0 80 20" style={{ display: "block", marginTop: -1 }}>
-            <path
-              d="M0 0 L0 10 Q10 20 20 10 Q30 0 40 10 Q50 20 60 10 Q70 0 80 10 L80 0 Z"
-              fill="#e0f2fe"
-            />
-          </svg>
+            {/* WiFi signal arcs */}
+            <motion.div animate={{ opacity: [0, 1, 0], scale: [0.8, 1.1, 0.8] }} transition={{ duration: 2, repeat: Infinity }}>
+              <svg style={{ position: "absolute", top: -14, right: 12 }} width="22" height="18" viewBox="0 0 22 18">
+                <path d="M3 15 Q11 2 19 15" stroke={BRAND.accentLight} strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.5" />
+                <path d="M6 15 Q11 6 16 15" stroke={BRAND.accentLight} strokeWidth="2" fill="none" strokeLinecap="round" opacity="0.8" />
+                <circle cx="11" cy="15" r="2" fill={BRAND.accentLight} />
+              </svg>
+            </motion.div>
+          </div>
         </div>
       </motion.div>
     </motion.div>
   );
 }
 
-// ── Cute Owl ──────────────────────────────────────────────────────────────────
-function OwlChar({ rawX, rawY, mood, introReady }: CharProps) {
-  const bx = useSpring(useTransform(rawX, [-1, 1], [-24, 24]), SP_FAST);
-  const by = useSpring(useTransform(rawY, [-1, 1], [-14, 14]), SP_FAST);
-  const rz = useSpring(useTransform(rawX, [-1, 1], [-6, 6]), SP_FAST);
-  const wingRot = useSpring(useTransform(rawX, [-1, 1], [10, -10]), SP_MED);
+// ── 🛡️ Security Shield ────────────────────────────────────────────────────────
+function ShieldChar({ rawX, rawY, mood, introReady }: CharProps) {
+  const bx = useSpring(useTransform(rawX, [-1, 1], [-20, 20]), SP_FAST);
+  const by = useSpring(useTransform(rawY, [-1, 1], [-12, 12]), SP_FAST);
+  const rz = useSpring(useTransform(rawX, [-1, 1], [-5, 5]), SP_MED);
 
   const isHiding = mood === "hiding";
-  const isWorried = mood === "worried" || mood === "peeking" || mood === "sad";
+  const isWorried = mood === "worried" || mood === "peeking";
   const isSad = mood === "sad";
 
   return (
     <motion.div
-      style={{ x: bx, y: by, rotateZ: rz, transformOrigin: "bottom center", left: 280, zIndex: 25 }}
-      initial={{ y: 60, opacity: 0, scale: 0.3, rotate: 15 }}
+      style={{ x: bx, y: by, rotateZ: rz, transformOrigin: "bottom center", left: 292, zIndex: 25 }}
+      initial={{ y: 70, opacity: 0, scale: 0.3, rotate: 15 }}
       animate={introReady ? { y: 0, opacity: 1, scale: 1, rotate: 0 } : {}}
-      transition={{ delay: 0.55, ...SP_SPRING }}
+      transition={{ delay: 0.6, ...SP_SPRING }}
       className="absolute bottom-0"
     >
       <motion.div
-        animate={{ y: [0, -5, 0], rotate: [0, 2, -2, 0] }}
-        transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
+        animate={{ y: [0, -7, 0], rotate: [0, 1, -1, 0] }}
+        transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 0.8 }}
       >
-        <div className="relative" style={{ width: 90, height: 110 }}>
-          {/* Left wing */}
-          <motion.div
-            style={{ rotate: wingRot, transformOrigin: "top right" }}
-          >
-            <div style={{
-              position: "absolute", top: 40, left: -8,
-              width: 22, height: 40, borderRadius: "12px 4px 12px 16px",
-              backgroundColor: "#1e40af",
-            }} />
-          </motion.div>
+        <div className="relative" style={{ width: 95, height: 150 }}>
+          {/* Shield body */}
+          <svg width="95" height="140" viewBox="0 0 95 140" style={{ position: "absolute", top: 0, left: 0 }}>
+            <defs>
+              <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={BRAND.primary} />
+                <stop offset="100%" stopColor={BRAND.primaryDark} />
+              </linearGradient>
+            </defs>
+            {/* Outer shield */}
+            <path d="M47 4 L88 20 L88 65 Q88 110 47 132 Q6 110 6 65 L6 20 Z" fill="url(#shieldGrad)" stroke={BRAND.accentLight} strokeWidth="2" />
+            {/* Inner shield highlight */}
+            <path d="M47 14 L80 26 L80 64 Q80 100 47 118 Q14 100 14 64 L14 26 Z" fill="none" stroke={BRAND.primaryLight} strokeWidth="1" opacity="0.4" />
+          </svg>
 
-          {/* Right wing */}
-          <motion.div
-            style={{ rotate: useSpring(useTransform(rawX, [-1, 1], [-10, 10]), SP_MED), transformOrigin: "top left" }}
-          >
-            <div style={{
-              position: "absolute", top: 40, right: -8,
-              width: 22, height: 40, borderRadius: "4px 12px 16px 12px",
-              backgroundColor: "#1e40af",
-            }} />
-          </motion.div>
-
-          {/* Body */}
-          <div style={{
-            width: 90, height: 110, borderRadius: "45px 45px 20px 20px",
-            backgroundColor: BRAND.primaryDark,
-            position: "relative", overflow: "hidden",
-          }}>
-            {/* Belly */}
-            <div style={{
-              position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)",
-              width: 56, height: 50, borderRadius: "50% 50% 20px 20px",
-              backgroundColor: "#bfdbfe",
-            }} />
-
-            {/* Ear tufts */}
-            <div style={{
-              position: "absolute", top: -8, left: 10,
-              width: 0, height: 0,
-              borderLeft: "6px solid transparent", borderRight: "6px solid transparent",
-              borderBottom: `14px solid ${BRAND.primaryDark}`,
-            }} />
-            <div style={{
-              position: "absolute", top: -8, right: 10,
-              width: 0, height: 0,
-              borderLeft: "6px solid transparent", borderRight: "6px solid transparent",
-              borderBottom: `14px solid ${BRAND.primaryDark}`,
-            }} />
-
+          {/* Face on shield */}
+          <div style={{ position: "absolute", top: 16, left: "50%", transform: "translateX(-50%)", width: 76, height: 90, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", paddingTop: 14, gap: 8, zIndex: 5 }}>
             {/* Eyes */}
-            <div style={{
-              display: "flex", gap: 8, justifyContent: "center",
-              paddingTop: 22,
-            }}>
+            <div style={{ display: "flex", gap: 16 }}>
               {isHiding ? (
                 <>
-                  <div style={{ width: 22, height: 22, borderRadius: "50%", backgroundColor: "#bfdbfe", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <div style={{ width: 14, height: 3, backgroundColor: "#1e3a5f", borderRadius: 2 }} />
-                  </div>
-                  <div style={{ width: 22, height: 22, borderRadius: "50%", backgroundColor: "#bfdbfe", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <div style={{ width: 14, height: 3, backgroundColor: "#1e3a5f", borderRadius: 2 }} />
-                  </div>
+                  <div style={{ width: 14, height: 3, backgroundColor: "#fff", borderRadius: 2 }} />
+                  <div style={{ width: 14, height: 3, backgroundColor: "#fff", borderRadius: 2 }} />
                 </>
               ) : (
                 <>
-                  <div style={{ width: 24, height: 24, borderRadius: "50%", backgroundColor: "#bfdbfe", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Eye rawX={rawX} rawY={rawY} size={16} pupilSize={9} white={false} />
-                  </div>
-                  <div style={{ width: 24, height: 24, borderRadius: "50%", backgroundColor: "#bfdbfe", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Eye rawX={rawX} rawY={rawY} size={16} pupilSize={9} white={false} />
-                  </div>
+                  <Eye rawX={rawX} rawY={rawY} size={14} pupilSize={8} white={true} />
+                  <Eye rawX={rawX} rawY={rawY} size={14} pupilSize={8} white={true} />
                 </>
               )}
             </div>
+            <Smile sad={isSad} worried={isWorried} size={14} color="#fff" />
 
-            {/* Beak */}
-            <div style={{ display: "flex", justifyContent: "center", marginTop: 3 }}>
-              <div style={{
-                width: 0, height: 0,
-                borderLeft: "7px solid transparent", borderRight: "7px solid transparent",
-                borderTop: "10px solid #fbbf24",
-              }} />
-            </div>
-
-            {/* Mouth */}
-            {(isWorried || isSad) && (
-              <div style={{ display: "flex", justifyContent: "center", marginTop: 2 }}>
-                <Smile sad={isSad} worried={isWorried} size={10} color="#93c5fd" />
+            {/* Lock icon */}
+            <div style={{ marginTop: 4, display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <div style={{ width: 16, height: 10, borderRadius: "8px 8px 0 0", border: "2.5px solid #fff", borderBottom: "none" }} />
+              <div style={{ width: 22, height: 14, borderRadius: 4, backgroundColor: "#fff22", background: "rgba(255,255,255,0.25)", border: "2px solid #fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <motion.div animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 2, repeat: Infinity }} style={{ width: 4, height: 4, borderRadius: "50%", backgroundColor: "#fff" }} />
               </div>
-            )}
+            </div>
           </div>
 
-          {/* Feet */}
-          <div style={{ display: "flex", justifyContent: "center", gap: 16, marginTop: -2 }}>
-            <div style={{
-              display: "flex", gap: 2,
-            }}>
-              <div style={{ width: 6, height: 8, borderRadius: "0 0 4px 4px", backgroundColor: "#fbbf24" }} />
-              <div style={{ width: 6, height: 8, borderRadius: "0 0 4px 4px", backgroundColor: "#fbbf24" }} />
-              <div style={{ width: 6, height: 8, borderRadius: "0 0 4px 4px", backgroundColor: "#fbbf24" }} />
-            </div>
-            <div style={{
-              display: "flex", gap: 2,
-            }}>
-              <div style={{ width: 6, height: 8, borderRadius: "0 0 4px 4px", backgroundColor: "#fbbf24" }} />
-              <div style={{ width: 6, height: 8, borderRadius: "0 0 4px 4px", backgroundColor: "#fbbf24" }} />
-              <div style={{ width: 6, height: 8, borderRadius: "0 0 4px 4px", backgroundColor: "#fbbf24" }} />
-            </div>
+          {/* Orbiting security dots */}
+          {[0, 1, 2].map(i => (
+            <motion.div
+              key={i}
+              animate={{ rotate: [i * 120, i * 120 + 360] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+              style={{ position: "absolute", top: 30, left: "50%", width: 70, height: 70, marginLeft: -35, marginTop: -5 }}
+            >
+              <motion.div
+                animate={{ scale: [0.8, 1.2, 0.8], opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.5 }}
+                style={{ position: "absolute", top: -4, left: "50%", marginLeft: -4, width: 8, height: 8, borderRadius: "50%", backgroundColor: [BRAND.accentLight, "#fbbf24", "#4ade80"][i], boxShadow: `0 0 8px ${[BRAND.accentLight, "#fbbf24", "#4ade80"][i]}` }}
+              />
+            </motion.div>
+          ))}
+
+          {/* Base / feet */}
+          <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", display: "flex", gap: 8 }}>
+            <div style={{ width: 22, height: 12, borderRadius: "4px 4px 0 0", backgroundColor: BRAND.primaryDark, border: `1px solid ${BRAND.primary}` }} />
+            <div style={{ width: 22, height: 12, borderRadius: "4px 4px 0 0", backgroundColor: BRAND.primaryDark, border: `1px solid ${BRAND.primary}` }} />
           </div>
         </div>
       </motion.div>
@@ -694,14 +660,15 @@ function Illustration({ rawX, rawY, mood, introReady }: CharProps) {
   const gy = useSpring(useTransform(rawY, [-1, 1], [-3, 3]), SP_SLOW);
 
   return (
-    <motion.div style={{ x: gx, y: gy, width: 400, height: 280 }} className="relative">
-      <CatChar rawX={rawX} rawY={rawY} mood={mood} introReady={introReady} />
-      <RobotChar rawX={rawX} rawY={rawY} mood={mood} introReady={introReady} />
-      <GhostChar rawX={rawX} rawY={rawY} mood={mood} introReady={introReady} />
-      <OwlChar rawX={rawX} rawY={rawY} mood={mood} introReady={introReady} />
+    <motion.div style={{ x: gx, y: gy, width: 420, height: 300 }} className="relative">
+      <CoderChar rawX={rawX} rawY={rawY} mood={mood} introReady={introReady} />
+      <AIBotChar rawX={rawX} rawY={rawY} mood={mood} introReady={introReady} />
+      <CloudChar rawX={rawX} rawY={rawY} mood={mood} introReady={introReady} />
+      <ShieldChar rawX={rawX} rawY={rawY} mood={mood} introReady={introReady} />
     </motion.div>
   );
 }
+
 
 // ── 4-pointed star logo — animated glow ───────────────────────────────────────
 function StarLogo() {
