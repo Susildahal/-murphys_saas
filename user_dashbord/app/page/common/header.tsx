@@ -1,5 +1,4 @@
 "use client";
-
 import React from "react";
 import { CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,11 +17,11 @@ interface HeaderProps {
   extraInfo?: React.ReactNode;
   total?: number;
 }
+
 const onClick = (event: React.MouseEvent) => {
   event.preventDefault();
   window.history.back();
 };
-
 function Header({
   title,
   description,
@@ -37,7 +36,6 @@ function Header({
 }: HeaderProps) {
   return (
     <div className="mb-4  mt-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-      
       {/* LEFT */}
       <div className="flex min-w-0 items-start gap-3">
         <Button
@@ -48,7 +46,6 @@ function Header({
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
-
         <div className="min-w-0">
           <CardTitle className="truncate text-sm font-semibold lg:text-base">
             {title}
