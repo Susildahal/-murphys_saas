@@ -40,14 +40,14 @@ function Header({
     <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       
       {/* LEFT */}
-      <div className="flex min-w-0 items-start gap-3">
+      <div className="flex items-start gap-3">
         <Button
           variant="ghost"
           size="icon"
           onClick={onClick}
-          className="shrink-0"
+          className="shrink-0 cursor-pointer hover:bg-none"
         >
-          <ArrowLeft className="h-5 w-5" />
+          <ArrowLeft className="h-5 w-10" />
         </Button>
 
         <div className="min-w-0">

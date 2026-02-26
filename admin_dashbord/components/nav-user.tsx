@@ -57,20 +57,13 @@ import Link from "next/link"
 export function NavUser() {
   const { isMobile } = useSidebar()
   const router = useRouter()
-  const profileState = useAppSelector((state) => state.profile)
   const meeState = useAppSelector((state) => state.mee)
+  console.log("meeState:", meeState)
   const dispatch = useAppDispatch()
-  const profile = Array.isArray(profileState.profile) ? profileState.profile[0] : profileState.profile
-  const currentUserEmail = meeState.data?.email || getAuth().currentUser?.email
+
 
   const [showLogoutDialog, setShowLogoutDialog] = useState(false)
 
-  const userName = profile?.firstName && profile?.lastName
-    ? `${profile.firstName} ${profile.lastName}`.trim()
-    : profile?.name || "User"
-  const userEmail = profile?.email || currentUserEmail || "Not available"
-  const userAvatar = profile?.profile_image || ""
-  const userRole = profile?.role_type || "User"
 
 
   const getInitials = (name: string) => {
@@ -97,13 +90,13 @@ export function NavUser() {
       dispatch(getMee())
     }
   }, [dispatch, meeState.data])
+  const userAvatar = meeState.data?.profile_image || ""
+  const userName = meeState.data?.firstName && meeState.data?.lastName
+    ? `${meeState.data.firstName} ${meeState.data.lastName}`.trim()
+    : meeState.data?.name || "User"
+  const userEmail = meeState.data?.email || "Not available"
+  const userRole = meeState.data?.role_type || "User"
 
-  useEffect(() => {
-    // Then fetch profile by email when we have the email
-    if (currentUserEmail && !profile) {
-      dispatch(fetchProfileByEmail(currentUserEmail))
-    }
-  }, [currentUserEmail, dispatch, profile])
 
   return (
     <>

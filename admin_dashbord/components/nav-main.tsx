@@ -65,7 +65,7 @@ export function NavMain({
                   <SidebarMenuButton
                     tooltip={item.title}
                     isActive={itemIsActive}
-                    className="h-9 text-slate-900 dark:text-white hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-all duration-200 rounded-lg data-[active=true]:bg-white/20 data-[active=true]:text-slate-900 dark:data-[active=true]:text-white data-[state=open]:text-slate-900 dark:data-[state=open]:text-white font-medium"
+                    className="h-9 text-slate-900 dark:text-white hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-all duration-200 rounded-lg data-[active=true]:bg-white/20 data-[active=true]:text-slate-900 dark:data-[active=true]:text-white data-[state=open]:text-slate-900 dark:data-[state=open]:text-white font-medium data-[active=true]:ring-0 data-[active=true]:shadow-none ring-0 shadow-none"
                   >
                     {item.icon && <item.icon className="h-4 w-4" />}
                     <span className="flex-1">{item.title}</span>
@@ -82,7 +82,7 @@ export function NavMain({
                           <SidebarMenuSubButton
                             asChild
                             isActive={subIsActive}
-                            className="h-8 text-slate-800 dark:text-white/80 hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-all duration-200 rounded-md data-[active=true]:bg-white/20 data-[active=true]:text-slate-900 dark:data-[active=true]:text-white data-[active=true]:font-medium"
+                            className="h-8 text-slate-800 dark:text-white/80 hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-all duration-200 rounded-md data-[active=true]:bg-white/20 data-[active=true]:text-slate-900 dark:data-[active=true]:text-white data-[active=true]:font-medium data-[active=true]:ring-0 data-[active=true]:shadow-none ring-0 shadow-none"
                           >
                             <Link href={subItem.url}>
                               <span className="text-sm">{subItem.title}</span>

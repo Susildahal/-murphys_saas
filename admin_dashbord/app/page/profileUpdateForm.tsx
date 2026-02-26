@@ -12,7 +12,6 @@ import {
   Phone,
   Calendar as CalendarIcon,
   MapPin,
-  Info,
   CheckCircle2,
 } from 'lucide-react';
 import { motion,  } from 'framer-motion';
