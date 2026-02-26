@@ -45,7 +45,7 @@ function Header({
           variant="ghost"
           size="icon"
           onClick={onClick}
-          className="shrink-0"
+          className="shrink-0 cursor-pointer"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
