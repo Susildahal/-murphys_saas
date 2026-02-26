@@ -66,13 +66,35 @@ export default function OpenTicketPage() {
   }
 
   const getPriorityColor = (priority: string) => {
-    // Use single blue shade for all priorities
-    return 'bg-blue-500/10 text-blue-600 border-blue-200 dark:bg-blue-500/20 dark:text-blue-400'
+    // Distinct, eye-catching colors per priority
+    switch ((priority || '').toLowerCase()) {
+      case 'urgent':
+        return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-200'
+      case 'high':
+        return 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-200'
+      case 'medium':
+        return 'bg-yellow-100 text-amber-700 border-yellow-200 dark:bg-amber-900/20 dark:text-amber-200'
+      case 'low':
+        return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-200'
+      default:
+        return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-200'
+    }
   }
 
   const getStatusColor = (status: string) => {
-    // Use single blue shade for all statuses
-    return 'bg-blue-500/10 text-blue-600 border-blue-200 dark:bg-blue-500/20 dark:text-blue-400'
+    // Eye-catching status colors
+    switch ((status || '').toLowerCase()) {
+      case 'open':
+        return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-200'
+      case 'in-progress':
+        return 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-200'
+      case 'resolved':
+        return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-200'
+      case 'closed':
+        return 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-200'
+      default:
+        return 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-200'
+    }
   }
 
   // Calculate stats
@@ -99,43 +121,59 @@ export default function OpenTicketPage() {
         {/* Stats Overview */}
         {tickets.length > 0 && (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="border-l-4 border-l-blue-500">
-              <CardContent className="p-3 flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Open Tickets</p>
-                  <p className="text-xl font-bold">{stats.open}</p>
+            <Card className="border-l-4 border-l-blue-500 hover:shadow-lg transition-shadow transform hover:-translate-y-0.5">
+              <CardContent className="p-4 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-gradient-to-br from-blue-500 to-indigo-500 text-white p-2 rounded-lg shadow-md">
+                    <TicketIcon className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Open Tickets</p>
+                    <p className="text-2xl font-extrabold tracking-tight">{stats.open}</p>
+                  </div>
                 </div>
-                <TicketIcon className="h-4 w-4 text-blue-500" />
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 border-l-blue-500">
-              <CardContent className="p-3 flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">In Progress</p>
-                  <p className="text-xl font-bold">{stats.inProgress}</p>
+            <Card className="border-l-4 border-l-amber-500 hover:shadow-lg transition-shadow transform hover:-translate-y-0.5">
+              <CardContent className="p-4 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-gradient-to-br from-amber-400 to-amber-600 text-white p-2 rounded-lg shadow-md">
+                    <Clock className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">In Progress</p>
+                    <p className="text-2xl font-extrabold tracking-tight">{stats.inProgress}</p>
+                  </div>
                 </div>
-                <Clock className="h-4 w-4 text-blue-500" />
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 border-l-blue-500">
-              <CardContent className="p-3 flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Resolved</p>
-                  <p className="text-xl font-bold">{stats.resolved}</p>
+            <Card className="border-l-4 border-l-green-500 hover:shadow-lg transition-shadow transform hover:-translate-y-0.5">
+              <CardContent className="p-4 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-gradient-to-br from-green-400 to-green-600 text-white p-2 rounded-lg shadow-md">
+                    <CheckCircle2 className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Resolved</p>
+                    <p className="text-2xl font-extrabold tracking-tight">{stats.resolved}</p>
+                  </div>
                 </div>
-                <CheckCircle2 className="h-4 w-4 text-blue-500" />
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 border-l-blue-500">
-              <CardContent className="p-3 flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-muted-foreground">Urgent</p>
-                  <p className="text-xl font-bold">{stats.urgent}</p>
+            <Card className="border-l-4 border-l-red-500 hover:shadow-lg transition-shadow transform hover:-translate-y-0.5">
+              <CardContent className="p-4 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-gradient-to-br from-red-500 to-pink-600 text-white p-2 rounded-lg shadow-md">
+                    <AlertCircle className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Urgent</p>
+                    <p className="text-2xl font-extrabold tracking-tight">{stats.urgent}</p>
+                  </div>
                 </div>
-                <AlertCircle className="h-4 w-4 text-blue-500" />
               </CardContent>
             </Card>
           </div>
@@ -172,12 +210,14 @@ export default function OpenTicketPage() {
                   <TableRow>
                     <TableCell colSpan={6} className="h-32 text-center">
                       <div className="flex flex-col items-center justify-center gap-2">
-                        <TicketIcon className="h-12 w-12 text-muted-foreground/40" />
-                        <p className="text-sm font-medium">No tickets found</p>
-                        <p className="text-xs text-muted-foreground">Create your first ticket to get started</p>
+                        <div className="rounded-full bg-gradient-to-br from-indigo-50 to-indigo-100 p-4 shadow-inner">
+                          <TicketIcon className="h-14 w-14 text-indigo-600" />
+                        </div>
+                        <p className="text-lg font-semibold mt-2">No tickets yet</p>
+                        <p className="text-sm text-muted-foreground">Create your first ticket to get help from our support team</p>
                         <Button 
                           size="sm" 
-                          className="mt-2 cursor-pointer"
+                          className="mt-3 bg-indigo-600 hover:bg-indigo-700 text-white"
                           onClick={() => router.push('/admin/open_ticket/create')}
                         >
                           <Plus className="h-4 w-4 mr-2" />
@@ -188,7 +228,7 @@ export default function OpenTicketPage() {
                   </TableRow>
                 ) : (
                   tickets.map((ticket) => (
-                    <TableRow key={ticket._id} className="hover:bg-muted/50">
+                    <TableRow key={ticket._id} className="hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                       <TableCell>{ticket.images && ticket.images.length > 0 ? <img src={ticket.images[0]} alt="Ticket" className="h-10 w-10 rounded-md object-cover" /> : <div className="h-8 w-8 rounded-md bg-gray-200 dark:bg-gray-700 flex items-center justify-center"><TicketIcon className="h-4 w-4 text-gray-500" /></div>}</TableCell>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
@@ -215,7 +255,11 @@ export default function OpenTicketPage() {
                         {format(new Date(ticket.createdAt), 'MMM d, yyyy')}
                       </TableCell>
                       <TableCell className="text-right">
-                        <DropdownMenu>
+                        <div className="flex items-center justify-end gap-2">
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 cursor-pointer" onClick={() => router.push(`/admin/open_ticket/${ticket._id}`)}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="sm" className="h-8 w-8 p-0 cursor-pointer">
                               <MoreVertical className="h-4 w-4 rotate-90" />
@@ -246,6 +290,7 @@ export default function OpenTicketPage() {
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -268,7 +313,7 @@ export default function OpenTicketPage() {
             </DialogDescription>
           </DialogHeader>
           {ticketToDelete && (
-            <div className="py-4 space-y-3 border rounded-lg p-4 bg-muted/30">
+            <div className="py-4 space-y-3 border rounded-lg p-4 bg-red-50 dark:bg-red-900/20">
               <div className="flex items-start gap-3">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <TicketIcon className="h-5 w-5 text-primary" />

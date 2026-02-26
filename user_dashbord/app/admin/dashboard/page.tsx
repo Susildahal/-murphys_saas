@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
   Building2,
   Calendar,
@@ -16,6 +16,7 @@ import { fetchDashboardStats } from '@/lib/redux/slices/dashboardSlicer';
 import { format } from 'date-fns';
 import Link from 'next/link';
 import Header from '@/app/page/common/header';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import SpinnerComponent from '@/app/page/common/Spinner';
 
 export default function DashboardPage() {
@@ -26,6 +27,36 @@ export default function DashboardPage() {
   const stats = dashboard?.stats || {};
   const recentServices = dashboard?.recentServices || [];
   const resentInvoices = dashboard?.resentInvoices || [];
+  // Aggregate invoices by invoice_id so duplicates (same invoice_id) show a single consolidated status
+  const processedInvoices = useMemo(() => {
+    const map = new Map<string, any>();
+    resentInvoices.forEach((inv: any) => {
+      const key = inv.invoice_id || inv._id;
+      const existing = map.get(key);
+      if (!existing) {
+        map.set(key, { ...inv });
+        return;
+      }
+
+      const getTime = (i: any) => (i && i.payment_date ? new Date(i.payment_date).getTime() : 0);
+
+      // Prefer the invoice with a payment_date (most recent)
+      if (getTime(inv) > getTime(existing)) {
+        map.set(key, { ...inv });
+        return;
+      }
+
+      // Otherwise pick the highest-priority status: completed > pending > failed/other
+      const priority = (s: string) => (s === 'completed' ? 3 : s === 'pending' ? 2 : s === 'failed' ? 1 : 0);
+      const existingPriority = priority(existing.payment_status || '');
+      const invPriority = priority(inv.payment_status || '');
+      if (invPriority > existingPriority) {
+        map.set(key, { ...inv });
+      }
+    });
+
+    return Array.from(map.values());
+  }, [resentInvoices]);
   const unpaidInvoices = dashboard?.unpaidInvoices ?? 0;
   const unpaidAmount = dashboard?.unpaidAmount ?? 0;
   const loading = dashboard?.loading;
@@ -117,7 +148,36 @@ export default function DashboardPage() {
       <Header 
     title='Dashboard'  
     />
-      <div className=" space-y-6">
+      {/* User banner card */}
+      {profile && (
+        <div className="max-w-7xl mx-auto px-4 md:px-0">
+          <div className="shadow-xl rounded-lg overflow-hidden border-0">
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white flex items-center gap-4">
+              <Avatar className="h-16 w-16">
+                {profile.profile_image ? (
+                  <AvatarImage src={profile.profile_image} alt={profile.name || profile.email} />
+                ) : (
+                  <AvatarFallback className="bg-white/20 text-white font-semibold">
+                    {(profile.name?.charAt(0) ?? profile.email?.charAt(0) ?? 'U').toUpperCase()}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              <div className="flex-1">
+                <p className="text-xl font-semibold">{profile.name || [profile.firstName, profile.lastName].filter(Boolean).join(' ') || 'User'}</p>
+                <p className="text-sm opacity-90">{profile.email}</p>
+              </div>
+              <div className="hidden md:block">
+                <Link href="/admin/profile">
+                  <Button variant="outline" className="border-white/30 text-white">View Profile</Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      <div className=" space-y-6 pt-5">
         {/* Payment Overdue Alert */}
         {unpaidInvoices > 0 && (
         
@@ -178,8 +238,8 @@ export default function DashboardPage() {
                 </Link>
               </div>
               <div className="space-y-3">
-                {resentInvoices && resentInvoices.length > 0 ? (
-                  resentInvoices.map((invoice: any) => (
+                {processedInvoices && processedInvoices.length > 0 ? (
+                  processedInvoices.map((invoice: any) => (
                     <div key={invoice._id || invoice.invoice_id} className="flex items-center justify-between p-3 rounded-lg transition-colors">
                       <div className="flex-1">
                         <p className="font-medium text-slate-900 dark:text-slate-100">#{invoice.invoice_id}</p>
