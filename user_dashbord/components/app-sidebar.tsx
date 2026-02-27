@@ -122,7 +122,7 @@ export function AppSidebar({ searchQuery = "", ...props }: AppSidebarProps) {
 
 
   return (
-    <Sidebar collapsible="icon" {...props} className=" bg-white dark:bg-black text-slate-900 dark:text-white">
+    <Sidebar collapsible="icon" {...props} className="  dark:bg-black text-slate-900 dark:text-white">
    
 
       {/* Fixed Header */}

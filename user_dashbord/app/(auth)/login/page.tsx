@@ -398,7 +398,7 @@ function SocialChar({ rawX, rawY, mood, introReady }: CharProps) {
           </div>
 
           {/* Floating Emoji/Icons */}
-          {["❤️", "👍", "🔥", "✨"].map((emoji, i) => (
+          {["❤️", "👍", "🔥", "✨" ,"👩‍💻","🔎",'💻',""].map((emoji, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, scale: 0 }}
