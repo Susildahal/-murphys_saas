@@ -83,7 +83,7 @@ function Header({
                 </Button>
               </Link>
             ) : (
-              <Button onClick={onButtonClick} className="whitespace-nowrap">
+              <Button onClick={onButtonClick} className=" cursor-pointer whitespace-nowrap">
                 {icon && <span className="mr-2 h-4 w-4">{icon}</span>}
                 {buttonText || linkText}
               </Button>
