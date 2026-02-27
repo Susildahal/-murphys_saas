@@ -147,24 +147,9 @@ function BillingHistoryPage() {
     fetchBillingHistory();
   }, [filter, page, startDate, endDate]);
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircle2 className="h-5 w-5 text-blue-600" />;
-      case 'failed':
-        return <XCircle className="h-5 w-5 text-red-600" />;
-      case 'pending':
-        return <Clock className="h-5 w-5 text-amber-600" />;
-      case 'refunded':
-        return <DollarSign className="h-5 w-5 text-green-600" />;
-      default:
-        return null;
-    }
-  };
-
   const getStatusBadge = (status: string) => {
     const variants: Record<string, any> = {
-      completed: 'default',
+      completed: 'success',
       failed: 'destructive',
       pending: 'outline',
       refunded: 'secondary'

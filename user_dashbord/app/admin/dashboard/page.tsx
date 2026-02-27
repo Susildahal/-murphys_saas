@@ -172,9 +172,9 @@ export default function DashboardPage() {
                 <p className="text-xl font-semibold">{profile.name || [profile.firstName, profile.lastName].filter(Boolean).join(' ') || 'User'}</p>
                 <p className="text-sm opacity-90">{profile.email}</p>
               </div>
-              <div className="hidden md:block">
+              <div className="hidden md:block ml-4">
                 <Link href="/admin/profile">
-                  <Button className=" cursor-pointer hover:bg-white  bg-white "> <span className='text-blue-500'>View Profile</span></Button>
+                  <Button className="cursor-pointer hover:bg-white bg-white px-6"><span className='text-blue-500'>View Profile</span></Button>
                 </Link>
               </div>
             </div>
@@ -201,8 +201,8 @@ export default function DashboardPage() {
                 </AlertDescription>
               </div>
             </div>
-            <Link href="/admin/billing" className=' relative top-0 left-0'>
-              <Button size="sm" className="bg-red-600 cursor-pointer hover:bg-red-700 text-white">
+            <Link href="/admin/billing" className='mr-4'>
+              <Button className="bg-red-600 cursor-pointer hover:bg-red-700 text-white px-6">
                 Pay Now
               </Button>
             </Link>
