@@ -170,7 +170,7 @@ export default function DashboardPage() {
               </div>
               <div className="hidden md:block">
                 <Link href="/admin/profile">
-                  <Button variant="outline" className="border-white/30 text-white">View Profile</Button>
+                  <Button variant="outline" className=" cursor-pointer text-white">View Profile</Button>
                 </Link>
               </div>
             </div>
@@ -187,7 +187,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-5">
                         <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-300" />
 
-    <div className=' flex justify-start items-start flex-col'>
+    <div className=' flex justify-start items-start flex-col'> 
 
             <AlertTitle className="text-red-800 dark:text-red-200 font-semibold">Payment Overdue</AlertTitle>
             <AlertDescription className="text-red-700 dark:text-red-200 ">

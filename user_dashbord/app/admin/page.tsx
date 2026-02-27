@@ -2,6 +2,7 @@
 import React, { useEffect } from 'react'
 import axiosInstance from '@/lib/axios'
 import { getMee } from '@/lib/redux/slices/meeSlice'
+import { setProfile } from '@/lib/redux/slices/profileSlice'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { useRouter } from 'next/navigation'
 
@@ -21,6 +22,12 @@ const Page = () => {
                 params: { email },
             })
             console.log('Profile data:', response.data)
+            
+            // Store profile data in Redux
+            const profileData = response.data?.data || response.data
+            if (profileData) {
+                dispatch(setProfile(profileData))
+            }
 
             const currentPath = typeof window !== 'undefined' ? window.location.pathname : ''
             // Only navigate to /admin/dashboard when not already under any /admin route
