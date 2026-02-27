@@ -21,7 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "@/hooks/use-toast";
 
 // ── Springs ────────────────────────────────────────────────────────────────────
 const SP_SLOW = { stiffness: 22, damping: 16, mass: 1.8 };
