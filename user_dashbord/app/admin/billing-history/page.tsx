@@ -152,11 +152,11 @@ function BillingHistoryPage() {
       case 'completed':
         return <CheckCircle2 className="h-5 w-5 text-blue-600" />;
       case 'failed':
-        return <XCircle className="h-5 w-5 text-blue-600" />;
+        return <XCircle className="h-5 w-5 text-red-600" />;
       case 'pending':
-        return <Clock className="h-5 w-5 text-blue-600" />;
+        return <Clock className="h-5 w-5 text-amber-600" />;
       case 'refunded':
-        return <DollarSign className="h-5 w-5 text-blue-600" />;
+        return <DollarSign className="h-5 w-5 text-green-600" />;
       default:
         return null;
     }
@@ -513,8 +513,8 @@ function BillingHistoryPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="border-l-4 border-l-blue-500">
             <CardContent className="p-3 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-950 flex items-center justify-center">
-                <CheckCircle2 className="h-4 w-4 text-blue-600" />
+              <div className="rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 text-white p-2 shrink-0 shadow-md">
+                <CheckCircle2 className="h-5 w-5" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Total Paid</p>
@@ -523,10 +523,10 @@ function BillingHistoryPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-l-4 border-l-blue-500">
+          <Card className="border-l-4 border-l-red-500">
             <CardContent className="p-3 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-950 flex items-center justify-center">
-                <XCircle className="h-4 w-4 text-blue-600" />
+              <div className="rounded-lg bg-gradient-to-br from-red-500 to-pink-600 text-white p-2 shrink-0 shadow-md">
+                <XCircle className="h-5 w-5" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Failed</p>
@@ -537,10 +537,10 @@ function BillingHistoryPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-l-4 border-l-blue-500">
+          <Card className="border-l-4 border-l-amber-500">
             <CardContent className="p-3 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-950 flex items-center justify-center">
-                <Clock className="h-4 w-4 text-blue-600" />
+              <div className="rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 text-white p-2 shrink-0 shadow-md">
+                <Clock className="h-5 w-5" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Pending</p>
@@ -551,10 +551,10 @@ function BillingHistoryPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-l-4 border-l-blue-500">
+          <Card className="border-l-4 border-l-green-500">
             <CardContent className="p-3 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-950 flex items-center justify-center">
-                <DollarSign className="h-4 w-4 text-blue-600" />
+              <div className="rounded-lg bg-gradient-to-br from-green-400 to-green-600 text-white p-2 shrink-0 shadow-md">
+                <DollarSign className="h-5 w-5" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Refunded</p>
