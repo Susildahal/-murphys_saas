@@ -47,10 +47,10 @@ function Header({
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="min-w-0">
-          <CardTitle className="truncate text-sm font-semibold lg:text-base">
-            {title}
+          <CardTitle className="truncate text-sm text-blue-600 font-semibold lg:text-base">
+         <span className=" ">   {title}</span>
             {typeof total === "number" && (
-              <span className="ml-2 text-sm font-normal text-muted-foreground">
+              <span className="ml-2 text-sm font-normal ">
                 (Total: {total})
               </span>
             )}

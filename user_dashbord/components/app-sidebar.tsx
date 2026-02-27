@@ -127,10 +127,11 @@ export function AppSidebar({ searchQuery = "", ...props }: AppSidebarProps) {
 
       {/* Fixed Header */}
       <SidebarHeader className="bg-background pb-4 pt-4">
-        <div className="flex px-4 items-center justify-between">
+        <div className="flex px-4 items-center justify-center min-h-[40px]">
           <AnimatePresence mode="wait">
-            {!isCollapsed && (
+            {!isCollapsed ? (
               <motion.div
+                key="expanded"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -142,26 +143,30 @@ export function AppSidebar({ searchQuery = "", ...props }: AppSidebarProps) {
                     width={130}
                     height={130}
                     className="object-contain"
+                    priority
                   />
 
               </motion.div>
+            ) : (
+              <motion.div
+                key="collapsed"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.2 }}
+                className="flex items-center justify-center w-full"
+              >
+                <Image
+                  src="/half.png"
+                  alt="Murphys Logo Collapsed"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                  priority
+                />
+              </motion.div>
             )}
           </AnimatePresence>
-
-          {isCollapsed && (
-            <motion.div
-              className="flex items-center justify-center z-50"
-            >
-              <Image
-                src="/half.png"
-                alt="Murphys Logo Collapsed"
-                width={40}
-                height={40}
-                className="object-contain"
-                priority
-              />
-            </motion.div>
-          )}
         </div>
       </SidebarHeader>
 

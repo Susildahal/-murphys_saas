@@ -499,7 +499,7 @@ function FloatingInput({
         onChange={onChange}
         onFocus={() => { setFocused(true); onFocus?.(); }}
         onBlur={() => { setFocused(false); onBlur?.(); }}
-        className="w-full bg-transparent text-gray-900 text-sm outline-none"
+        className="w-full bg-white text-gray-900 text-sm outline-none"
         style={{ paddingTop: "1.4rem", paddingBottom: "0.375rem", borderBottom: `2px solid ${error ? "#ef4444" : focused ? BRAND.primary : "#e5e7eb"}` }}
       />
       <motion.div

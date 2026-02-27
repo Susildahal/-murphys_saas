@@ -508,7 +508,7 @@ function FloatingInput({ label, id, type = "text", value, onChange, onFocus, onB
         onChange={onChange}
         onFocus={() => { setFocused(true); onFocus?.(); }}
         onBlur={() => { setFocused(false); onBlur?.(); }}
-        className="w-full bg-transparent text-gray-900 text-sm outline-none pb-1.5 pr-2"
+        className="w-full bg-white text-gray-900 text-sm outline-none pb-1.5 pr-2"
         style={{ paddingTop: "1.4rem", borderBottom: `2px solid ${error ? "#ef4444" : focused ? BRAND.primary : "#e5e7eb"}` }}
       />
       {/* Gradient underline sweep */}
@@ -558,7 +558,7 @@ function PasswordField({ value, onChange, onFocus, onBlur, visible, onToggleVisi
         onChange={onChange}
         onFocus={() => { setFocused(true); onFocus?.(); }}
         onBlur={() => { setFocused(false); onBlur?.(); }}
-        className="w-full bg-transparent text-gray-900 text-sm outline-none pr-10"
+        className="w-full bg-white text-gray-900 text-sm outline-none pr-10"
         style={{ paddingTop: "1.4rem", paddingBottom: "0.375rem", borderBottom: `2px solid ${error ? "#ef4444" : focused ? BRAND.primary : "#e5e7eb"}` }}
       />
       <motion.div

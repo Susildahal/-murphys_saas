@@ -182,7 +182,7 @@ function Page() {
         total={billingInfo.length} 
       />
       
-      <div className="max-w-5xl mx-auto p-6 space-y-8">
+      <div className=" mx-auto  space-y-8">
         {/* Simplified No Payment Status */}
         {unpaidRenewals.length === 0 && !loading && billingInfo.length > 0 && (
           <div className="flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg text-emerald-800 dark:text-emerald-200">
@@ -203,7 +203,7 @@ function Page() {
           <section className="space-y-4">
             <div className="flex justify-between items-end border-b pb-4">
               <div>
-                <h2 className="text-lg font-bold tracking-tight">Outstanding Balance</h2>
+                <h2 className="text-lg text-blue-600 font-bold tracking-tight">Outstanding Balance</h2>
                 <p className="text-sm text-muted-foreground">You have {unpaidRenewals.length} pending payment(s).</p>
               </div>
               <div className="text-right">
