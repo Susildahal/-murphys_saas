@@ -82,7 +82,7 @@ function page() {
   const [selectedClient, setSelectedClient] = React.useState<string | null>(clientId);
   const [selectedService, setSelectedService] = React.useState<string | null>(null);
   const [assignStatus, setAssignStatus] = React.useState<'active' | 'paused' | 'cancelled'>('active');
-  const [assignCycle, setAssignCycle] = React.useState<'monthly' | 'annual' | 'none'>('monthly');
+  const [assignCycle, setAssignCycle] = React.useState<'monthly' | 'annual' | 'none' | 'one-time'>('monthly');
   const [assignStartDate, setAssignStartDate] = React.useState<string>('');
   const [assignPrice, setAssignPrice] = React.useState<number | undefined>(undefined);
   const [assignAutoInvoice, setAssignAutoInvoice] = React.useState<boolean>(false);
@@ -156,8 +156,8 @@ function page() {
         categoryId: svc.categoryId || svc.categoryId || null,
         status: assignStatus,
         cycle: assignCycle,
-        start_date: assignStartDate,
-        end_date: assignEndDate,
+        start_date: assignCycle === 'one-time' ? null : assignStartDate,
+        end_date: assignCycle === 'one-time' ? null : assignEndDate,
         price: assignPrice,
         auto_invoice: assignAutoInvoice,
         notes: assignNotes,
@@ -251,12 +251,14 @@ function page() {
                   <SelectContent>
                     <SelectItem value="monthly">Monthly</SelectItem>
                     <SelectItem value="annual">Annual</SelectItem>
+                    <SelectItem value="one-time">One Time</SelectItem>
                     <SelectItem value="none">None</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
+            {assignCycle !== 'one-time' && (
             <div>
               <Label className=' pb-2'>Start / End date</Label>
               <DateRangePicker
@@ -267,6 +269,7 @@ function page() {
                 }}
               />
             </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4">
               <div>

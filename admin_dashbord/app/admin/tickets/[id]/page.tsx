@@ -12,21 +12,20 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Loader2, ArrowLeft, Send } from 'lucide-react'
+import { Loader2,  Send } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import Image from 'next/image'
 import Header from '@/app/page/common/header'
 export default function AdminTicketDetailPage() {
-  const router = useRouter()
   const params = useParams()
   const dispatch = useAppDispatch()
   const { data: meeData } = useAppSelector((state) => state.mee)
+  console.log("meeData:", meeData)
   const { currentTicket, loading } = useAppSelector((state) => state.tickets)
   
   const ticketId = params.id as string
@@ -67,7 +66,11 @@ export default function AdminTicketDetailPage() {
       return
     }
 
-    if (!meeData?.uid || !meeData?.email) {
+    // Support multiple shapes for meeData: some responses include `uid`, others use `userId` or `_id`.
+    const adminIdValue = meeData?.uid || meeData?.userId || meeData?._id || null
+    const adminEmailValue = meeData?.email || null
+
+    if (!adminIdValue || !adminEmailValue) {
       toast.error('Admin information not available')
       return
     }
@@ -78,8 +81,8 @@ export default function AdminTicketDetailPage() {
       await dispatch(addAdminResponse({
         id: ticketId,
         adminResponse: adminResponseText,
-        adminId: meeData.uid,
-        adminEmail: meeData.email
+        adminId: adminIdValue,
+        adminEmail: adminEmailValue
       })).unwrap()
       toast.success('Response added successfully')
     } catch (error: any) {

@@ -159,17 +159,18 @@ const InvoicesPage = () => {
 
     
 
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border">
-        <table className="w-full text-left">
+      <div className="bg-white dark:bg-zinc-900 rounded-lg border overflow-hidden">
+        <div className="w-full overflow-x-auto">
+        <table className="w-full text-left min-w-[720px] sm:min-w-full">
           <thead className="border-b">
             <tr className="text-sm text-gray-500 dark:text-gray-400">
               <th className="p-4 font-medium">Invoice</th>
-               <th className="p-4 font-medium">Service Name</th>
+              <th className="p-4 font-medium hidden sm:table-cell">Service Name</th>
               <th className="p-4 font-medium">Status</th>
-              <th className="p-4 font-medium">Issue Date</th>
-              <th className="p-4 font-medium">Due Date</th>
+              <th className="p-4 font-medium hidden sm:table-cell">Issue Date</th>
+              <th className="p-4 font-medium hidden sm:table-cell">Due Date</th>
               <th className="p-4 font-medium text-right">Amount</th>
-              <th className="p-4 font-medium text-right">Amount</th>
+              <th className="p-4 font-medium text-right hidden md:table-cell">Amount</th>
               <th className="p-4 font-medium text-right">Actions</th>
             </tr>
           </thead>
@@ -183,8 +184,12 @@ const InvoicesPage = () => {
                   <div className="font-medium text-gray-900 dark:text-gray-100">
                     {row.invoiceId || `INV-${String(row.serviceId).slice(-6)}`}
                   </div>
+                  {/* show service name on small screens inside the first cell */}
+                  <div className="sm:hidden text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    {row.serviceName || '-'}
+                  </div>
                 </td>
-                <td className="p-4">
+                <td className="p-4 hidden sm:table-cell">
                   <div className="font-medium text-gray-900 dark:text-gray-100">
                     {row.serviceName || '-'}
                   </div>
@@ -213,10 +218,10 @@ const InvoicesPage = () => {
                     </Badge>
                   )}
                 </td>
-                <td className="p-4 text-sm text-gray-600 dark:text-gray-400">
+                <td className="p-4 text-sm text-gray-600 dark:text-gray-400 hidden sm:table-cell">
                   {row.issueDate ? new Date(row.issueDate).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }) : '-'}
                 </td>
-                <td className="p-4 text-sm text-gray-600 dark:text-gray-400">
+                <td className="p-4 text-sm text-gray-600 dark:text-gray-400 hidden sm:table-cell">
                   {row.noPaymentRequired 
                     ? <span className="text-gray-500 italic">Available soon</span>
                     : row.dueDate 
@@ -227,7 +232,7 @@ const InvoicesPage = () => {
                 <td className="p-4 text-right font-semibold text-gray-900 dark:text-gray-100">
                   {row.noPaymentRequired ? '-' : row.amount > 0 ? `$${row.amount.toLocaleString()}` : '-'}
                 </td>
-                <td className="p-4 text-right font-semibold text-gray-900 dark:text-gray-100">
+                <td className="p-4 text-right font-semibold text-gray-900 dark:text-gray-100 hidden md:table-cell">
                   {row.noPaymentRequired ? '-' : row.amount > 0 ? `$${row.amount.toLocaleString()}` : '-'}
                 </td>
                 <td className="p-4 text-right">
@@ -263,13 +268,14 @@ const InvoicesPage = () => {
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={7} className="p-12 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan={8} className="p-12 text-center text-gray-500 dark:text-gray-400">
                   No invoices found
                 </td>
               </tr>
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
     

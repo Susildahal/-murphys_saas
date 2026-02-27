@@ -11,7 +11,7 @@ const assignServiceSchema = new mongoose.Schema({
     status: { type: String, enum: ['active', 'expired', 'cancelled' ,'paused'], default: 'active' },
     note: { type: String },
     price: { type: String,  },
-    cycle: { type: String, enum: ['annual', 'monthly', 'none'], required: true },
+    cycle: { type: String, enum: ['annual', 'monthly', 'none','one-time'], required: true },
     start_date: { type: Date,  default: Date.now },
     end_date: { type: Date,  },
     renewal_dates: [{

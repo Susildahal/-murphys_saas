@@ -82,7 +82,7 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
   const [assignSubmitting, setAssignSubmitting] = useState(false);
   const [assignStartDate, setAssignStartDate] = useState<string>('');
   const [assignRenewalDate, setAssignRenewalDate] = useState<string | null>(null);
-  const [assignCycle, setAssignCycle] = useState<'monthly' | 'annual' | 'none'>('monthly');
+  const [assignCycle, setAssignCycle] = useState<'monthly' | 'annual' | 'none' | 'one-time'>('monthly');
   const [assignPrice, setAssignPrice] = useState<number | undefined>(undefined);
   const [assignAutoInvoice, setAssignAutoInvoice] = useState<boolean>(false);
   const [assignNotes, setAssignNotes] = useState<string>('');
@@ -209,8 +209,8 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
       client_id: selectedClient,
       service_catalog_id: (assigningService as any)._id || (assigningService as any).id,
       status: assignStatus,
-      start_date: assignStartDate,
-      end_date: assignRenewalDate || null,
+      start_date: assignCycle === 'one-time' ? null : assignStartDate,
+      end_date: assignCycle === 'one-time' ? null : (assignRenewalDate || null),
       cycle: assignCycle,
       price: assignPrice,
       auto_invoice: assignAutoInvoice,
@@ -774,12 +774,14 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
                   <SelectContent>
                     <SelectItem value="monthly">Monthly</SelectItem>
                     <SelectItem value="annual">Annual</SelectItem>
+                    <SelectItem value="one-time">One Time</SelectItem>
                     <SelectItem value="none">None</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
+            {assignCycle !== 'one-time' && (
             <div>
               <Label className=' pb-2'>Start / Complite  date</Label>
               <DateRangePicker
@@ -790,6 +792,7 @@ export default function ServiceTable({ onEdit, categoryFilter = 'all' }: Service
                 }}
               />
             </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4">
               <div>
