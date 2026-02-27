@@ -26,7 +26,7 @@ const authRouter = Router();
 // Public routes
 authRouter.post("/auth/verify-email", verifyEmail);
 authRouter.post("/auth/send-verification", sendVerificationEmail); // Step 1: Send email
-authRouter.get("/auth/verify-token", verifyTokenSS); // Step 2: Verify token
+authRouter.post("/auth/verify-token", verifyTokenSS); // Step 2: Verify token
 
 // Protected routes (require Firebase authentication)
 authRouter.post("/auth/register",  registerUser);
