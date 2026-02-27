@@ -21,6 +21,7 @@ import invoiceRouter from "./models/invoice.routes";
 import privacyPolicyRouter from "./routes/privacypolicy.route";
 import ticketRouter from "./routes/ticket.route";
 import authRouter from "./routes/auth.routes";
+import otpRouter from "./routes/otp.routes";
 
 // Use profile routes
 
@@ -76,6 +77,7 @@ app.use("/api/billing", billingrouter);
 app.use("/api/invoices", invoiceRouter);
 app.use("/api", privacyPolicyRouter);
 app.use("/api", ticketRouter);
+app.use("/api", otpRouter);
 
 export default app;
 

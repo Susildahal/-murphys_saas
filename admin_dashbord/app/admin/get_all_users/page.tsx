@@ -6,9 +6,12 @@ import { Input } from '@/components/ui/input';
 import { fetchProfile, deleteProfile } from '@/lib/redux/slices/profileSlice';
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { useAppSelector } from '@/lib/redux/hooks'
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import DeleteModel from '@/app/page/common/DeleteModel';
 import Pagination from '@/app/page/common/Pagination';
+import { useAuth } from '@/hooks/use-auth';
+import OtpVerifyModal from '@/components/OtpVerifyModal';
+import { getMee } from '@/lib/redux/slices/meeSlice';
 import {
   Dialog,
   DialogContent,
@@ -42,6 +45,9 @@ import {
   TableRow,
 } from "@/components/ui/table"
 function Page() {
+  const { user: currentUser } = useAuth();
+  const meeData = useAppSelector((state: any) => state.mee?.data);
+  const [otpVerified, setOtpVerified] = useState(false);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [currentPage, setCurrentPage] = React.useState(1);
   const [deleteId, setDeleteId] = React.useState<string | null>(null);
@@ -97,11 +103,12 @@ function Page() {
   }, [profiles, sortConfig]);
 
   useEffect(() => {
+    if (!otpVerified) return;
     const timer = setTimeout(() => {
       dispatch(fetchProfile({ page: currentPage, limit: 10, search: searchTerm }));
     }, 500);
     return () => clearTimeout(timer);
-  }, [dispatch, currentPage, searchTerm]);
+  }, [dispatch, currentPage, searchTerm, otpVerified]);
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
@@ -147,6 +154,10 @@ function Page() {
     } catch (error: any) {
       showErrorToast(error?.message || 'Failed to delete user');
     }
+  }
+
+  if (!otpVerified) {
+    return <OtpVerifyModal email={meeData?.email || currentUser?.email || ''} onVerified={() => setOtpVerified(true)} />
   }
 
   return (

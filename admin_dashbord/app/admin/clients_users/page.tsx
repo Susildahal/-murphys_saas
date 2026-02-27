@@ -32,12 +32,18 @@ import DateRangePicker from '@/components/ui/date-range-picker'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import Link from "next/link"
+import { useAuth } from '@/hooks/use-auth'
+import OtpVerifyModal from '@/components/OtpVerifyModal'
+import { getMee } from '@/lib/redux/slices/meeSlice'
 
 
 
 
 function ClientsUsersPage() {
   const dispatch = useAppDispatch()
+  const { user: currentUser } = useAuth()
+  const meeData = useAppSelector((state: any) => state.mee?.data)
+  const [otpVerified, setOtpVerified] = useState(false)
   const [searchTerm, setSearchTerm] = React.useState('')
   const { profile, loading, error, page, totalPages } = useAppSelector((state) => state.profile as any)
   const { services } = useAppSelector((state) => state.services)
@@ -61,22 +67,24 @@ function ClientsUsersPage() {
   const [assignAutoInvoice, setAssignAutoInvoice] = useState<boolean>(false)
   const [assignNotes, setAssignNotes] = useState<string>('')
 
-  // initial load
+  // initial load — only after OTP is verified
   useEffect(() => {
+    if (!otpVerified) return
     dispatch(getadminProfile({ role_type: 'client user', page: 1, limit: 10, search: '' } as any))
     dispatch(fetchRoles({} as any))
     dispatch(fetchServices({ page: 1, limit: 1000 } as any)) // Fetch all services for dropdown
-  }, [dispatch])
+  }, [dispatch, otpVerified])
 
   // debounced search: when searchTerm changes, wait 500ms before dispatching
   useEffect(() => {
+    if (!otpVerified) return
     const handle = setTimeout(() => {
       // reset to first page when searching
       dispatch(getadminProfile({ role_type: 'client user', page: 1, limit: 10, search: searchTerm } as any))
     }, 500)
 
     return () => clearTimeout(handle)
-  }, [searchTerm, dispatch])
+  }, [searchTerm, dispatch, otpVerified])
 
   const handlePageChange = (p: number) => {
     dispatch(getadminProfile({ role_type: 'client user', page: p, limit: 10, search: searchTerm } as any))
@@ -124,6 +132,10 @@ function ClientsUsersPage() {
     } finally {
       setAssignSubmitting(false)
     }
+  }
+
+  if (!otpVerified) {
+    return <OtpVerifyModal email={meeData?.email || ''} onVerified={() => setOtpVerified(true)} />
   }
 
   return (

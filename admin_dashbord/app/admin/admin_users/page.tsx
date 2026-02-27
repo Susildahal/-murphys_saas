@@ -29,6 +29,8 @@ import { Input } from '@/components/ui/input'
 import axiosInstance from '@/lib/axios'
 import DeleteModel from '@/app/page/common/DeleteModel'
 import { deleteProfile } from '@/lib/redux/slices/profileSlice'
+import OtpVerifyModal from '@/components/OtpVerifyModal'
+import { getMee } from '@/lib/redux/slices/meeSlice'
 
 function AdminUsersPage() {
   const dispatch = useAppDispatch()
@@ -36,6 +38,8 @@ function AdminUsersPage() {
   const { profile, loading, error, page, totalPages } = useAppSelector((state) => state.profile as any)
   const { roles } = useAppSelector((state: any) => state.role)
   const { user: currentUser } = useAuth()
+  const meeData = useAppSelector((state: any) => state.mee?.data)
+  const [otpVerified, setOtpVerified] = useState(false)
 
   const profiles = Array.isArray(profile) ? profile : profile ? [profile] : []
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
@@ -43,24 +47,30 @@ function AdminUsersPage() {
   const [showDeleteModel, setShowDeleteModel] = useState(false);
   const [userToDelete, setUserToDelete] = useState<any>(null);
 
-  // initial load
+  // initial load — only after OTP is verified
   useEffect(() => {
+    if (!otpVerified) return
     dispatch(getadminProfile({ role_type: 'admin user', page: 1, limit: 10, search: '' } as any))
     dispatch(fetchRoles({} as any))
-  }, [dispatch])
+  }, [dispatch, otpVerified])
 
   // debounced search: when searchTerm changes, wait 500ms before dispatching
   useEffect(() => {
+    if (!otpVerified) return
     const handle = setTimeout(() => {
       // reset to first page when searching
-      dispatch(getadminProfile({ role_type: 'admin user', page: 1, limit: 10, search: searchTerm } as any))
+      dispatch(getadminProfile({ role_type: 'admin user', page: 1, limit: 10, search: searchTerm }363748 as any))
     }, 500)
 
     return () => clearTimeout(handle)
-  }, [searchTerm, dispatch])
+  }, [searchTerm, dispatch, otpVerified])
 
   const handlePageChange = (p: number) => {
     dispatch(getadminProfile({ role_type: 'admin user', page: p, limit: 10, search: searchTerm } as any))
+  }
+
+  if (!otpVerified) {
+    return <OtpVerifyModal email={meeData?.email || currentUser?.email || ''} onVerified={() => setOtpVerified(true)} />
   }
 
   return (
