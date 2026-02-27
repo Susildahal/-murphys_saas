@@ -153,13 +153,13 @@ console.log("Profile data in NavUser:", profile)
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <DropdownMenuItem onClick={() => router.push('/admin/profile')} className="cursor-pointer py-2.5 flex items-center">
-                  <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center mr-2">
+                  <div className="h-7 w-7 aspect-square shrink-0 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center mr-2">
                     <User className="h-4 w-4 text-slate-700 dark:text-white/70" />
                   </div>
                   <span>My Profile</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push('/admin/change_password')} className="cursor-pointer py-2.5 flex items-center">
-                  <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center mr-2">
+                  <div className="h-7 w-7 aspect-square shrink-0 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center mr-2">
                     <Settings className="h-4 w-4 text-slate-700 dark:text-white/70" />
                   </div>
                   <span>Change Password</span>
@@ -167,14 +167,14 @@ console.log("Profile data in NavUser:", profile)
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setShowLogoutDialog(true)} className="cursor-pointer text-destructive focus:text-destructive py-2.5 flex items-center">
-                <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center mr-2">
+                <div className="h-7 w-7 aspect-square shrink-0 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center mr-2">
                   <LogOut className="h-4 w-4 text-slate-700 dark:text-white/70" />
                 </div>
                 <span>Log out</span>
               </DropdownMenuItem>
               <Link href="/admin/delete_account">
                 <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive py-2.5 flex items-center">
-                  <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center mr-2">
+                  <div className="h-7 w-7 aspect-square shrink-0 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center mr-2">
                     <Trash className="h-4 w-4 text-slate-700 dark:text-white/70" />
                   </div>
                   <span>Delete Account</span>

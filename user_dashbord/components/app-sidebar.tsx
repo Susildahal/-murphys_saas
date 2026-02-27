@@ -49,11 +49,6 @@ const data = {
       icon: LayoutDashboard,
     },
     {
-      name: "Profile",
-      url: "/admin/profile",
-      icon: User,
-    },
-    {
       name: "Services",
       url: "/admin/services",
       icon: Briefcase,
@@ -97,7 +92,12 @@ const data = {
       name: "Invoices",
       url: "/admin/invoices",
       icon: FileText,
-    }
+    },
+       {
+      name: "Profile",
+      url: "/admin/profile",
+      icon: User,
+    },
   ],
 }
 
@@ -136,24 +136,31 @@ export function AppSidebar({ searchQuery = "", ...props }: AppSidebarProps) {
                 exit={{ opacity: 0 }}
                 className="flex items-center gap-2"
               >
-                <Image
-                  src="/logo.png"
-                  alt="Murphys Logo"
-                  width={130}
-                  height={130}
-                  className="object-contain"
-                />
+                  <Image
+                    src="/logo.png"
+                    alt="Murphys Logo"
+                    width={130}
+                    height={130}
+                    className="object-contain"
+                  />
 
               </motion.div>
             )}
           </AnimatePresence>
 
           {isCollapsed && (
-            <div className="flex w-full justify-center">
-              <span className="text-lg font-bold tracking-tight bg-gradient-to-r from-gray-900 to-violet-600 dark:from-white dark:to-violet-400 bg-clip-text text-transparent">
-                MT
-              </span>
-            </div>
+            <motion.div
+              className="flex items-center justify-center z-50"
+            >
+              <Image
+                src="/half.png"
+                alt="Murphys Logo Collapsed"
+                width={40}
+                height={40}
+                className="object-contain"
+                priority
+              />
+            </motion.div>
           )}
         </div>
       </SidebarHeader>

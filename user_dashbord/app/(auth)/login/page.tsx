@@ -47,66 +47,7 @@ function useCursor() {
   return { rawX, rawY };
 }
 
-// ── Floating Particles ────────────────────────────────────────────────────────
-function FloatingParticles() {
-  const [particles, setParticles] = useState<
-    { id: number; x: number; y: number; size: number; duration: number; delay: number; shape: number; color: string }[]
-  >([]);
-  useEffect(() => {
-    setParticles(
-      Array.from({ length: 22 }, (_, i) => ({
-        id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: Math.random() * 8 + 2,
-        duration: Math.random() * 10 + 8,
-        delay: Math.random() * 5,
-        shape: i % 4,
-        color: ["#7c3aed22", "#ec489933", "#f59e0b22", "#10b98122"][i % 4],
-      }))
-    );
-  }, []);
 
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {particles.map(p => (
-        <motion.div
-          key={p.id}
-          className="absolute"
-          style={{ left: `${p.x}%`, top: `${p.y}%` }}
-          animate={{
-            y: [0, -40, 0, 30, 0],
-            x: [0, 20, -15, 10, 0],
-            opacity: [0.1, 0.5, 0.3, 0.6, 0.1],
-            scale: [1, 1.4, 0.8, 1.2, 1],
-            rotate: p.shape === 2 ? [0, 180, 360] : [0, 90, 180],
-          }}
-          transition={{
-            duration: p.duration,
-            delay: p.delay,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        >
-          {p.shape === 0 && (
-            <div className="rounded-full" style={{ width: p.size, height: p.size, backgroundColor: p.color }} />
-          )}
-          {p.shape === 1 && (
-            <svg width={p.size + 6} height={p.size + 6} viewBox="0 0 16 16">
-              <path d="M8 0 L10 6 L16 8 L10 10 L8 16 L6 10 L0 8 L6 6 Z" fill={p.color} />
-            </svg>
-          )}
-          {p.shape === 2 && (
-            <div style={{ width: p.size, height: p.size, backgroundColor: p.color, transform: "rotate(45deg)", borderRadius: 2 }} />
-          )}
-          {p.shape === 3 && (
-            <div className="rounded-full" style={{ width: p.size * 1.2, height: p.size, border: `1.5px solid ${p.color}`, backgroundColor: "transparent" }} />
-          )}
-        </motion.div>
-      ))}
-    </div>
-  );
-}
 
 // ── Sparkle burst (on click) ──────────────────────────────────────────────────
 function Sparkle({ x, y }: { x: number; y: number }) {
@@ -511,25 +452,25 @@ function Illustration({ rawX, rawY, mood, introReady }: CharProps) {
 
 
 // ── 4-pointed star logo — animated glow ───────────────────────────────────────
-function StarLogo() {
-  return (
-    <motion.div
-      animate={{ rotate: [0, 5, -5, 0] }}
-      transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-      className="relative"
-    >
-      <motion.div
-        animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.4, 1] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute inset-0 rounded-full"
-        style={{ background: `radial-gradient(circle, ${BRAND.glow} 0%, transparent 70%)`, filter: "blur(8px)" }}
-      />
-      <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-        <path d="M16 2 C16 2 14.5 12 8 16 C14.5 20 16 30 16 30 C16 30 17.5 20 24 16 C17.5 12 16 2 16 2Z" fill="#111" />
-      </svg>
-    </motion.div>
-  );
-}
+// function StarLogo() {
+//   return (
+//     <motion.div
+//       animate={{ rotate: [0, 5, -5, 0] }}
+//       transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+//       className="relative"
+//     >
+//       <motion.div
+//         animate={{ opacity: [0.3, 0.6, 0.3], scale: [1, 1.4, 1] }}
+//         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+//         className="absolute inset-0 rounded-full"
+//         style={{ background: `radial-gradient(circle, ${BRAND.glow} 0%, transparent 70%)`, filter: "blur(8px)" }}
+//       />
+//       <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+//         <path d="M16 2 C16 2 14.5 12 8 16 C14.5 20 16 30 16 30 C16 30 17.5 20 24 16 C17.5 12 16 2 16 2Z" fill="#111" />
+//       </svg>
+//     </motion.div>
+//   );
+// }
 
 // ── Animated Input ────────────────────────────────────────────────────────────
 type FloatingInputProps = {
@@ -716,11 +657,22 @@ function IntroOverlay({ onDone }: { onDone: () => void }) {
       onAnimationComplete={onDone}
     >
       <motion.div
-        animate={{ rotate: [0, 360], scale: [0.4, 1.2, 0.9, 1] }}
-        transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+        initial={{ scale: 0.5, rotate: -180, opacity: 0 }}
+        animate={{ scale: 1, rotate: 0, opacity: 1 }}
+        exit={{ scale: 1.5, rotate: 180, opacity: 0 }}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
       >
-        <svg width="48" height="48" viewBox="0 0 32 32" fill="none">
-          <path d="M16 2 C16 2 14.5 12 8 16 C14.5 20 16 30 16 30 C16 30 17.5 20 24 16 C17.5 12 16 2 16 2Z" fill="white" />
+        <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+          <rect x="10" y="10" width="80" height="80" rx="16" fill="white" fillOpacity="0.2" />
+          <circle cx="50" cy="50" r="25" stroke="white" strokeWidth="4" fill="none" />
+          <motion.circle
+            cx="50" cy="50" r="25"
+            stroke="white" strokeWidth="4" fill="none"
+            strokeDasharray="160"
+            initial={{ strokeDashoffset: 160 }}
+            animate={{ strokeDashoffset: 0 }}
+            transition={{ duration: 1, ease: "easeInOut" }}
+          />
         </svg>
       </motion.div>
     </motion.div>

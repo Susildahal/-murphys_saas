@@ -1,6 +1,6 @@
 'use client';
 
-import  { useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   Building2,
   Calendar,
@@ -77,7 +77,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <>
-      <SpinnerComponent />
+        <SpinnerComponent />
       </>
     );
   }
@@ -92,9 +92,9 @@ export default function DashboardPage() {
         </Card>
       </div>
     );
-  } 
+  }
 
-  const statsCards = [  
+  const statsCards = [
     {
       title: "Paid Balance ",
       value: `$${stats.totalSpent || 0}`,
@@ -151,13 +151,13 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen">
       {/* Blue Gradient Header */}
-      <Header 
-    title='Dashboard'  
-    />
+      <Header
+        title='Dashboard'
+      />
       {/* User banner card */}
       {profile && (
-        <div className="max-w-7xl mx-auto px-4 md:px-0">
-          <div className="shadow-xl rounded-lg overflow-hidden border-0">
+        <div className=" mx-auto px-4 md:px-0">
+          <div className=" rounded-lg overflow-hidden border-0">
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white flex items-center gap-4">
               <Avatar className="h-16 w-16">
                 {profile.profile_image ? (
@@ -186,28 +186,28 @@ export default function DashboardPage() {
       <div className=" space-y-6 pt-5">
         {/* Payment Overdue Alert */}
         {unpaidInvoices > 0 && (
-        
+
           <Alert className="bg-red-50 flex justify-between gap-3 items-center border-red-200 dark:bg-red-900/20 dark:border-red-700">
             <div className="flex items-center gap-5">
-                        <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-300" />
+              <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-300" />
 
-    <div className=' flex justify-start items-start flex-col'> 
+              <div className=' flex justify-start items-start flex-col'>
 
-            <AlertTitle className="text-red-800 dark:text-red-200 font-semibold">Payment Overdue</AlertTitle>
-            <AlertDescription className="text-red-700 dark:text-red-200 ">
-              <span>
-                You have {unpaidInvoices} unpaid invoice{unpaidInvoices > 1 ? 's' : ''} totaling ${unpaidAmount}
-              </span>
-             </AlertDescription>
+                <AlertTitle className="text-red-800 dark:text-red-200 font-semibold">Payment Overdue</AlertTitle>
+                <AlertDescription className="text-red-700 dark:text-red-200 ">
+                  <span>
+                    You have {unpaidInvoices} unpaid invoice{unpaidInvoices > 1 ? 's' : ''} totaling ${unpaidAmount}
+                  </span>
+                </AlertDescription>
               </div>
-              </div>
-              <Link href="/admin/billing" className=' relative top-0 left-0'>
-                <Button size="sm" className="bg-red-600 cursor-pointer hover:bg-red-700 text-white">
-                  Pay Now
-                </Button>
-              </Link>
+            </div>
+            <Link href="/admin/billing" className=' relative top-0 left-0'>
+              <Button size="sm" className="bg-red-600 cursor-pointer hover:bg-red-700 text-white">
+                Pay Now
+              </Button>
+            </Link>
           </Alert>
-         
+
         )}
 
         {/* Stats Cards */}
@@ -263,15 +263,15 @@ export default function DashboardPage() {
                           </td>
                           <td className="py-3 px-3 text-right font-semibold text-slate-900 dark:text-slate-100">${invoice.amount}</td>
                           <td className="py-3 px-3 text-right">
-                            <Badge 
+                            <Badge
                               className={
                                 invoice.payment_status === 'completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-200' :
-                                invoice.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-200' :
-                                'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-200'
+                                  invoice.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-200' :
+                                    'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-200'
                               }
                             >
                               {invoice.payment_status === 'completed' ? 'Paid' :
-                               invoice.payment_status === 'pending' ? 'Sent' : 'Overdue'}
+                                invoice.payment_status === 'pending' ? 'Sent' : 'Overdue'}
                             </Badge>
                           </td>
                         </tr>
