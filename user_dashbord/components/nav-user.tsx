@@ -128,7 +128,7 @@ console.log("Profile data in NavUser:", profile)
             </DropdownMenuTrigger>
             <DropdownMenuContent
               className="w-64 rounded-xl shadow-lg border"
-              side={isMobile ? "bottom" : "right"}
+              side="bottom"
               align="end"
               sideOffset={8}
             >
@@ -152,23 +152,31 @@ console.log("Profile data in NavUser:", profile)
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem onClick={() => router.push('/admin/profile')} className="cursor-pointer py-2.5">
-                  <User className="h-4 w-4 mr-2" />
+                <DropdownMenuItem onClick={() => router.push('/admin/profile')} className="cursor-pointer py-2.5 flex items-center">
+                  <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center mr-2">
+                    <User className="h-4 w-4 text-slate-700 dark:text-white/70" />
+                  </div>
                   <span>My Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => router.push('/admin/change_password')} className="cursor-pointer py-2.5">
-                  <Settings className="h-4 w-4 mr-2" />
+                <DropdownMenuItem onClick={() => router.push('/admin/change_password')} className="cursor-pointer py-2.5 flex items-center">
+                  <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center mr-2">
+                    <Settings className="h-4 w-4 text-slate-700 dark:text-white/70" />
+                  </div>
                   <span>Change Password</span>
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setShowLogoutDialog(true)} className="cursor-pointer text-destructive focus:text-destructive py-2.5">
-                <LogOut className="h-4 w-4 mr-2" />
+              <DropdownMenuItem onClick={() => setShowLogoutDialog(true)} className="cursor-pointer text-destructive focus:text-destructive py-2.5 flex items-center">
+                <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center mr-2">
+                  <LogOut className="h-4 w-4 text-slate-700 dark:text-white/70" />
+                </div>
                 <span>Log out</span>
               </DropdownMenuItem>
               <Link href="/admin/delete_account">
-                <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive py-2.5">
-                  <Trash className="h-4 w-4 mr-2" />
+                <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive py-2.5 flex items-center">
+                  <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center mr-2">
+                    <Trash className="h-4 w-4 text-slate-700 dark:text-white/70" />
+                  </div>
                   <span>Delete Account</span>
                 </DropdownMenuItem>
               </Link>

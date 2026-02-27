@@ -101,6 +101,7 @@ export default function DashboardPage() {
       subtitle: stats.totalSpent > 0 ? 'Balance Paid' : 'No payments made',
       icon: Building2,
       color: 'text-blue-500',
+      bgGradient: 'bg-gradient-to-br from-blue-500 to-indigo-500',
       borderColor: 'border-l-blue-500',
       link: '/admin/billing'
     },
@@ -120,8 +121,9 @@ export default function DashboardPage() {
         return `Due in ${days} day${days !== 1 ? 's' : ''}`;
       })(),
       icon: Calendar,
-      color: 'text-blue-500',
-      borderColor: 'border-l-blue-500',
+      color: 'text-amber-500',
+      bgGradient: 'bg-gradient-to-br from-amber-400 to-amber-600',
+      borderColor: 'border-l-amber-500',
       link: '/admin/billing'
     },
     {
@@ -129,8 +131,9 @@ export default function DashboardPage() {
       value: stats.activeServices ?? dashboard?.activeService ?? 0,
       subtitle: recentServices.length > 0 ? `Next Renewal: ${format(new Date(recentServices[0]?.renewal_date || new Date()), 'dd MMM')}` : 'No active services',
       icon: Clock,
-      color: 'text-blue-500',
-      borderColor: 'border-l-blue-500',
+      color: 'text-green-500',
+      bgGradient: 'bg-gradient-to-br from-green-400 to-green-600',
+      borderColor: 'border-l-green-500',
       link: '/admin/view_assign_service'
     },
     {
@@ -138,8 +141,9 @@ export default function DashboardPage() {
       value: unpaidInvoices || 0,
       subtitle: unpaidInvoices > 0 ? `$${unpaidAmount} total due` : 'No pending payments',
       icon: Clock,
-      color: 'text-blue-500',
-      borderColor: 'border-l-blue-500',
+      color: 'text-red-500',
+      bgGradient: 'bg-gradient-to-br from-red-500 to-pink-600',
+      borderColor: 'border-l-red-500',
       link: '/admin/billing'
     },
   ];
@@ -170,7 +174,7 @@ export default function DashboardPage() {
               </div>
               <div className="hidden md:block">
                 <Link href="/admin/profile">
-                  <Button variant="outline" className=" cursor-pointer text-white">View Profile</Button>
+                  <Button className=" cursor-pointer hover:bg-white  bg-white "> <span className='text-blue-500'>View Profile</span></Button>
                 </Link>
               </div>
             </div>
@@ -212,8 +216,8 @@ export default function DashboardPage() {
             <Link href={card.link} key={index}>
               <Card className={`border-l-4 ${card.borderColor} hover:shadow-md transition-all cursor-pointer`}>
                 <CardContent className="px-3 py-2.5 flex items-center gap-3">
-                  <div className={`rounded-lg bg-blue-50 dark:bg-blue-900/20 p-2 shrink-0`}>
-                    <card.icon className={`h-5 w-5 ${card.color}`} />
+                  <div className={`rounded-lg ${card.bgGradient} text-white p-2 shrink-0 shadow-md`}>
+                    <card.icon className="h-5 w-5" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-medium text-slate-500 dark:text-slate-400 truncate">{card.title}</p>
@@ -231,7 +235,7 @@ export default function DashboardPage() {
         {/* Recent Invoices and Active Services */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Invoices */}
-          <Card>
+          <Card className="border border-gray-200 dark:border-gray-700">
             <CardContent className="">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold ">Recent Invoices</h2>
@@ -239,40 +243,50 @@ export default function DashboardPage() {
                   <Button variant="link" className="text-blue-600 cursor-pointer text-sm">View All</Button>
                 </Link>
               </div>
-              <div className="space-y-3">
-                {processedInvoices && processedInvoices.length > 0 ? (
-                  processedInvoices.map((invoice: any) => (
-                    <div key={invoice._id || invoice.invoice_id} className="flex items-center justify-between p-3 rounded-lg transition-colors">
-                      <div className="flex-1">
-                        <p className="font-medium text-slate-900 dark:text-slate-100">#{invoice.invoice_id}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                          {invoice.payment_date ? format(new Date(invoice.payment_date), 'MMM dd, yyyy') : 'Pending'}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="font-semibold text-slate-900 dark:text-slate-100">${invoice.amount}</span>
-                        <Badge 
-                          className={
-                            invoice.payment_status === 'completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-200' :
-                            invoice.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-200' :
-                            'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-200'
-                          }
-                        >
-                          {invoice.payment_status === 'completed' ? 'Paid' :
-                           invoice.payment_status === 'pending' ? 'Sent' : 'Overdue'}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-center text-slate-500 dark:text-slate-400 py-8">No invoices found</p>
-                )}
-              </div>
+              {processedInvoices && processedInvoices.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-200 dark:border-gray-700">
+                        <th className="text-left py-3 px-3 text-sm font-semibold text-slate-700 dark:text-slate-300">Invoice ID</th>
+                        <th className="text-left py-3 px-3 text-sm font-semibold text-slate-700 dark:text-slate-300">Date</th>
+                        <th className="text-right py-3 px-3 text-sm font-semibold text-slate-700 dark:text-slate-300">Amount</th>
+                        <th className="text-right py-3 px-3 text-sm font-semibold text-slate-700 dark:text-slate-300">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {processedInvoices.map((invoice: any) => (
+                        <tr key={invoice._id || invoice.invoice_id} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                          <td className="py-3 px-3 font-medium text-slate-900 dark:text-slate-100">#{invoice.invoice_id}</td>
+                          <td className="py-3 px-3 text-sm text-slate-500 dark:text-slate-400">
+                            {invoice.payment_date ? format(new Date(invoice.payment_date), 'MMM dd, yyyy') : 'Pending'}
+                          </td>
+                          <td className="py-3 px-3 text-right font-semibold text-slate-900 dark:text-slate-100">${invoice.amount}</td>
+                          <td className="py-3 px-3 text-right">
+                            <Badge 
+                              className={
+                                invoice.payment_status === 'completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-200' :
+                                invoice.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-200' :
+                                'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-200'
+                              }
+                            >
+                              {invoice.payment_status === 'completed' ? 'Paid' :
+                               invoice.payment_status === 'pending' ? 'Sent' : 'Overdue'}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-center text-slate-500 dark:text-slate-400 py-8">No invoices found</p>
+              )}
             </CardContent>
           </Card>
 
           {/* Active Services */}
-          <Card>
+          <Card className="border border-gray-200 dark:border-gray-700">
             <CardContent className="">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold ">Active Services</h2>
@@ -280,28 +294,38 @@ export default function DashboardPage() {
                   <Button variant="link" className="text-blue-600 cursor-pointer text-sm">View All</Button>
                 </Link>
               </div>
-              <div className="space-y-3">
-                {recentServices && recentServices.length > 0 ? (
-                  recentServices.map((service: any) => (
-                    <div key={service._id} className="flex items-center justify-between p-3 rounded-lg transition-colors">
-                      <div className="flex-1">
-                        <p className="font-medium text-slate-900 dark:text-slate-100">{service.service_name}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                          Renewal: {service.renewal_date ? format(new Date(service.renewal_date), 'MMM dd, yyyy') : 'N/A'}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-slate-900 dark:text-slate-100">${service.price}/mo</p>
-                        <Badge className="bg-blue-100 text-blue-700 text-xs dark:bg-blue-900/20 dark:text-blue-200">
-                          {service.status || 'Active'}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-center text-slate-500 dark:text-slate-400 py-8">No active services</p>
-                )}
-              </div>
+              {recentServices && recentServices.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-200 dark:border-gray-700">
+                        <th className="text-left py-3 px-3 text-sm font-semibold text-slate-700 dark:text-slate-300">Service Name</th>
+                        <th className="text-left py-3 px-3 text-sm font-semibold text-slate-700 dark:text-slate-300">Renewal Date</th>
+                        <th className="text-right py-3 px-3 text-sm font-semibold text-slate-700 dark:text-slate-300">Price</th>
+                        <th className="text-right py-3 px-3 text-sm font-semibold text-slate-700 dark:text-slate-300">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {recentServices.map((service: any) => (
+                        <tr key={service._id} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                          <td className="py-3 px-3 font-medium text-slate-900 dark:text-slate-100">{service.service_name}</td>
+                          <td className="py-3 px-3 text-sm text-slate-500 dark:text-slate-400">
+                            {service.renewal_date ? format(new Date(service.renewal_date), 'MMM dd, yyyy') : 'N/A'}
+                          </td>
+                          <td className="py-3 px-3 text-right font-semibold text-slate-900 dark:text-slate-100">${service.price}/mo</td>
+                          <td className="py-3 px-3 text-right">
+                            <Badge className="bg-blue-100 text-blue-700 text-xs dark:bg-blue-900/20 dark:text-blue-200">
+                              {service.status || 'Active'}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-center text-slate-500 dark:text-slate-400 py-8">No active services</p>
+              )}
             </CardContent>
           </Card>
         </div>

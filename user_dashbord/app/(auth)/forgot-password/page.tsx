@@ -506,7 +506,7 @@ function FloatingInput({
       <motion.div
         animate={{ scaleX: focused ? 1 : 0 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        style={{ width: "100%", position: "absolute", bottom: 0, left: 0, height: 2, background: error ? "#ef4444" : `linear-gradient(90deg, ${BRAND.primary}, ${BRAND.accent})`, transformOrigin: "left" }}
+        style={{ width: "100%", position: "absolute", bottom: 0, left: 0, height: 2, background: error ? "#ef4444" : "#3b82f6", transformOrigin: "left" }}
       />
     </motion.div>
   );
@@ -686,7 +686,7 @@ export default function ForgotPasswordPage() {
             className="absolute inset-0 pointer-events-none"
             style={{ backgroundImage: `radial-gradient(circle, ${BRAND.primary}20 1px, transparent 1px)`, backgroundSize: "24px 24px" }}
           />
-          <FloatingParticles />
+          {/* <FloatingParticles /> */}
           <div className="absolute top-0 left-0 right-0 h-24 pointer-events-none"
             style={{ background: `linear-gradient(180deg, ${BRAND.glow} 0%, transparent 100%)` }} />
           <div className="pb-8 w-full flex justify-center">
@@ -711,8 +711,8 @@ export default function ForgotPasswordPage() {
           <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
             className="text-center mb-9">
-            <h1 className="text-[1.85rem] font-bold tracking-tight"
-              style={{ background: `linear-gradient(135deg, #111 0%, ${BRAND.primary} 100%)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                       <h1 className="text-[1.85rem] font-bold text-blue-600 tracking-tight">
+
               Forgot Password?
             </h1>
             <motion.p
@@ -755,18 +755,18 @@ export default function ForgotPasswordPage() {
 
             <motion.button
               initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.36, duration: 0.45 }}
-              whileHover={{ scale: 1.025, boxShadow: `0 10px 40px ${BRAND.glow}` }}
+              transition={{ delay: 0.52, duration: 0.45 }}
+              whileHover={{ scale: 1.025, boxShadow: `0 10px 40px rgba(59, 130, 246, 0.3)` }}
               whileTap={{ scale: 0.97 }}
               onClick={handleSubmit}
               type="button"
-              className="w-full text-white py-4 rounded-2xl text-sm font-semibold tracking-wide relative overflow-hidden"
-              style={{ background: `linear-gradient(135deg, #0f172a 0%, ${BRAND.primary} 100%)` }}
+              className="w-full text-white py-4 rounded-2xl cursor-pointer text-sm font-semibold tracking-wide relative overflow-hidden"
+              style={{ background: `linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)` }}
             >
               <motion.div
                 className="absolute inset-0 opacity-0"
                 whileHover={{ opacity: 1 }}
-                style={{ background: `linear-gradient(135deg, ${BRAND.primary} 0%, ${BRAND.accent} 100%)` }}
+                style={{ background: `linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)` }}
                 transition={{ duration: 0.3 }}
               />
               <span className="relative z-10">
@@ -807,7 +807,7 @@ export default function ForgotPasswordPage() {
               <motion.button
                 whileHover={{ color: BRAND.primary }}
                 type="button"
-                className="text-gray-900 cursor-pointer font-semibold hover:underline underline-offset-2 transition-colors"
+                className="text-blue-600 cursor-pointer font-semibold hover:underline underline-offset-2 transition-colors"
               >
                 Sign In
               </motion.button>

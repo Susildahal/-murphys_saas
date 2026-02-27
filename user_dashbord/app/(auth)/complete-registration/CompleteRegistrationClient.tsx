@@ -524,7 +524,7 @@ function FloatingInput({
       <motion.div
         animate={{ scaleX: focused ? 1 : 0 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        style={{ width: "100%", position: "absolute", bottom: 0, left: 0, height: 2, background: error ? "#ef4444" : `linear-gradient(90deg, ${BRAND.primary}, ${BRAND.accent})`, transformOrigin: "left" }}
+        style={{ width: "100%", position: "absolute", bottom: 0, left: 0, height: 2, background: error ? "#ef4444" : "#3b82f6", transformOrigin: "left" }}
       />
     </motion.div>
   );
@@ -573,7 +573,7 @@ function PasswordField({ value, onChange, onFocus, onBlur, visible, onToggleVisi
       <motion.div
         animate={{ scaleX: focused ? 1 : 0 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        style={{ width: "100%", position: "absolute", bottom: 0, left: 0, height: 2, background: error ? "#ef4444" : `linear-gradient(90deg, ${BRAND.primary}, ${BRAND.accent})`, transformOrigin: "left" }}
+        style={{ width: "100%", position: "absolute", bottom: 0, left: 0, height: 2, background: error ? "#ef4444" : "#3b82f6", transformOrigin: "left" }}
       />
       <button type="button" onClick={onToggleVisible}
         className="absolute right-0 bottom-2 text-gray-400 hover:text-blue-600 transition-colors">
@@ -884,7 +884,7 @@ export default function CompleteRegistrationClient() {
             className="absolute inset-0 pointer-events-none"
             style={{ backgroundImage: `radial-gradient(circle, ${BRAND.primary}20 1px, transparent 1px)`, backgroundSize: "24px 24px" }}
           />
-          <FloatingParticles />
+          {/* <FloatingParticles /> */}
           <div className="absolute top-0 left-0 right-0 h-24 pointer-events-none"
             style={{ background: `linear-gradient(180deg, ${BRAND.glow} 0%, transparent 100%)` }} />
           <div className="pb-8 w-full flex justify-center">

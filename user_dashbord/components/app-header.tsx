@@ -22,6 +22,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { NavUser } from "@/components/nav-user"
 
 interface AppHeaderProps {
   onSearchChange?: (value: string) => void
@@ -77,6 +78,7 @@ export function AppHeader({ onSearchChange, searchValue }: AppHeaderProps) {
           >
             <Search className="h-4 w-4 text-slate-700 dark:text-slate-200" />
           </button>
+          
 
           {/* Center: search (desktop) */}
           <div className="hidden md:flex px-2 flex-1">
@@ -151,14 +153,8 @@ export function AppHeader({ onSearchChange, searchValue }: AppHeaderProps) {
           </DropdownMenu>
 
 
-          <Button variant="ghost" className="relative h-10 w-10 rounded-full p-0">
-            <Avatar className="h-10 w-10 cursor-pointer ring-2 ring-white dark:ring-slate-800">
-              <AvatarImage src={userAvatar} alt={userName} />
-              <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                {getInitials(userName)}
-              </AvatarFallback>
-            </Avatar>
-          </Button>
+          {/* User menu (dropdown) */}
+          <NavUser />
         </div>
         {/* Mobile search overlay */}
         {showMobileSearch && (

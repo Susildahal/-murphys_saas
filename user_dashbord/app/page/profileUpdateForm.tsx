@@ -274,21 +274,21 @@ const formatPhone = (value: string, countryCode = '+61') => {
                 <div className="relative group">
                   <Avatar className="w-32 h-32 border-4 border-background  transition-transform duration-300 group-hover:scale-105">
                     <AvatarImage src={imagePreview} className="object-cover" />
-                    <AvatarFallback className="text-4xl bg-muted">
+                    <AvatarFallback className="text-4xl text-blue-500 bg-muted">
                       {form.watch('firstName')?.[0] || <User className="w-12 h-12" />}
                     </AvatarFallback>
                   </Avatar>
-                  <label className="absolute bottom-0 right-0 p-2 bg-primary text-primary-foreground rounded-full cursor-pointer  hover:bg-primary/90 transition-colors">
-                    <Camera className="w-4 h-4" />
+                  <label className="absolute bottom-0 right-0 p-2 bg-blue-600 text-white rounded-full cursor-pointer transition-colors">
+                    <Camera className="w-4 h-4 text-white" />
                     <input type="file" className="hidden" accept="image/*" onChange={handleImageChange} />
                   </label>
                 </div>
 
                 <div className="mt-4 text-center">
-                  <h2 className="text-xl font-bold text-foreground">
+                  <h2 className="text-xl font-bold text-blue-500 ">
                     {form.watch('firstName')} {form.watch('lastName')}
                   </h2>
-                  <p className="text-sm text-muted-foreground font-medium">User Profile</p>
+                  <p className="text-sm text-blue-500 font-medium">User Profile</p>
                 </div>
 
                 <Separator className="my-6" />
@@ -296,9 +296,9 @@ const formatPhone = (value: string, countryCode = '+61') => {
                 <div className="w-full space-y-4">
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
                     <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                      <Mail className="w-4 h-4" />
+                      <Mail className="w-4 text-blue-400  h-4" />
                     </div>
-                    <span className="truncate">{userEmail || 'No email set'}</span>
+                    <span className="truncate text-blue-500">{userEmail || 'No email set'}</span>
                   </div>
                   {form.watch('referralSource') && (
                     <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -344,7 +344,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
                       <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500">
                         <User className="w-5 h-5" />
                       </div>
-                      <h3 className="text-lg font-bold">Personal Details</h3>
+                      <h3 className="text-lg text-blue-500 font-bold">Personal Details</h3>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -447,7 +447,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
                       <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-500">
                         <Info className="w-5 h-5" />
                       </div>
-                      <h3 className="text-lg font-bold">About You</h3>
+                      <h3 className="text-lg text-blue-500 font-bold">About You</h3>
                     </div>
 
                     <FormField
@@ -512,7 +512,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
                       <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500">
                         <Phone className="w-5 h-5" />
                       </div>
-                      <h3 className="text-lg font-bold">Contact & Social</h3>
+                      <h3 className="text-lg  text-blue-500 font-bold">Contact & Social</h3>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -650,7 +650,7 @@ const formatPhone = (value: string, countryCode = '+61') => {
                       <div className="p-2 rounded-lg bg-amber-500/10 text-amber-500">
                         <MapPin className="w-5 h-5" />
                       </div>
-                      <h3 className="text-lg font-bold">Location</h3>
+                      <h3 className="text-lg  text-blue-500 font-bold">Location</h3>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
