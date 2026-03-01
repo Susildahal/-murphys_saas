@@ -7,10 +7,10 @@ import Header from '@/app/page/common/header';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { 
-  CreditCard, 
-  Calendar, 
-  CheckCircle2, 
+import {
+  CreditCard,
+  Calendar,
+  CheckCircle2,
   AlertCircle,
   Receipt,
   Clock,
@@ -19,121 +19,75 @@ import {
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { useToast } from '@/hooks/use-toast'
-import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js'
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
+import { PayPalScriptProvider, PayPalButtons, FUNDING } from '@paypal/react-paypal-js'
+import axiosInstance from '@/lib/axios'
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
+const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'AV_tVxQekwPqP4fz4bI8-CLDs7_cGnDV15R1Mlrc2ZlEUGnu2qoGL4SkfoR_sPotN6z7u8UM_BajzUPw';
 
-// --- CheckoutForm Component ---
-function CheckoutForm({ 
-  renewalId, 
-  amount, 
-  assignServiceId,
-  onSuccess,
-  onCancel
-}: { 
-  renewalId: string; 
-  amount: number; 
-  assignServiceId: string;
-  onSuccess: () => void;
-  onCancel: () => void;
-}) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const { toast } = useToast();
-  const [processing, setProcessing] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!stripe || !elements) return;
-    setProcessing(true);
-
-    try {
-      const { error: submitError } = await elements.submit();
-      if (submitError) {
-        toast({ title: 'Validation Error', description: submitError.message, variant: 'destructive' });
-        setProcessing(false);
-        return;
-      }
-
-      const { error: pmError, paymentMethod } = await stripe.createPaymentMethod({ elements });
-      if (pmError) {
-        toast({ title: 'Payment Method Error', description: pmError.message, variant: 'destructive' });
-        setProcessing(false);
-        return;
-      }
-
-      const axiosInstance = (await import('@/lib/axios')).default;
-      await axiosInstance.post('/billing/process-payment', {
-        paymentMethodId: paymentMethod.id,
-        renewalId,
-        amount,
-        assignServiceId
-      });
-
-      toast({ title: 'Payment Successful', description: `Payment of $${amount} processed.` });
-      onSuccess();
-    } catch (error: any) {
-      toast({
-        title: 'Payment Failed',
-        description: error.response?.data?.message || error.message || 'Failed to process payment',
-        variant: 'destructive',
-      });
-    } finally {
-      setProcessing(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <PaymentElement />
-      <div className="flex gap-3 pt-2">
-        <Button type="submit" disabled={!stripe || processing} className="flex-1">
-          {processing ? 'Processing...' : `Confirm Payment of $${amount}`}
-        </Button>
-        <Button type="button" variant="outline" onClick={onCancel} disabled={processing}>
-          Cancel
-        </Button>
-      </div>
-    </form>
-  );
-}
-
-// --- StripePaymentModal Component ---
-function StripePaymentModal({ 
-  renewalId, amount, assignServiceId, serviceName, onClose, onSuccess 
-}: { 
+// --- PayPalPaymentModal Component ---
+function PayPalPaymentModal({
+  renewalId, amount, assignServiceId, serviceName, onClose, onSuccess
+}: {
   renewalId: string; amount: number; assignServiceId: string; serviceName: string; onClose: () => void; onSuccess: () => void;
 }) {
-  const options: StripeElementsOptions = {
-    mode: 'payment',
-    amount: Math.round(amount * 100),
-    currency: 'aud',
-    paymentMethodCreation: 'manual',
-  };
+  const { toast } = useToast();
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-md shadow-lg border-2">
-        <CardHeader>
-          <CardTitle>Payment Details</CardTitle>
-          <CardDescription>
-            <div className="mt-4 flex justify-between items-center text-foreground">
-              <span className="text-sm text-muted-foreground">Service: {serviceName}</span>
-              <span className="font-bold text-lg">${amount} AUD</span>
-            </div>
-          </CardDescription>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <Card className="w-full max-w-sm shadow-2xl border">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base font-bold">Complete Payment</CardTitle>
+            <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-xl leading-none">&times;</button>
+          </div>
+          <div className="mt-3 rounded-lg bg-muted/40 border px-4 py-3 flex items-center justify-between">
+            <span className="text-sm text-muted-foreground truncate max-w-[180px]">{serviceName}</span>
+            <span className="font-bold text-lg ml-2">${amount} <span className="text-xs font-normal text-muted-foreground">AUD</span></span>
+          </div>
         </CardHeader>
-        <CardContent>
-          <Elements stripe={stripePromise} options={options}>
-            <CheckoutForm
-              renewalId={renewalId}
-              amount={amount}
-              assignServiceId={assignServiceId}
-              onSuccess={onSuccess}
-              onCancel={onClose}
-            />
-          </Elements>
+        <CardContent className="space-y-3 pt-0">
+          <p className="text-xs text-muted-foreground text-center">You will be redirected to PayPal to complete this payment securely.</p>
+          <PayPalButtons
+            fundingSource={FUNDING.PAYPAL}
+            style={{ layout: 'horizontal', color: 'blue', shape: 'pill', label: 'pay', height: 44 }}
+            createOrder={async () => {
+              try {
+                const res = await axiosInstance.post('/billing/create-order', {
+                  renewalId,
+                  amount,
+                  assignServiceId,
+                });
+                return res.data.orderID as string;
+              } catch (err: any) {
+                toast({ title: 'Order Error', description: err?.response?.data?.message || 'Failed to create order', variant: 'destructive' });
+                throw err;
+              }
+            }}
+            onApprove={async (data: any) => {
+              try {
+                const response = await axiosInstance.post('/billing/capture-payment', {
+                  orderID: data.orderID,
+                  renewalId,
+                  assignServiceId,
+                });
+                console.log(response.data);
+                toast({ title: 'Payment Successful', description: `Payment of $${amount} AUD processed via PayPal.` });
+                onSuccess();
+              } catch (err: any) {
+                toast({ title: 'Capture Failed', description: err?.response?.data?.message || 'Failed to capture payment', variant: 'destructive' });
+              }
+            }}
+            onError={(err) => {
+              console.error('PayPal error:', err);
+              toast({ title: 'PayPal Error', description: 'PayPal payment was not completed.', variant: 'destructive' });
+            }}
+            onCancel={() => {
+              toast({ title: 'Payment Cancelled', description: 'You cancelled the PayPal payment.' });
+            }}
+          />
+          <Button variant="ghost" size="sm" className="w-full text-muted-foreground" onClick={onClose}>
+            Cancel
+          </Button>
         </CardContent>
       </Card>
     </div>
@@ -144,7 +98,7 @@ function StripePaymentModal({
 function Page() {
   const dispatch = useAppDispatch();
   const { billingInfo, loading, error } = useAppSelector((state) => state.billing);
-  const [selectedRenewal, setSelectedRenewal] = useState<{ 
+  const [selectedRenewal, setSelectedRenewal] = useState<{
     id: string; amount: number; assignServiceId: string; serviceName: string;
   } | null>(null);
 
@@ -175,13 +129,13 @@ function Page() {
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-transparent pb-12">
       {loading && <SpinnerComponent />}
-      
+
       <Header
         title="Billing & Payments"
         description="View your active services and payment history"
-        total={billingInfo.length} 
+        total={billingInfo.length}
       />
-      
+
       <div className=" mx-auto  space-y-8">
         {/* Simplified No Payment Status */}
         {unpaidRenewals.length === 0 && !loading && billingInfo.length > 0 && (
@@ -222,7 +176,7 @@ function Page() {
                       </div>
                       <Badge variant="secondary" className="text-[10px] uppercase">Pending</Badge>
                     </div>
-                    
+
                     <div className="flex justify-between items-center">
                       <span className="text-2xl font-bold">${renewal.price}</span>
                       <span className="text-xs text-muted-foreground flex items-center gap-1">
@@ -231,11 +185,11 @@ function Page() {
                       </span>
                     </div>
 
-                    <Button 
+                    <Button
                       size="sm"
                       className="w-full cursor-pointer"
-                      onClick={() => setSelectedRenewal({ 
-                        id: renewal._id, 
+                      onClick={() => setSelectedRenewal({
+                        id: renewal._id,
                         amount: renewal.price,
                         assignServiceId: renewal.assignServiceId,
                         serviceName: renewal.serviceName
@@ -254,10 +208,10 @@ function Page() {
         <section className="space-y-4">
           {/* <h2 className="text-lg font-bold tracking-tight">Service History</h2> */}
           {billingInfo.length === 0 && !loading ? (
-             <Card className="border-dashed shadow-none py-12 text-center">
-                <Info className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-muted-foreground text-sm">No billing records found.</p>
-             </Card>
+            <Card className="border-dashed shadow-none py-12 text-center">
+              <Info className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+              <p className="text-muted-foreground text-sm">No billing records found.</p>
+            </Card>
           ) : (
             <div className="space-y-6">
               {billingInfo.map((billing) => (
@@ -274,22 +228,22 @@ function Page() {
                   <CardContent className="p-0">
                     {/* Simplified Stat Line */}
                     <div className="grid grid-cols-2 md:grid-cols-4 divide-x border-b">
-                       <div className="p-4 text-center">
-                          <p className="text-[10px] uppercase text-muted-foreground font-semibold">Price</p>
-                          <p className="font-bold">${billing.price}</p>
-                       </div>
-                       <div className="p-4 text-center">
-                          <p className="text-[10px] uppercase text-muted-foreground font-semibold">Cycle</p>
-                          <p className="font-bold capitalize">{billing.cycle}</p>
-                       </div>
-                       <div className="p-4 text-center">
-                          <p className="text-[10px] uppercase text-muted-foreground font-semibold">Start</p>
-                          <p className="font-bold">{format(new Date(billing.start_date), 'MMM dd, yyyy')}</p>
-                       </div>
-                       <div className="p-4 text-center">
-                          <p className="text-[10px] uppercase text-muted-foreground font-semibold">End</p>
-                          <p className="font-bold">{format(new Date(billing.end_date), 'MMM dd, yyyy')}</p>
-                       </div>
+                      <div className="p-4 text-center">
+                        <p className="text-[10px] uppercase text-muted-foreground font-semibold">Price</p>
+                        <p className="font-bold">${billing.price}</p>
+                      </div>
+                      <div className="p-4 text-center">
+                        <p className="text-[10px] uppercase text-muted-foreground font-semibold">Cycle</p>
+                        <p className="font-bold capitalize">{billing.cycle}</p>
+                      </div>
+                      <div className="p-4 text-center">
+                        <p className="text-[10px] uppercase text-muted-foreground font-semibold">Start</p>
+                        <p className="font-bold">{format(new Date(billing.start_date), 'MMM dd, yyyy')}</p>
+                      </div>
+                      <div className="p-4 text-center">
+                        <p className="text-[10px] uppercase text-muted-foreground font-semibold">End</p>
+                        <p className="font-bold">{format(new Date(billing.end_date), 'MMM dd, yyyy')}</p>
+                      </div>
                     </div>
 
                     {/* Simple Payment Schedule List */}
@@ -298,8 +252,8 @@ function Page() {
                       {billing.renewal_dates.map((renewal) => (
                         <div key={renewal._id} className="flex items-center justify-between p-3 border rounded-md text-sm">
                           <div className="flex items-center gap-3">
-                            {renewal.haspaid ? 
-                              <CheckCircle2 className="h-4 w-4 text-emerald-500" /> : 
+                            {renewal.haspaid ?
+                              <CheckCircle2 className="h-4 w-4 text-emerald-500" /> :
                               <Clock className="h-4 w-4 text-slate-400" />
                             }
                             <span className="font-medium">{format(new Date(renewal.date), 'MMM dd, yyyy')}</span>
@@ -308,12 +262,12 @@ function Page() {
                           <div className="flex items-center gap-4">
                             <span className="font-bold">${renewal.price}</span>
                             {!renewal.haspaid ? (
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
+                              <Button
+                                variant="outline"
+                                size="sm"
                                 className="h-7 text-xs"
-                                onClick={() => setSelectedRenewal({ 
-                                  id: renewal._id, 
+                                onClick={() => setSelectedRenewal({
+                                  id: renewal._id,
                                   amount: renewal.price,
                                   assignServiceId: billing._id,
                                   serviceName: billing.service_name
@@ -336,7 +290,7 @@ function Page() {
         </section>
 
         {selectedRenewal && (
-          <StripePaymentModal
+          <PayPalPaymentModal
             renewalId={selectedRenewal.id}
             amount={selectedRenewal.amount}
             assignServiceId={selectedRenewal.assignServiceId}
@@ -353,4 +307,17 @@ function Page() {
   )
 }
 
-export default Page;
+export default function BillingPage() {
+  return (
+    <PayPalScriptProvider
+      options={{
+        clientId: PAYPAL_CLIENT_ID,
+        currency: 'AUD',
+        intent: 'capture',
+        disableFunding: 'card,credit,venmo,paylater',
+      } as any}
+    >
+      <Page />
+    </PayPalScriptProvider>
+  );
+}

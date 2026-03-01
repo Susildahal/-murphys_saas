@@ -1,4 +1,4 @@
-import { getBillingInfo, processRenewalPayment, getBillingHistory, getBillingStats, deleteBillingRecord, getAdminBillingHistory, getAdminBillingStats, deleteAdminBillingRecord } from "../conttrolers/billing.contollers";
+import { getBillingInfo, createPayPalOrder, capturePayPalPayment, getBillingHistory, getBillingStats, deleteBillingRecord, getAdminBillingHistory, getAdminBillingStats, deleteAdminBillingRecord } from "../conttrolers/billing.contollers";
 import { verifyToken } from "../middleware/auth";
 import { isAdmin } from "../middleware/rbac";
 
@@ -7,7 +7,8 @@ const billingrouter = express.Router();
 
 // User endpoints
 billingrouter.get("/info", verifyToken, getBillingInfo);
-billingrouter.post("/process-payment", verifyToken, processRenewalPayment);
+billingrouter.post("/create-order", verifyToken, createPayPalOrder);
+billingrouter.post("/capture-payment", verifyToken, capturePayPalPayment);
 billingrouter.get("/history", verifyToken, getBillingHistory);
 billingrouter.get("/stats", verifyToken, getBillingStats);
 billingrouter.delete("/history/:id", verifyToken, deleteBillingRecord);

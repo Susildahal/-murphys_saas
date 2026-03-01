@@ -140,7 +140,7 @@ axiosInstance.interceptors.response.use(
         showErrorToast('Your session has expired. Please login again.', 'Authentication Error');
         localStorage.removeItem('token');
         localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
+        // window.location.href = '/login';
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
@@ -153,7 +153,7 @@ axiosInstance.interceptors.response.use(
       showErrorToast('Access denied. Please login with an account that has access.', 'Access Denied');
       localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');
-      window.location.href = '/login';
+      // window.location.href = '/login';
       return Promise.reject(error);
     }
 

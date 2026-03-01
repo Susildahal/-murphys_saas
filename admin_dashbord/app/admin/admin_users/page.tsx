@@ -59,7 +59,7 @@ function AdminUsersPage() {
     if (!otpVerified) return
     const handle = setTimeout(() => {
       // reset to first page when searching
-      dispatch(getadminProfile({ role_type: 'admin user', page: 1, limit: 10, search: searchTerm }363748 as any))
+      dispatch(getadminProfile({ role_type: 'admin user', page: 1, limit: 10, search: searchTerm } as any))
     }, 500)
 
     return () => clearTimeout(handle)

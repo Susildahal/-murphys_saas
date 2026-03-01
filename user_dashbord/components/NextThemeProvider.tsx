@@ -6,7 +6,7 @@ export default function NextThemeProvider({ children }: { children: React.ReactN
   return (
     <NextThemesProvider
       attribute="class"
-      defaultTheme="dark"
+      defaultTheme="light"
       enableSystem
       disableTransitionOnChange
     >

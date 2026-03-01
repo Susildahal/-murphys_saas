@@ -12,9 +12,9 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table'
-import { 
-  Receipt, 
-  CheckCircle2, 
+import {
+  Receipt,
+  CheckCircle2,
   XCircle,
   Clock,
   DollarSign,
@@ -101,7 +101,7 @@ function BillingHistoryPage() {
     setLoading(true);
     try {
       const axiosInstance = (await import('@/lib/axios')).default;
-      
+
       const params = new URLSearchParams({
         page: page.toString(),
         limit: '10'
@@ -164,7 +164,7 @@ function BillingHistoryPage() {
     try {
       setLoading(true);
       const axiosInstance = (await import('@/lib/axios')).default;
-      
+
       // Fetch all data with high limit for export
       const params = new URLSearchParams({
         page: '1',
@@ -200,7 +200,7 @@ function BillingHistoryPage() {
       doc.setFont('helvetica', 'normal');
       doc.text(`Generated: ${format(new Date(), 'MMM dd, yyyy HH:mm')}`, margin, yPos);
       yPos += 5;
-      
+
       if (filter !== 'all') {
         doc.text(`Filter: ${filter.charAt(0).toUpperCase() + filter.slice(1)}`, margin, yPos);
         yPos += 5;
@@ -209,7 +209,7 @@ function BillingHistoryPage() {
         doc.text(`Date Range: ${startDate || 'Any'} to ${endDate || 'Any'}`, margin, yPos);
         yPos += 5;
       }
-      
+
       yPos += 5;
       doc.setDrawColor(200);
       doc.line(margin, yPos, pageWidth - margin, yPos);
@@ -252,7 +252,7 @@ function BillingHistoryPage() {
       doc.text('Status', margin + 120, yPos);
       doc.text('Date', margin + 150, yPos);
       yPos += 5;
-      
+
       doc.setDrawColor(200);
       doc.line(margin, yPos, pageWidth - margin, yPos);
       yPos += 5;
@@ -269,7 +269,7 @@ function BillingHistoryPage() {
         // Truncate text if too long
         const invoiceId = item.invoice_id.length > 15 ? item.invoice_id.substring(0, 12) + '...' : item.invoice_id;
         const serviceName = item.service_name.length > 25 ? item.service_name.substring(0, 22) + '...' : item.service_name;
-        
+
         doc.text(invoiceId, margin, yPos);
         doc.text(serviceName, margin + 35, yPos);
         doc.text(`$${item.amount}`, margin + 90, yPos);
@@ -314,7 +314,7 @@ function BillingHistoryPage() {
     try {
       // CSV headers
       const headers = ['Invoice ID', 'Service Name', 'Amount', 'Currency', 'Status', 'Payment Method', 'Created Date', 'Payment Date'];
-      
+
       // CSV rows
       const rows = billingHistory.map(item => [
         item.invoice_id,
@@ -337,11 +337,11 @@ function BillingHistoryPage() {
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement('a');
       const url = URL.createObjectURL(blob);
-      
+
       link.setAttribute('href', url);
       link.setAttribute('download', `billing-history-${format(new Date(), 'yyyy-MM-dd')}.csv`);
       link.style.visibility = 'hidden';
-      
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -365,9 +365,9 @@ function BillingHistoryPage() {
     try {
       setLoading(true);
       const axiosInstance = (await import('@/lib/axios')).default;
-      
-      await axiosInstance.delete(`/billing/history/${selectedItemForDelete}`);
-      
+
+      await axiosInstance.delete(`/billing/admin/history/${selectedItemForDelete}`);
+
       toast({
         title: 'Success',
         description: 'Payment record deleted successfully',
@@ -400,97 +400,97 @@ function BillingHistoryPage() {
         title="Billing History"
         description="View and manage all your payment transactions"
         total={billingHistory.length}
-        extraInfo={    
-        <div>
-         
+        extraInfo={
           <div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div>
-                <Select value={filter} onValueChange={setFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Statuses" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="failed">Failed</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="refunded">Refunded</SelectItem>
-                  </SelectContent>
-                </Select>
 
-              </div>
+            <div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <Select value={filter} onValueChange={setFilter}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Statuses" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Statuses</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="failed">Failed</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="refunded">Refunded</SelectItem>
+                    </SelectContent>
+                  </Select>
 
-              <div>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={`w-full justify-start text-left font-normal ${!calendarStartDate && 'text-muted-foreground'}`}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {calendarStartDate ? format(calendarStartDate, 'PPP') : 'Pick a date'}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={calendarStartDate}
-                      onSelect={(date) => {
-                        setCalendarStartDate(date);
-                        setStartDate(date ? format(date, 'yyyy-MM-dd') : '');
-                      }}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
+                </div>
 
-              <div>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={`w-full justify-start text-left font-normal ${!calendarEndDate && 'text-muted-foreground'}`}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {calendarEndDate ? format(calendarEndDate, 'PPP') : 'Pick a date'}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={calendarEndDate}
-                      onSelect={(date) => {
-                        setCalendarEndDate(date);
-                        setEndDate(date ? format(date, 'yyyy-MM-dd') : '');
-                      }}
-                      initialFocus
-                      disabled={(date) => calendarStartDate ? date < calendarStartDate : false}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
+                <div>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={`w-full justify-start text-left font-normal ${!calendarStartDate && 'text-muted-foreground'}`}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {calendarStartDate ? format(calendarStartDate, 'PPP') : 'Pick a date'}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={calendarStartDate}
+                        onSelect={(date) => {
+                          setCalendarStartDate(date);
+                          setStartDate(date ? format(date, 'yyyy-MM-dd') : '');
+                        }}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
 
-              <div className="flex items-end">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setFilter('all');
-                    setStartDate('');
-                    setEndDate('');
-                    setCalendarStartDate(undefined);
-                    setCalendarEndDate(undefined);
-                    setPage(1);
-                  }}
-                  className="w-full"
-                >
-                  Clear Filters
-                </Button>
+                <div>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={`w-full justify-start text-left font-normal ${!calendarEndDate && 'text-muted-foreground'}`}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {calendarEndDate ? format(calendarEndDate, 'PPP') : 'Pick a date'}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={calendarEndDate}
+                        onSelect={(date) => {
+                          setCalendarEndDate(date);
+                          setEndDate(date ? format(date, 'yyyy-MM-dd') : '');
+                        }}
+                        initialFocus
+                        disabled={(date) => calendarStartDate ? date < calendarStartDate : false}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div className="flex items-end">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setFilter('all');
+                      setStartDate('');
+                      setEndDate('');
+                      setCalendarStartDate(undefined);
+                      setCalendarEndDate(undefined);
+                      setPage(1);
+                    }}
+                    className="w-full"
+                  >
+                    Clear Filters
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-        </div>}
+          </div>}
       />
 
       <div className="space-y-6 ">
@@ -656,10 +656,10 @@ function BillingHistoryPage() {
 
             {/* Pagination */}
             <div className="p-4">
-              <Pagination 
-                page={page} 
-                totalPages={totalPages} 
-                onPageChange={setPage} 
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
               />
             </div>
           </CardContent>
@@ -682,7 +682,7 @@ function BillingHistoryPage() {
             }}>
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={handleDeletePayment}
               className="bg-red-600 hover:bg-red-700"
             >

@@ -11,8 +11,8 @@ export interface IBillingHistory extends Document {
   currency: string;
   payment_status: 'pending' | 'completed' | 'failed' | 'refunded';
   payment_method: string;
-  stripe_payment_intent_id?: string;
-  stripe_payment_method_id?: string;
+  paypal_order_id?: string;
+  paypal_payer_id?: string;
   payment_date?: Date;
   failure_reason?: string;
   metadata?: Record<string, any>;
@@ -65,13 +65,13 @@ const BillingHistorySchema = new Schema<IBillingHistory>(
     },
     payment_method: {
       type: String,
-      default: 'card',
+      default: 'paypal',
     },
-    stripe_payment_intent_id: {
+    paypal_order_id: {
       type: String,
       sparse: true,
     },
-    stripe_payment_method_id: {
+    paypal_payer_id: {
       type: String,
     },
     payment_date: {

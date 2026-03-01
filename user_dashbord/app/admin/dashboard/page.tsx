@@ -21,7 +21,7 @@ import Header from '@/app/page/common/header';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import SpinnerComponent from '@/app/page/common/Spinner';
 
-export default function DashboardPage() {
+export default function Page() {
   const dispatch = useAppDispatch();
   const profileState = useAppSelector((state) => state.profile) as { profile: any; loading: boolean; error: string | null };
   const { profile } = profileState;

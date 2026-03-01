@@ -13,9 +13,9 @@ import { useParams } from 'next/navigation';
 import { showSuccessToast, showErrorToast } from '@/lib/toast-handler';
 
 export default function ServiceVerificationPage() {
-      const params = useParams();
-      const rawToken = params.token;
-      const token = Array.isArray(rawToken) ? rawToken[0] : rawToken;
+const params = useParams();
+const rawToken = params.token;
+const token = Array.isArray(rawToken) ? rawToken[0] : rawToken;
   
  
 

@@ -23,6 +23,7 @@ const assignServiceSchema = new mongoose.Schema({
     auto_invoice: { type: Boolean, default: false },
     isaccepted: { type: String,  enum: ["accepted", "rejected" ,"pending" , 'completed' ,'running' ], default: "pending" },
     email: { type: String, required: true },
+    
 }, { timestamps: true });
 
 

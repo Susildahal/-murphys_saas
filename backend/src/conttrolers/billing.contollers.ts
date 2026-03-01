@@ -1,72 +1,101 @@
 import AssignService from "../models/assignService.routes";
 import BillingHistory from "../models/billingHistory.model";
-import { Request , Response} from "express"; 
+import { Request, Response } from "express";
 import { AuthenticatedRequest } from "../middleware/auth";
-import Stripe from 'stripe';
 
-// Initialize Stripe with your secret key
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+// ─── PayPal configuration ────────────────────────────────────────────────────
+const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID || 'AV_tVxQekwPqP4fz4bI8-CLDs7_cGnDV15R1Mlrc2ZlEUGnu2qoGL4SkfoR_sPotN6z7u8UM_BajzUPw';
+const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET || 'EFUJCL_jX2jEkzUBCYX5GpH5sjVhR4S8ZNBnvZAWg2sQHwsZuGe-Yy89D-j17BhEpCv9BS7mysNEt5gQ';
+const PAYPAL_BASE_URL = process.env.PAYPAL_BASE_URL || 'https://api-m.sandbox.paypal.com';
 
-if (!stripeSecretKey) {
-    console.error('⚠️ STRIPE_SECRET_KEY is not set in environment variables!');
-    throw new Error('STRIPE_SECRET_KEY is required');
+/** Get a short-lived OAuth2 access token from PayPal */
+async function getPayPalAccessToken(): Promise<string> {
+    const credentials = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64');
+    const resp = await fetch(`${PAYPAL_BASE_URL}/v1/oauth2/token`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Basic ${credentials}`,
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'grant_type=client_credentials',
+    });
+    if (!resp.ok) {
+        const err = await resp.text();
+        throw new Error(`PayPal auth failed: ${err}`);
+    }
+    const data = await resp.json() as any;
+    return data.access_token as string;
 }
 
-console.log('✅ Stripe initialized with key:', stripeSecretKey.substring(0, 12) + '...');
-
-const stripe = new Stripe(stripeSecretKey, {
-    apiVersion: '2025-12-15.clover',
-});
-
-export const getBillingInfo = async ( req: AuthenticatedRequest, res: Response ) => {
-    try {
-       const user = req.user;
-       const status = req.query.status as string | undefined;
-       if (!user) {
-        return  res.status(401).json({ message: 'Unauthorized' });
-       }
-       const billingInfo = await AssignService.find({ email: user?.email });
-       res.status(200).json({ data: billingInfo, message: 'Billing info retrieved successfully' });
-
-       if (!billingInfo) {
-        return res.status(404).json({ message: 'Billing info not found' });
-       }
-    } catch (error) {
-        res.status(500).json({ message: 'Server Error', error });
-    }
-    
-};
-
-export const processRenewalPayment = async ( req: AuthenticatedRequest, res: Response ) => {
+export const getBillingInfo = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
+        const status = req.query.status as string | undefined;
         if (!user) {
             return res.status(401).json({ message: 'Unauthorized' });
         }
+        const billingInfo = await AssignService.find({ email: user?.email });
+        res.status(200).json({ data: billingInfo, message: 'Billing info retrieved successfully' });
 
-        const { paymentMethodId, renewalId, amount, assignServiceId } = req.body;
+        if (!billingInfo) {
+            return res.status(404).json({ message: 'Billing info not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error });
+    }
 
-        console.log('💳 Processing payment:', { 
-            user: user.email, 
-            renewalId, 
-            amount, 
-            assignServiceId 
+};
+
+/** Step 1 – Create a PayPal order and return the orderID to the frontend */
+export const createPayPalOrder = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(401).json({ message: 'Unauthorized' });
+
+        const { renewalId, amount, assignServiceId } = req.body;
+
+        if (!renewalId || !amount || !assignServiceId) {
+            return res.status(400).json({ message: 'Missing required fields: renewalId, amount, assignServiceId' });
+        }
+
+        const assignService = await AssignService.findById(assignServiceId);
+        if (!assignService) return res.status(404).json({ message: 'Service not found' });
+
+        const accessToken = await getPayPalAccessToken();
+
+        const orderPayload = {
+            intent: 'CAPTURE',
+            purchase_units: [
+                {
+                    reference_id: `${assignServiceId}-${renewalId}`,
+                    description: `Renewal for ${assignService.service_name} (${assignService.invoice_id})`,
+                    amount: {
+                        currency_code: 'AUD',
+                        value: Number(amount).toFixed(2),
+                    },
+                    custom_id: `${user.uid || ''}::${renewalId}::${assignServiceId}`,
+                },
+            ],
+        };
+
+        const orderResp = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(orderPayload),
         });
 
-        if (!paymentMethodId || !renewalId || !amount || !assignServiceId) {
-            return res.status(400).json({ message: 'Missing required fields' });
+        if (!orderResp.ok) {
+            const errText = await orderResp.text();
+            console.error('PayPal create order error:', errText);
+            return res.status(502).json({ message: 'PayPal order creation failed', detail: errText });
         }
 
-        // Get the assign service to get invoice and service details
-        const assignService = await AssignService.findById(assignServiceId);
-        
-        if (!assignService) {
-            return res.status(404).json({ message: 'Service not found' });
-        }
+        const order = await orderResp.json() as any;
 
-        console.log('📦 Service found:', assignService.service_name);
-
-        // Create initial billing history record as pending
+        // Create a pending billing history so we can tie it to the capture later
         const billingHistory = new BillingHistory({
             user_email: user.email || '',
             user_id: user.uid || '',
@@ -74,122 +103,117 @@ export const processRenewalPayment = async ( req: AuthenticatedRequest, res: Res
             renewal_id: renewalId,
             invoice_id: assignService.invoice_id,
             service_name: assignService.service_name,
-            amount: amount,
+            amount,
             currency: 'aud',
             payment_status: 'pending',
-            payment_method: 'card',
-            stripe_payment_method_id: paymentMethodId,
+            payment_method: 'paypal',
+            paypal_order_id: order.id,
             metadata: {
-                renewal_label: assignService.renewal_dates.find((r: any) => r._id.toString() === renewalId)?.label
-            }
+                renewal_label: assignService.renewal_dates.find((r: any) => r._id.toString() === renewalId)?.label,
+            },
         });
+        await billingHistory.save();
 
-        try {
-            console.log('🔐 Creating Stripe payment intent...');
-            
-            // Create a payment intent
-            const paymentIntent = await stripe.paymentIntents.create({
-                amount: Math.round(amount * 100), // Convert to cents
-                currency: 'aud',
-                payment_method: paymentMethodId,
-                confirm: true,
-                description: `Renewal payment for ${assignService.service_name} - ${assignService.invoice_id}`,
-                metadata: {
-                    userId: user.uid || '',
-                    userEmail: user.email || '',
-                    renewalId,
-                    assignServiceId,
-                    invoiceId: assignService.invoice_id
-                },
-                automatic_payment_methods: {
-                    enabled: true,
-                    allow_redirects: 'never',
-                },
-            });
-
-            console.log('✅ Payment intent created:', paymentIntent.id, 'Status:', paymentIntent.status);
-
-            if (paymentIntent.status === 'succeeded') {
-                // Update billing history to completed
-                billingHistory.payment_status = 'completed';
-                billingHistory.stripe_payment_intent_id = paymentIntent.id;
-                billingHistory.payment_date = new Date();
-                await billingHistory.save();
-
-                console.log('💾 Billing history saved:', billingHistory._id);
-
-                // Find and update the specific renewal date in assign service
-                const renewalDate = assignService.renewal_dates.find(
-                    (r: any) => r._id.toString() === renewalId
-                );
-
-                if (renewalDate) {
-                    renewalDate.haspaid = true;
-                    await assignService.save();
-                    console.log('✅ Renewal marked as paid');
-                }
-
-                return res.status(200).json({ 
-                    message: 'Payment processed successfully',
-                    billingHistoryId: billingHistory._id,
-                    paymentIntent: {
-                        id: paymentIntent.id,
-                        amount: paymentIntent.amount,
-                        status: paymentIntent.status
-                    }
-                });
-            } else {
-                // Payment requires additional action or failed
-                billingHistory.payment_status = 'failed';
-                billingHistory.failure_reason = `Payment status: ${paymentIntent.status}`;
-                await billingHistory.save();
-
-                console.log('❌ Payment failed:', paymentIntent.status);
-
-                return res.status(400).json({ 
-                    message: 'Payment requires additional action or failed',
-                    status: paymentIntent.status,
-                    billingHistoryId: billingHistory._id
-                });
-            }
-
-        } catch (stripeError: any) {
-            // Save failed payment to billing history
-            billingHistory.payment_status = 'failed';
-            billingHistory.failure_reason = stripeError.message;
-            await billingHistory.save();
-
-            console.error('❌ Stripe payment error:', stripeError.message);
-            
-            return res.status(500).json({ 
-                message: 'Payment processing failed',
-                error: stripeError.message,
-                billingHistoryId: billingHistory._id
-            });
-        }
+        console.log('✅ PayPal order created:', order.id);
+        return res.status(201).json({ orderID: order.id, billingHistoryId: billingHistory._id });
 
     } catch (error: any) {
-        console.error('❌ Payment processing error:', error);
-        return res.status(500).json({ 
-            message: 'Server error during payment processing',
-            error: error.message 
-        });
+        console.error('❌ createPayPalOrder error:', error);
+        return res.status(500).json({ message: 'Server error during order creation', error: error.message });
     }
 };
 
-export const getBillingHistory = async ( req: AuthenticatedRequest, res: Response ) => {
+/** Step 2 – Capture an approved PayPal order and update billing history */
+export const capturePayPalPayment = async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const user = req.user;
+        if (!user) return res.status(401).json({ message: 'Unauthorized' });
+
+        const { orderID, renewalId, assignServiceId } = req.body;
+
+        if (!orderID || !renewalId || !assignServiceId) {
+            return res.status(400).json({ message: 'Missing required fields: orderID, renewalId, assignServiceId' });
+        }
+
+        const accessToken = await getPayPalAccessToken();
+
+        const captureResp = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders/${orderID}/capture`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        const captureData = await captureResp.json() as any;
+
+        if (!captureResp.ok || captureData.status !== 'COMPLETED') {
+            console.error('❌ PayPal capture failed:', captureData);
+            // Mark pending billing record as failed
+            await BillingHistory.findOneAndUpdate(
+                { paypal_order_id: orderID },
+                { payment_status: 'failed', failure_reason: JSON.stringify(captureData) }
+            );
+            return res.status(400).json({ message: 'PayPal capture failed', detail: captureData });
+        }
+
+        const capture = captureData.purchase_units?.[0]?.payments?.captures?.[0];
+        const payerId = captureData.payer?.payer_id || '';
+
+        // Update billing history
+        const billingHistory = await BillingHistory.findOneAndUpdate(
+            { paypal_order_id: orderID },
+            {
+                payment_status: 'completed',
+                paypal_payer_id: payerId,
+                payment_date: new Date(),
+            },
+            { new: true }
+        );
+
+        // Mark renewal as paid in assign service
+        const assignService = await AssignService.findById(assignServiceId);
+        if (assignService) {
+            const renewalDate = assignService.renewal_dates.find(
+                (r: any) => r._id.toString() === renewalId
+            );
+            if (renewalDate) {
+                renewalDate.haspaid = true;
+                await assignService.save();
+                console.log('✅ Renewal marked as paid');
+            }
+        }
+
+        console.log('✅ PayPal payment captured:', capture?.id);
+        return res.status(200).json({
+            message: 'Payment captured successfully',
+            billingHistoryId: billingHistory?._id,
+            capture: {
+                id: capture?.id,
+                amount: capture?.amount,
+                status: captureData.status,
+            },
+        });
+
+    } catch (error: any) {
+        console.error('❌ capturePayPalPayment error:', error);
+        return res.status(500).json({ message: 'Server error during payment capture', error: error.message });
+    }
+};
+
+export const getBillingHistory = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         if (!user) {
             return res.status(401).json({ message: 'Unauthorized' });
         }
 
-        const { 
-            status, 
-            startDate, 
-            endDate, 
-            page = 1, 
-            limit = 10 
+        const {
+            status,
+            startDate,
+            endDate,
+            page = 1,
+            limit = 10
         } = req.query;
 
         // Build query
@@ -221,7 +245,7 @@ export const getBillingHistory = async ( req: AuthenticatedRequest, res: Respons
             BillingHistory.countDocuments(query)
         ]);
 
-        res.status(200).json({ 
+        res.status(200).json({
             data: billingHistory,
             pagination: {
                 total,
@@ -229,7 +253,7 @@ export const getBillingHistory = async ( req: AuthenticatedRequest, res: Respons
                 limit: Number(limit),
                 pages: Math.ceil(total / Number(limit))
             },
-            message: 'Billing history retrieved successfully' 
+            message: 'Billing history retrieved successfully'
         });
 
     } catch (error) {
@@ -238,7 +262,7 @@ export const getBillingHistory = async ( req: AuthenticatedRequest, res: Respons
     }
 };
 
-export const getBillingStats = async ( req: AuthenticatedRequest, res: Response ) => {
+export const getBillingStats = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         if (!user) {
@@ -260,7 +284,7 @@ export const getBillingStats = async ( req: AuthenticatedRequest, res: Response 
 
         const totalPaid = await BillingHistory.aggregate([
             {
-                $match: { 
+                $match: {
                     user_email: user.email,
                     payment_status: 'completed'
                 }
@@ -273,10 +297,10 @@ export const getBillingStats = async ( req: AuthenticatedRequest, res: Response 
             }
         ]);
 
-        res.status(200).json({ 
+        res.status(200).json({
             stats,
             totalPaid: totalPaid[0]?.total || 0,
-            message: 'Billing stats retrieved successfully' 
+            message: 'Billing stats retrieved successfully'
         });
 
     } catch (error) {
@@ -284,13 +308,9 @@ export const getBillingStats = async ( req: AuthenticatedRequest, res: Response 
         res.status(500).json({ message: 'Server Error', error });
     }
 };
-    
 
 
-
-
-
-export const deleteBillingRecord = async ( req: AuthenticatedRequest, res: Response ) => {
+export const deleteBillingRecord = async (req: AuthenticatedRequest, res: Response) => {
     try {
 
         const { id } = req.params;
@@ -308,20 +328,20 @@ export const deleteBillingRecord = async ( req: AuthenticatedRequest, res: Respo
 };
 
 // Admin endpoints - Get all billing history across all users
-export const getAdminBillingHistory = async ( req: AuthenticatedRequest, res: Response ) => {
+export const getAdminBillingHistory = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         if (!user) {
             return res.status(401).json({ message: 'Unauthorized' });
         }
 
-        const { 
+        const {
             status,
-            clientEmail, 
-            startDate, 
-            endDate, 
-            page = 1, 
-            limit = 10 
+            clientEmail,
+            startDate,
+            endDate,
+            page = 1,
+            limit = 10
         } = req.query;
 
         // Build query for all users
@@ -358,7 +378,7 @@ export const getAdminBillingHistory = async ( req: AuthenticatedRequest, res: Re
             BillingHistory.countDocuments(query)
         ]);
 
-        res.status(200).json({ 
+        res.status(200).json({
             data: billingHistory,
             pagination: {
                 total,
@@ -366,7 +386,7 @@ export const getAdminBillingHistory = async ( req: AuthenticatedRequest, res: Re
                 limit: Number(limit),
                 pages: Math.ceil(total / Number(limit))
             },
-            message: 'Admin billing history retrieved successfully' 
+            message: 'Admin billing history retrieved successfully'
         });
 
     } catch (error) {
@@ -376,7 +396,7 @@ export const getAdminBillingHistory = async ( req: AuthenticatedRequest, res: Re
 };
 
 // Admin endpoints - Get stats for all users
-export const getAdminBillingStats = async ( req: AuthenticatedRequest, res: Response ) => {
+export const getAdminBillingStats = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const user = req.user;
         if (!user) {
@@ -396,7 +416,7 @@ export const getAdminBillingStats = async ( req: AuthenticatedRequest, res: Resp
 
         const totalPaid = await BillingHistory.aggregate([
             {
-                $match: { 
+                $match: {
                     payment_status: 'completed'
                 }
             },
@@ -408,10 +428,10 @@ export const getAdminBillingStats = async ( req: AuthenticatedRequest, res: Resp
             }
         ]);
 
-        res.status(200).json({ 
+        res.status(200).json({
             stats,
             totalPaid: totalPaid[0]?.total || 0,
-            message: 'Admin billing stats retrieved successfully' 
+            message: 'Admin billing stats retrieved successfully'
         });
 
     } catch (error) {
@@ -421,18 +441,18 @@ export const getAdminBillingStats = async ( req: AuthenticatedRequest, res: Resp
 };
 
 // Admin endpoint - Delete billing record (admin version)
-export const deleteAdminBillingRecord = async ( req: AuthenticatedRequest, res: Response ) => {
+export const deleteAdminBillingRecord = async (req: AuthenticatedRequest, res: Response) => {
     try {
         const { id } = req.params;
         console.log('Admin attempting to delete billing record with ID:', id);
-        
+
         const billingRecord = await BillingHistory.findById(id);
         if (!billingRecord) {
             return res.status(404).json({ message: 'Billing record not found' });
         }
-        
+
         await BillingHistory.findByIdAndDelete(id);
-        res.status(200).json({ 
+        res.status(200).json({
             message: 'Billing record deleted successfully',
             deletedRecord: {
                 id: billingRecord._id,

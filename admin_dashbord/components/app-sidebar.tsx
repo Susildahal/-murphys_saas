@@ -86,10 +86,6 @@ const data = {
           url: "/admin/change_password",
         },
         {
-          title: "Delete Account",
-          url: "/admin/delete_account",
-        },
-        {
           title: "Privacy Policy",
           url: "/admin/privacy_policy",
         },

@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Loader2, Mail, ShieldCheck } from 'lucide-react'
+import { Loader2, Mail, Router, ShieldCheck } from 'lucide-react'
 import axiosInstance from '@/lib/axios'
 
 interface OtpVerifyModalProps {
@@ -19,11 +19,13 @@ interface OtpVerifyModalProps {
   email: string
   /** Called when the OTP is successfully verified */
   onVerified: () => void
+  /** Optional: Called when the user cancels the modal */
+  onCancel?: () => void
 }
 
 type Step = 'sending' | 'enter' | 'verifying' | 'error'
 
-const OtpVerifyModal: React.FC<OtpVerifyModalProps> = ({ email, onVerified }) => {
+const OtpVerifyModal: React.FC<OtpVerifyModalProps> = ({ email, onVerified, onCancel }) => {
   const [step, setStep] = useState<Step>('sending')
   const [code, setCode] = useState('')
   const [errorMsg, setErrorMsg] = useState('')
@@ -94,11 +96,11 @@ const OtpVerifyModal: React.FC<OtpVerifyModalProps> = ({ email, onVerified }) =>
 
   return (
     <Dialog open>
-      {/* Prevent closing by clicking outside — user must verify */}
+      {/* Prevent closing by clicking outside — user must verify, unless onCancel is provided */}
       <DialogContent
         className="sm:max-w-md"
-        onInteractOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
+        onInteractOutside={onCancel ? undefined : (e) => e.preventDefault()}
+        onEscapeKeyDown={onCancel ? undefined : (e) => e.preventDefault()}
       >
         <DialogHeader>
           <div className="flex items-center gap-2">
@@ -197,7 +199,13 @@ const OtpVerifyModal: React.FC<OtpVerifyModalProps> = ({ email, onVerified }) =>
               Try Again
             </Button>
           )}
-        </DialogFooter>
+
+          {/* Cancel button, if onCancel is provided */}
+        
+            <Button variant="secondary" onClick={() => window.history.back()} className="w-full sm:w-auto">
+              Cancel
+            </Button>
+                </DialogFooter>
       </DialogContent>
     </Dialog>
   )

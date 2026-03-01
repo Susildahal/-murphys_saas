@@ -38,10 +38,17 @@ app.use(cors({
   origin: (origin, callback) => {
     // Allow non-browser requests (no origin header - e.g., Postman, curl, server-to-server)
     if (!origin) return callback(null, true);
+
+    // Local development allowlist (any localhost port or local network IP)
+    if (origin.match(/^http:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+)(:\d+)?$/)) {
+      return callback(null, true);
+    }
+
     // Check if origin is in allowlist or wildcard is enabled
     if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
+
     // Origin not allowed - DON'T throw error, just reject without error to prevent serverless loops
     console.warn(`CORS blocked origin: ${origin}`);
     return callback(null, false);
