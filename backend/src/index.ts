@@ -15,6 +15,7 @@ import rolerouter from "./routes/role.routes";
 import siteSettingRouter from "./routes/siteSetting.route";
 import noticeRouter from "./routes/notic.routes";
 import dashboardrouter from "./routes/dashboard";
+import adminRouter from "./routes/admin.route";
 import cartRouter from "./routes/cart.routes";
 import billingrouter from "./routes/billing.routes";
 import invoiceRouter from "./models/invoice.routes";
@@ -22,6 +23,7 @@ import privacyPolicyRouter from "./routes/privacypolicy.route";
 import ticketRouter from "./routes/ticket.route";
 import authRouter from "./routes/auth.routes";
 import otpRouter from "./routes/otp.routes";
+
 
 // Use profile routes
 
@@ -79,6 +81,7 @@ app.use("/api", rolerouter);
 app.use("/api/settings", siteSettingRouter);
 app.use("/api", noticeRouter);
 app.use("/api", dashboardrouter);
+app.use("/api/admin", adminRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/billing", billingrouter);
 app.use("/api/invoices", invoiceRouter);
@@ -87,7 +90,3 @@ app.use("/api", ticketRouter);
 app.use("/api", otpRouter);
 
 export default app;
-
-
-
-
