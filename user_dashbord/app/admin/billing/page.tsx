@@ -8,11 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
-  CreditCard,
   Calendar,
   CheckCircle2,
   AlertCircle,
-  Receipt,
   Clock,
   ArrowRight,
   Info
@@ -184,7 +182,6 @@ function Page() {
                         {format(new Date(renewal.date), 'MMM dd')}
                       </span>
                     </div>
-
                     <Button
                       size="sm"
                       className="w-full cursor-pointer"
