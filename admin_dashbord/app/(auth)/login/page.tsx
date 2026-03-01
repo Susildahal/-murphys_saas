@@ -1,6 +1,6 @@
 'use client';
 
-import {  useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
@@ -31,7 +31,7 @@ export default function LoginPage() {
         email: values.email,
         password: values.password,
       });
-console.log(userCredential.data)
+      console.log(userCredential.data)
       if (userCredential.data && userCredential.data.token) {
         localStorage.setItem("token", userCredential.data.token);
         setModalStatus("Login successful! Redirecting...");
@@ -58,7 +58,7 @@ console.log(userCredential.data)
       >
         {/* Header */}
         <div className="text-center mb-10">
-          <h1 className="text-3xl font-semibold text-gray-900 mb-3">Sign In</h1>
+          <h1 className="text-3xl font-semibold text-gray-900 mb-3">Murphy’s | Admin Login</h1>
           <p className="text-base text-gray-500">
             Enter your credentials to access your account
           </p>
@@ -80,8 +80,8 @@ console.log(userCredential.data)
                   type="email"
                   placeholder="Email Address"
                   className={`h-12 text-base rounded shadow-none ${touched.email && errors.email
-                      ? "border-red-500"
-                      : ""
+                    ? "border-red-500"
+                    : ""
                     }`}
                 />
                 {touched.email && errors.email && (
@@ -99,8 +99,8 @@ console.log(userCredential.data)
                     type={passwordClick ? "text" : "password"}
                     placeholder="Password"
                     className={`h-12 text-base pr-12 rounded shadow-none ${touched.password && errors.password
-                        ? "border-red-500"
-                        : ""
+                      ? "border-red-500"
+                      : ""
                       }`}
                   />
                   <button

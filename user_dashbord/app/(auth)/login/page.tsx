@@ -339,7 +339,7 @@ function SocialChar({ rawX, rawY, mood, introReady }: CharProps) {
           </div>
 
           {/* Floating Emoji/Icons */}
-          {["❤️", "👍", "🔥", "✨" ,"👩‍💻","🔎",'💻',""].map((emoji, i) => (
+          {["❤️", "👍", "🔥", "✨", "👩‍💻", "🔎", '💻', ""].map((emoji, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, scale: 0 }}
@@ -624,10 +624,10 @@ function Checkbox({ checked, onToggle, delay }: { checked: boolean; onToggle: ()
         </motion.div>
         <span className="text-xs text-gray-500 select-none">Remember for 30 days</span>
       </button>
- <Link href="/forgot-password">
-  <motion.button
-    type="button"
-    className="
+      <Link href="/forgot-password">
+        <motion.button
+          type="button"
+          className="
       text-xs
       text-blue-600
       hover:text-blue-700
@@ -637,10 +637,10 @@ function Checkbox({ checked, onToggle, delay }: { checked: boolean; onToggle: ()
       cursor-pointer
       appearance-none
     "
-  >
-    Forgot password?
-  </motion.button>
-</Link>
+        >
+          Forgot password?
+        </motion.button>
+      </Link>
     </motion.div>
   );
 }
@@ -855,8 +855,8 @@ export default function LoginPage() {
             transition={{ delay: 0.2, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
             className="text-center mb-9">
             <h1 className="text-[1.85rem] font-bold text-blue-600 tracking-tight">
-            
-              Welcome back!
+
+              Welcome back to Murphy’s!
             </h1>
             <motion.p
               initial={{ opacity: 0 }}
