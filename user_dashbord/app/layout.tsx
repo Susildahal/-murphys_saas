@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "Murphy’s Dashboard | Digital Marketing & Solutions",
   description: "Secure client portal for managing your digital marketing services, billing, and project progress with Murphy’s.",
   icons: {
-    icon: "/half.png", // Using the brand's partial logo as the tab icon
+    icon: "/logo.png",
     apple: "/logo.png",
   },
 };
