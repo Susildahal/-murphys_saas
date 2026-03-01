@@ -26,6 +26,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import Image from "next/image"
+import { cn } from "@/lib/utils"
 
 // This is sample data.
 const data = {
@@ -93,7 +94,7 @@ const data = {
       url: "/admin/invoices",
       icon: FileText,
     },
-       {
+    {
       name: "Profile",
       url: "/admin/profile",
       icon: User,
@@ -123,11 +124,11 @@ export function AppSidebar({ searchQuery = "", ...props }: AppSidebarProps) {
 
   return (
     <Sidebar collapsible="icon" {...props} className="  dark:bg-black text-slate-900 dark:text-white">
-   
+
 
       {/* Fixed Header */}
       <SidebarHeader className="bg-background pb-4 pt-4">
-        <div className="flex px-4 items-center justify-center min-h-[40px]">
+        <div className={cn("flex items-center justify-center min-h-[40px]", !isCollapsed && "px-4")}>
           <AnimatePresence mode="wait">
             {!isCollapsed ? (
               <motion.div
@@ -137,14 +138,14 @@ export function AppSidebar({ searchQuery = "", ...props }: AppSidebarProps) {
                 exit={{ opacity: 0 }}
                 className="flex items-center gap-2"
               >
-                  <Image
-                    src="/logo.png"
-                    alt="Murphys Logo"
-                    width={130}
-                    height={130}
-                    className="object-contain"
-                    priority
-                  />
+                <Image
+                  src="/logo.png"
+                  alt="Murphys Logo"
+                  width={130}
+                  height={130}
+                  className="object-contain"
+                  priority
+                />
 
               </motion.div>
             ) : (
@@ -159,8 +160,8 @@ export function AppSidebar({ searchQuery = "", ...props }: AppSidebarProps) {
                 <Image
                   src="/half.png"
                   alt="Murphys Logo Collapsed"
-                  width={40}
-                  height={40}
+                  width={32}
+                  height={32}
                   className="object-contain"
                   priority
                 />

@@ -43,11 +43,11 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   async (config) => {
     try {
-        const token = localStorage.getItem('token');
+      const token = localStorage.getItem('token');
       if (token) {
-      
+
         config.headers.Authorization = `Bearer ${token}`;
-        console.log('Token added to request');  
+        console.log('Token added to request');
       } else {
         console.warn('No authenticated user found');
       }
@@ -76,7 +76,7 @@ axiosInstance.interceptors.response.use(
         PATCH: 'Updated successfully',
         DELETE: 'Deleted successfully',
       };
-      
+
       if (method && successMessages[method]) {
         showSuccessToast(successMessages[method]);
       }
@@ -106,7 +106,7 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       const refreshTokenValue = localStorage.getItem('refreshToken');
-      
+
       if (!refreshTokenValue) {
         // No refresh token, redirect to login
         console.error('No refresh token available');
@@ -139,8 +139,7 @@ axiosInstance.interceptors.response.use(
         console.error('Refresh token failed');
         showErrorToast('Your session has expired. Please login again.', 'Authentication Error');
         localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        // window.location.href = '/login';
+        window.location.href = '/login';
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
@@ -153,7 +152,7 @@ axiosInstance.interceptors.response.use(
       showErrorToast('Access denied. Please login with an account that has access.', 'Access Denied');
       localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');
-      // window.location.href = '/login';
+      window.location.href = '/login';
       return Promise.reject(error);
     }
 
@@ -174,7 +173,7 @@ axiosInstance.interceptors.response.use(
         showErrorToast(error.message || 'An unexpected error occurred.', 'Error');
       }
     }
-    
+
     return Promise.reject(error);
   }
 );
