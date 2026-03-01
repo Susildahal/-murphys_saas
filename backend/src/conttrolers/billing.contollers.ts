@@ -3,15 +3,26 @@ import BillingHistory from "../models/billingHistory.model";
 import { Request, Response } from "express";
 import { AuthenticatedRequest } from "../middleware/auth";
 
-// ─── PayPal configuration ────────────────────────────────────────────────────
-const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID || 'AV_tVxQekwPqP4fz4bI8-CLDs7_cGnDV15R1Mlrc2ZlEUGnu2qoGL4SkfoR_sPotN6z7u8UM_BajzUPw';
-const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET || 'EFUJCL_jX2jEkzUBCYX5GpH5sjVhR4S8ZNBnvZAWg2sQHwsZuGe-Yy89D-j17BhEpCv9BS7mysNEt5gQ';
-const PAYPAL_BASE_URL = process.env.PAYPAL_BASE_URL || 'https://api-m.sandbox.paypal.com';
-
 /** Get a short-lived OAuth2 access token from PayPal */
 async function getPayPalAccessToken(): Promise<string> {
-    const credentials = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64');
-    const resp = await fetch(`${PAYPAL_BASE_URL}/v1/oauth2/token`, {
+    // Read at request-time so dotenv values are always picked up
+    const clientId = process.env.PAYPAL_CLIENT_ID?.trim();
+    const clientSecret = process.env.PAYPAL_CLIENT_SECRET?.trim();
+    const baseUrl = process.env.PAYPAL_BASE_URL || 'https://api-m.sandbox.paypal.com';
+
+    console.log('🔑 PayPal Config Check:');
+    console.log('Client ID:', clientId ? `${clientId.substring(0, 10)}...` : 'MISSING');
+    console.log('Client Secret:', clientSecret ? `${clientSecret.substring(0, 10)}...` : 'MISSING');
+    console.log('Base URL:', baseUrl);
+
+    if (!clientId || !clientSecret) {
+        throw new Error('PayPal credentials (PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET) are not set in environment variables');
+    }
+
+    const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+    console.log('🔐 Requesting PayPal access token...');
+    
+    const resp = await fetch(`${baseUrl}/v1/oauth2/token`, {
         method: 'POST',
         headers: {
             'Authorization': `Basic ${credentials}`,
@@ -19,11 +30,15 @@ async function getPayPalAccessToken(): Promise<string> {
         },
         body: 'grant_type=client_credentials',
     });
+    
     if (!resp.ok) {
         const err = await resp.text();
+        console.error('❌ PayPal auth failed:', err);
         throw new Error(`PayPal auth failed: ${err}`);
     }
+    
     const data = await resp.json() as any;
+    console.log('✅ PayPal access token obtained successfully');
     return data.access_token as string;
 }
 
@@ -63,6 +78,9 @@ export const createPayPalOrder = async (req: AuthenticatedRequest, res: Response
 
         const accessToken = await getPayPalAccessToken();
 
+        const frontendUrl = process.env.frontendurl || 'http://localhost:3001/';
+        const baseUrl = frontendUrl.endsWith('/') ? frontendUrl.slice(0, -1) : frontendUrl;
+
         const orderPayload = {
             intent: 'CAPTURE',
             purchase_units: [
@@ -76,9 +94,19 @@ export const createPayPalOrder = async (req: AuthenticatedRequest, res: Response
                     custom_id: `${user.uid || ''}::${renewalId}::${assignServiceId}`,
                 },
             ],
+            application_context: {
+                return_url: `${baseUrl}/admin/billing`,
+                cancel_url: `${baseUrl}/admin/billing`,
+                brand_name: 'Murphy\'s Technology',
+                landing_page: 'NO_PREFERENCE',
+                user_action: 'PAY_NOW',
+                shipping_preference: 'NO_SHIPPING',
+            },
         };
 
-        const orderResp = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders`, {
+        console.log('🔵 Creating PayPal order with payload:', JSON.stringify(orderPayload, null, 2));
+
+        const orderResp = await fetch(`${process.env.PAYPAL_BASE_URL || 'https://api-m.sandbox.paypal.com'}/v2/checkout/orders`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
@@ -94,6 +122,11 @@ export const createPayPalOrder = async (req: AuthenticatedRequest, res: Response
         }
 
         const order = await orderResp.json() as any;
+
+        console.log('✅ PayPal order created successfully');
+        console.log('Order ID:', order.id);
+        console.log('Order Status:', order.status);
+        console.log('Approval URL:', order.links?.find((l: any) => l.rel === 'approve')?.href);
 
         // Create a pending billing history so we can tie it to the capture later
         const billingHistory = new BillingHistory({
@@ -137,7 +170,7 @@ export const capturePayPalPayment = async (req: AuthenticatedRequest, res: Respo
 
         const accessToken = await getPayPalAccessToken();
 
-        const captureResp = await fetch(`${PAYPAL_BASE_URL}/v2/checkout/orders/${orderID}/capture`, {
+        const captureResp = await fetch(`${process.env.PAYPAL_BASE_URL || 'https://api-m.sandbox.paypal.com'}/v2/checkout/orders/${orderID}/capture`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${accessToken}`,
@@ -146,6 +179,8 @@ export const capturePayPalPayment = async (req: AuthenticatedRequest, res: Respo
         });
 
         const captureData = await captureResp.json() as any;
+
+        console.log('📦 PayPal capture response:', JSON.stringify(captureData, null, 2));
 
         if (!captureResp.ok || captureData.status !== 'COMPLETED') {
             console.error('❌ PayPal capture failed:', captureData);
@@ -465,5 +500,63 @@ export const deleteAdminBillingRecord = async (req: AuthenticatedRequest, res: R
     catch (error) {
         console.error('Error deleting admin billing record:', error);
         res.status(500).json({ message: 'Server Error', error });
+    }
+};
+
+/** Test endpoint to verify PayPal credentials */
+export const testPayPalConnection = async (req: Request, res: Response) => {
+    try {
+        console.log('🧪 Testing PayPal connection...');
+        const accessToken = await getPayPalAccessToken();
+        
+        // Test creating a minimal order
+        const testOrderPayload = {
+            intent: 'CAPTURE',
+            purchase_units: [{
+                amount: {
+                    currency_code: 'AUD',
+                    value: '1.00'
+                },
+                description: 'Test order'
+            }],
+        };
+
+        const baseUrl = process.env.PAYPAL_BASE_URL || 'https://api-m.sandbox.paypal.com';
+        const orderResp = await fetch(`${baseUrl}/v2/checkout/orders`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(testOrderPayload),
+        });
+
+        const orderData = await orderResp.json() as any;
+
+        if (!orderResp.ok) {
+            console.error('❌ Test order failed:', orderData);
+            return res.status(502).json({ 
+                success: false,
+                message: 'PayPal test order failed', 
+                detail: orderData,
+                suggestion: 'Your PayPal sandbox credentials may be invalid or the account may have restrictions.'
+            });
+        }
+
+        console.log('✅ PayPal test successful!');
+        return res.status(200).json({ 
+            success: true,
+            message: 'PayPal connection successful',
+            testOrderId: orderData.id,
+            accountStatus: 'Active and working'
+        });
+
+    } catch (error: any) {
+        console.error('❌ PayPal test failed:', error);
+        return res.status(500).json({ 
+            success: false,
+            message: 'PayPal connection test failed', 
+            error: error.message 
+        });
     }
 };

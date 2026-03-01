@@ -1,9 +1,12 @@
-import { getBillingInfo, createPayPalOrder, capturePayPalPayment, getBillingHistory, getBillingStats, deleteBillingRecord, getAdminBillingHistory, getAdminBillingStats, deleteAdminBillingRecord } from "../conttrolers/billing.contollers";
+import { getBillingInfo, createPayPalOrder, capturePayPalPayment, getBillingHistory, getBillingStats, deleteBillingRecord, getAdminBillingHistory, getAdminBillingStats, deleteAdminBillingRecord, testPayPalConnection } from "../conttrolers/billing.contollers";
 import { verifyToken } from "../middleware/auth";
 import { isAdmin } from "../middleware/rbac";
 
 import express from "express";
 const billingrouter = express.Router();
+
+// Test endpoint (no auth required for testing)
+billingrouter.get("/test-paypal", testPayPalConnection);
 
 // User endpoints
 billingrouter.get("/info", verifyToken, getBillingInfo);

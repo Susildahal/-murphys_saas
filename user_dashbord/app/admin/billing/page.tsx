@@ -311,6 +311,7 @@ export default function BillingPage() {
         clientId: PAYPAL_CLIENT_ID,
         currency: 'AUD',
         intent: 'capture',
+        locale: 'en_AU',
         disableFunding: 'card,credit,venmo,paylater',
       } as any}
     >

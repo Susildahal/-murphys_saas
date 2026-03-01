@@ -1,6 +1,4 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+export default {
   reactStrictMode: false, // Disable strict mode to suppress findDOMNode warnings from react-quill
   turbopack: {
     // ensures Turbopack uses this folder as the workspace root (silences "inferred workspace root" warning)
@@ -16,17 +14,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  
-  /* Proxy /api requests to backend to avoid CORS in production */
-  // async rewrites() {
-  //   return [
-  //     {
-  //       source: "/api/:path*",
-  //       // expects NEXT_PUBLIC_API_URL without a trailing /api
-  //       destination: `https://murphys-saas-l94u.vercel.app/api/:path*`,
-  //     },
-  //   ];
-  // },
+  /* Proxy /api requests to backend to avoid CORS in production
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        // expects NEXT_PUBLIC_API_URL without a trailing /api
+        destination: `https://murphys-saas-l94u.vercel.app/api/:path*`,
+      },
+    ];
+  },
+  */
 };
-
-export default nextConfig;
